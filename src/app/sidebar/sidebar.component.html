@@ -1,0 +1,21 @@
+<div class="sidebar_menu" [@onSideNavChange]="sidebarState" (mouseenter)="toggleSideNav()"
+  (mouseleave)="toggleSideNavOnLeave()">
+  <mat-nav-list class="menu-list">
+    <a mat-list-item routerLinkActive="active-list-item" routerLink="dashboard" title="Incidents">
+      <mat-icon class="icon" [@iconAnimation]="sidebarState">privacy_tip</mat-icon>
+      <span class="label" [@labelAnimation]="sidebarState">Incidents</span>
+    </a>
+
+    <a mat-list-item routerLinkActive="active-list-item" routerLink="projects" title="Projects">
+      <mat-icon class="icon" [@iconAnimation]="sidebarState">source</mat-icon>
+      <span class="label" [@labelAnimation]="sidebarState">Projects</span>
+    </a>
+    <span></span>
+
+    <a mat-list-item routerLinkActive="active-list-item" routerLink="settings" title="Settings">
+      <mat-icon class="icon" [@iconAnimation]="sidebarState">settings</mat-icon>
+      <span class="label" [@labelAnimation]="sidebarState">Settings</span>
+    </a>
+
+  </mat-nav-list>
+</div>

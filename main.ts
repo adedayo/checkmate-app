@@ -11,33 +11,35 @@ function createWindow(): BrowserWindow {
   const electronScreen = screen;
   const size = electronScreen.getPrimaryDisplay().workAreaSize;
 
+  let heightRatio = 0.8
+  let widthRatio = 0.75
+  let x = size.width * (1 - widthRatio) / 2
+  let y = size.height * (1 - heightRatio) / 2
   // Create the browser window.
   win = new BrowserWindow({
-    x: 0,
-    y: 0,
-    width: size.width,
-    height: size.height,
+    x: x,
+    y: y,
+    width: size.width * widthRatio,
+    height: size.height * heightRatio,
     webPreferences: {
       nodeIntegration: true,
-      allowRunningInsecureContent: (serve) ? true : false,
+      devTools: (serve) ? true : false,
+      allowRunningInsecureContent: false,
       contextIsolation: false,  // false if you want to run 2e2 test with Spectron
       enableRemoteModule: true // true if you want to run 2e2 test  with Spectron or use remote module in renderer context (ie. Angular)
     },
   });
 
   if (serve) {
-    win.webContents.openDevTools();
+    // win.webContents.openDevTools(); // open with CMD + ALT + I
     require('electron-reload')(__dirname, {
       electron: require(`${__dirname}/node_modules/electron`)
     });
     win.loadURL('http://localhost:4200');
 
   } else {
-    win.loadURL(url.format({
-      pathname: path.join(__dirname, 'dist/checkmate-app/index.html'),
-      protocol: 'file:',
-      slashes: true
-    }));
+    let indexFile = url.format(url.pathToFileURL(path.join(__dirname, 'dist/checkmate-app/index.html')))
+    win.loadURL(indexFile)
   }
 
   // Emitted when the window is closed.
