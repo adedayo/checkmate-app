@@ -14,9 +14,12 @@ import { ToggleSidebarComponent } from './toggle-sidebar/toggle-sidebar.componen
 import { HeaderComponent } from './header/header.component';
 import { MatListModule } from "@angular/material/list";
 import { MatDividerModule } from '@angular/material/divider';
+import { NgxElectronModule } from "ngx-electron";
 import { ProjectsComponent } from './projects/projects.component';
 import { SettingsComponent } from './settings/settings.component';
-
+import { FooterComponent } from './footer/footer.component';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { HttpClientModule } from '@angular/common/http';
 @NgModule({
   declarations: [
     AppComponent,
@@ -25,7 +28,8 @@ import { SettingsComponent } from './settings/settings.component';
     ToggleSidebarComponent,
     HeaderComponent,
     ProjectsComponent,
-    SettingsComponent
+    SettingsComponent,
+    FooterComponent
   ],
   imports: [
     BrowserModule,
@@ -37,6 +41,9 @@ import { SettingsComponent } from './settings/settings.component';
     MatSidenavModule,
     MatListModule,
     MatDividerModule,
+    NgxElectronModule,
+    MatGridListModule,
+    HttpClientModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

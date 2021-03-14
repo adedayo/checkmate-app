@@ -1,10 +1,21 @@
 {
-  "productName": "checkmate",
+  "productName": "CheckMate",
+  "appId": "com.securityauditlabs.checkmate",
   "directories": {
     "output": "release/"
   },
   "files": [
     "**/*",
+    "!**/dist/builder-debug.yml",
+    "!**/dist/builder-effective-config.yml",
+    "!**/dist/CheckMate*",
+    "!**/dist/mac/*",
+    "!**/dist/win/*",
+    "!**/dist/linux/*",
+    "!checkmate-binary/*",
+    "!**/.metals",
+    "!**/.vscode",
+    "!.browserslistrc",
     "!**/*.ts",
     "!*.code-workspace",
     "!LICENSE.md",
@@ -17,24 +28,39 @@
     "!_config.yml",
     "!karma.conf.js",
     "!tsconfig.json",
+    "!tsconfig.serve.json",
+    "!tsconfig.spec.json",
+    "!tsconfig.app.json",
     "!tslint.json"
   ],
   "win": {
-    "icon": "dist/assets/icons",
+    "icon": "build/icons/CheckMateLogo.ico",
     "target": [
       "portable"
     ]
   },
   "mac": {
-    "icon": "dist/assets/icons",
+    "icon": "build/icons/CheckMateLogo.icns",
     "target": [
       "dmg"
     ]
   },
   "linux": {
-    "icon": "dist/assets/icons",
+    "icon": "build/icons/CheckMateLogo.png",
     "target": [
       "AppImage"
     ]
-  }
+  },
+  "extraResources": [
+    {
+      "from": "checkmate-binary/darwin/checkmate",
+      "to": "checkmate",
+      "filter": [
+        "**/*"
+      ]
+    }
+  ],
+  "publish": [
+    "github"
+  ]
 }

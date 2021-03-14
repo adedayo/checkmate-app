@@ -1,10 +1,43 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { spawn } from 'child_process';
+import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+import { platform } from 'os'
 
 let win: BrowserWindow = null;
 const args = process.argv.slice(1),
   serve = args.some(val => val === '--serve');
+let cmExec = 'checkmate'
+let os = 'darwin'
+switch (platform()) {
+  case 'darwin':
+    os = 'darwin'
+    break
+  case 'win32':
+    os = 'win'
+    cmExec += '.exe'
+    break
+  default:
+    os = 'linux'
+    break
+}
+
+let appPath = path.join(path.dirname(app.getAppPath()), cmExec)
+if (serve) {
+  appPath = path.join(path.dirname(app.getAppPath()), 'checkmate-app', 'checkmate-binary', os, cmExec)
+}
+console.log('Remote path (exe):', appPath, "Env: ", process.env.NODE_ENV);
+
+
+const apiPort = 17283
+const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`]
+const checkMateAPI = spawn(appPath, cmArgs, {});
+
+
+ipcMain.handle('api-config', (event) => {
+  return apiPort
+})
+
 
 function createWindow(): BrowserWindow {
 
@@ -68,6 +101,10 @@ try {
       app.quit();
     }
   });
+
+  app.on('before-quit', () => {
+    checkMateAPI.kill()
+  })
 
   app.on('activate', () => {
     // On OS X it's common to re-create a window in the app when the
