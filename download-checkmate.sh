@@ -2,10 +2,6 @@
 
 # Download latest checkmate binaries. Requires curl and jq to be available
 
-
-
-
-
 binaryDir="checkmate-binary"
 downloadDir="${binaryDir}/releases"
 darwinDir="${binaryDir}/darwin"

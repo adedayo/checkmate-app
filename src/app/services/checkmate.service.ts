@@ -2,6 +2,7 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { ElectronIPC } from "./electron.service";
 import { Observable } from "rxjs";
+import { ProjectSummary } from "../models/project-scan";
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,7 @@ import { Observable } from "rxjs";
 export class CheckMateService {
 
   apiPort = '17283'
+  api = `http://localhost:${this.apiPort}/api`
   version = '';
   constructor(private http: HttpClient, private electron: ElectronIPC) {
     this.electron.getAPIConfig().then(port => {
@@ -18,8 +20,11 @@ export class CheckMateService {
 
 
   public getVersion(): Observable<string> {
-    console.log(`calling API with port ${this.apiPort}`);
-    return this.http.get<string>(`http://localhost:${this.apiPort}/api/version`)
+    return this.http.get<string>(`${this.api}/version`)
+  }
+
+  public getProjectSummaries(): Observable<ProjectSummary[]> {
+    return this.http.get<ProjectSummary[]>(`${this.api}/projectsummaries`)
   }
 
 

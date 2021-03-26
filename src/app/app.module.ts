@@ -20,6 +20,12 @@ import { SettingsComponent } from './settings/settings.component';
 import { FooterComponent } from './footer/footer.component';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { HttpClientModule } from '@angular/common/http';
+import { ProjectSummaryComponent } from './project-summary/project-summary.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { ProjectSetupComponent } from './project-setup/project-setup.component';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 @NgModule({
   declarations: [
     AppComponent,
@@ -29,7 +35,9 @@ import { HttpClientModule } from '@angular/common/http';
     HeaderComponent,
     ProjectsComponent,
     SettingsComponent,
-    FooterComponent
+    FooterComponent,
+    ProjectSummaryComponent,
+    ProjectSetupComponent
   ],
   imports: [
     BrowserModule,
@@ -44,6 +52,11 @@ import { HttpClientModule } from '@angular/common/http';
     NgxElectronModule,
     MatGridListModule,
     HttpClientModule,
+    FontAwesomeModule,
+    MatStepperModule,
+    MatFormFieldModule,
+    FormsModule,
+    ReactiveFormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

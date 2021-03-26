@@ -4,11 +4,14 @@
     <app-sidebar></app-sidebar>
   </mat-drawer>
 
-  <mat-drawer-content class="drawer-content" [@onSideNavChange]="sidebarState">
-    <mat-grid-list cols="1">
-      <router-outlet></router-outlet>
-      <app-footer class="bottom"></app-footer>
-    </mat-grid-list>
+  <mat-drawer-content class="flex" [@onSideNavChange]="sidebarState">
+    <div class="flex relative h-full w-full">
+      <router-outlet class="h-full"></router-outlet>
+      <app-footer class="absolute inset-x-0 bottom-0 pb-16 w-full bg-purple-900"></app-footer>
+
+    </div>
+
+
   </mat-drawer-content>
 
 </mat-drawer-container>

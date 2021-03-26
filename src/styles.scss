@@ -9,3 +9,7 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
   overflow: hidden;
 }
+
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";

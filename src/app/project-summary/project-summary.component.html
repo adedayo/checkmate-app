@@ -1,0 +1,36 @@
+<div class="overflow-hidden bg-white w-auto rounded-lg shadow flex flex-col min-w-max">
+  <div class="flex bg-purple-800 text-lg text-center">
+    <p class="py-4 pl-2 lg:pl-4 text-purple-50 text-base min-w-max">{{projectSummary.Name}}</p>
+    <span class="w-full"></span>
+    <fa-icon class="text-purple-50 self-center px-2 lg:px-4" size="lg" [icon]="faCog"></fa-icon>
+  </div>
+  <div *ngIf='projectSummary.LastScore' class="flex bg-purple-50">
+    <p class="self-center pl-2 lg:pl-4 text-purple-900 absolute font-bold text-xl">Grade</p>
+    <span class="w-full"></span>
+    <div class="w-20 h-20 min-w-0 flex items-center place-content-center text-6xl text-purple-900">
+      {{projectSummary.LastScore.Grade}}</div>
+    <span class="w-full"></span>
+  </div>
+  <div class="px-2 py-5 lg:p-4">
+    <div>
+      <div class="text-sm font-medium text-purple-800 truncate">Code Repositories</div>
+      <div *ngIf="projectSummary.Repositories">
+        <div *ngFor="let repo of projectSummary.Repositories" class="mt-1 text-xs font-semibold text-purple-900">
+          {{repo.Location}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="flex px-2 py-5 lg:p-4 bg-gray-200 relative">
+    <div *ngIf='projectSummary.LastScan' class="flex pr-16 min-w-max">
+      <div class="text-purple-900 text-sm font-bold min-w-max">Last Scan:</div>
+      <div class="pl-2 text-sm  text-purple-800 min-w-max">{{projectSummary.LastScan | date : "E
+        MMM dd,
+        yyyy. H:mm:ss z"
+        }}
+      </div>
+    </div>
+
+    <fa-icon class="absolute inset-y-auto right-0 text-purple-800  px-2 lg:px-4" size="lg" [icon]="faPlayCircle">
+    </fa-icon>
+  </div>
+</div>
