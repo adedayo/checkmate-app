@@ -18,7 +18,6 @@ export class CheckMateService {
     })
   }
 
-
   public getVersion(): Observable<string> {
     return this.http.get<string>(`${this.api}/version`)
   }
@@ -26,6 +25,5 @@ export class CheckMateService {
   public getProjectSummaries(): Observable<ProjectSummary[]> {
     return this.http.get<ProjectSummary[]>(`${this.api}/projectsummaries`)
   }
-
 
 }

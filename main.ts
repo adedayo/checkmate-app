@@ -54,6 +54,8 @@ function createWindow(): BrowserWindow {
     y: y,
     width: size.width * widthRatio,
     height: size.height * heightRatio,
+    minWidth: 500,
+    minHeight: 500,
     webPreferences: {
       nodeIntegration: true,
       devTools: (serve) ? true : false,

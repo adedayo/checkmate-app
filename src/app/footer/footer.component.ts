@@ -13,7 +13,6 @@ export class FooterComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkmate.getVersion().subscribe(v => {
-      console.log("Footer got", v);
       this.version = v
     })
   }

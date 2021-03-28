@@ -8,6 +8,9 @@ body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   overflow: hidden;
+  width: 500px;
+  min-width: 500px;
+  width: auto !important;
 }
 
 @import "tailwindcss/base";
