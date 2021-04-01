@@ -1,21 +1,26 @@
-<div class="sidebar_menu" [@onSideNavChange]="sidebarState" (mouseenter)="toggleSideNav()"
-  (mouseleave)="toggleSideNavOnLeave()">
-  <mat-nav-list class="menu-list">
-    <a mat-list-item routerLinkActive="active-list-item" routerLink="dashboard" title="Incidents">
-      <mat-icon class="icon" [@iconAnimation]="sidebarState">privacy_tip</mat-icon>
-      <span class="label" [@labelAnimation]="sidebarState">Incidents</span>
-    </a>
+<div [@onSideNavChange]="sidebarState" (mouseenter)="toggleSideNav()" (mouseleave)="toggleSideNavOnLeave()"
+  class="z-0 flex bg-purple-800 text-purple-100 w-64 space-y-6 px-2  min-h-full h-full">
 
-    <a mat-list-item routerLinkActive="active-list-item" routerLink="projects" title="Projects">
-      <mat-icon class="icon" [@iconAnimation]="sidebarState">source</mat-icon>
-      <span class="label" [@labelAnimation]="sidebarState">Projects</span>
-    </a>
-    <span></span>
 
-    <a mat-list-item routerLinkActive="active-list-item" routerLink="settings" title="Settings">
-      <mat-icon class="icon" [@iconAnimation]="sidebarState">settings</mat-icon>
-      <span class="label" [@labelAnimation]="sidebarState">Settings</span>
-    </a>
-
-  </mat-nav-list>
+  <nav class="flex flex-col text-lg w-full">
+    <div class="flex-grow">
+      <a routerLinkActive="active-list-item" routerLink="dashboard" title="Incidents"
+        class="flex mb-2 py-2.5 px-2 hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        <mat-icon class="icon self-center items-start" [@iconAnimation]="sidebarState">privacy_tip</mat-icon>
+        <div class="pl-4" [@labelAnimation]="sidebarState">Incidents</div>
+      </a>
+      <a routerLinkActive="active-list-item" routerLink="projects" title="Projects"
+        class="flex my-2 py-2.5 px-2 hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        <mat-icon class="icon self-center items-start" [@iconAnimation]="sidebarState">source</mat-icon>
+        <div class="pl-4" [@labelAnimation]="sidebarState">Projects</div>
+      </a>
+    </div>
+    <div class="flex-none min-w-full w-full">
+      <a routerLinkActive="active-list-item" routerLink="settings" title="Settings"
+        class="flex my-2 py-2.5 px-2 hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        <mat-icon class="icon self-center items-start" [@iconAnimation]="sidebarState">settings</mat-icon>
+        <div class="pl-4 mr-18" [@labelAnimation]="sidebarState">Settings</div>
+      </a>
+    </div>
+  </nav>
 </div>

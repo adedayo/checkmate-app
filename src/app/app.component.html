@@ -1,21 +1,20 @@
-<app-header></app-header>
-<mat-drawer-container class="drawer-container">
-  <mat-drawer class="drawer" mode="side" opened="true">
-    <app-sidebar></app-sidebar>
-  </mat-drawer>
+<div class="h-screen flex flex-col">
 
-  <mat-drawer-content class="flex" [@onSideNavChange]="sidebarState">
-    <div class="flex flex-col relative h-full w-full">
-      <div class="relative w-full h-full">
-        <router-outlet></router-outlet>
-      </div>
-      <div class="relative h-1 w-full">
-        <app-footer class="fixed min-h-0 z-50 inset-x-auto bottom-0 w-full bg-purple-900"></app-footer>
-      </div>
+  <!-- Top Nav -->
+  <div class="flex-none">
+    <app-header></app-header>
+  </div>
 
+  <div class="relative flex flex-row flex-grow">
+
+    <!-- Side Nav -->
+    <app-sidebar class=""></app-sidebar>
+
+
+    <!-- Content -->
+    <div class="flex flex-col p-2 relative w-full h-full min-h-full">
+      <router-outlet></router-outlet>
     </div>
 
-
-  </mat-drawer-content>
-
-</mat-drawer-container>
+  </div>
+</div>
