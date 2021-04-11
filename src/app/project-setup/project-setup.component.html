@@ -1,35 +1,113 @@
-<div class="bg-gray-800 w-full">
+<div class="bg-gray-800 w-full text-blue-800">
   <mat-vertical-stepper [linear]="true" #stepper>
-    <mat-step [stepControl]="firstFormGroup">
-      <form [formGroup]="firstFormGroup">
+    <mat-step [stepControl]="projectForm">
+      <form [formGroup]="projectForm">
         <ng-template matStepLabel><span class="text-purple-800">Fill out a project name</span> </ng-template>
-        <mat-form-field class="text-blue-800">
+        <mat-form-field class="text-blue-800 focus:outline-none">
           <mat-label>Project Name</mat-label>
-          <input matInput placeholder="Ex. Frontend API" formControlName="firstCtrl" required>
+          <input matInput placeholder="Ex. Frontend API" formControlName="projectName" required>
         </mat-form-field>
+
+
         <div>
-          <button mat-button matStepperNext><span class="text-blue-800">Next</span></button>
+          <button mat-button class="focus:outline-none" matStepperNext>Next</button>
         </div>
       </form>
     </mat-step>
-    <mat-step [stepControl]="secondFormGroup">
-      <form [formGroup]="secondFormGroup">
-        <ng-template matStepLabel> <span class="text-purple-800">Fill out your address </span></ng-template>
-        <mat-form-field>
-          <mat-label>Address</mat-label>
-          <input matInput formControlName="secondCtrl" placeholder="Ex. 1 Main St, New York, NY" required>
-        </mat-form-field>
+    <mat-step [stepControl]="projectForm">
+      <form [formGroup]="projectForm">
+        <ng-template matStepLabel> <span class="text-purple-800">Configure Repositories </span></ng-template>
+
+        <div formArrayName="repositories" class="flex flex-col mb-4">
+          <div *ngFor="let repository of convertToFormGroups(repositories.controls); let i = index"
+            class="flex relative w-full ">
+            <div [formGroup]="repository" class="flex py-2  items-center">
+              <select formControlName="type" class="h-12 mr-2 bg-white border border-gray-400
+              hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight
+              focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+                <option *ngFor="let repoType of repoTypes" [ngValue]="repoType.value">{{repoType.type}}</option>
+              </select>
+              <div *ngIf="repository.value.type === 'git'" class="">
+                <mat-form-field class="w-96 focus:outline-none">
+                  <mat-label>Git repository</mat-label>
+                  <input matInput placeholder="git@repository-url.git" formControlName="coordinate" required>
+                </mat-form-field>
+              </div>
+              <div *ngIf="repository.value.type === 'fs'">
+                <div *ngIf="isInElectron;else not_electron">
+                  <mat-form-field class="w-96 focus:outline-none">
+                    <mat-label>Full Filesystem Path</mat-label>
+                    <input matInput placeholder="/path/to/codebase" (click)="getCodePath(i)"
+                      formControlName="coordinate" required>
+                  </mat-form-field>
+                </div>
+                <ng-template #not_electron>
+                  <mat-form-field class="w-96 focus:outline-none">
+                    <mat-label>Full Filesystem Path</mat-label>
+                    <input matInput placeholder="/path/to/codebase" formControlName="coordinate" required>
+                  </mat-form-field>
+                </ng-template>
+              </div>
+              <div class="ml-4">
+                <mat-icon (click)="deleteRepo(i)">
+                  delete_forever</mat-icon>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center text-blue-800" (click)="addRepo()">
+            <button class="focus:outline-none" mat-mini-fab aria-label="Add code repository">
+              <mat-icon class="text-blue-800 focus:outline-none">add</mat-icon>
+            </button>
+            <div class="pl-2">Add code repository</div>
+          </div>
+        </div>
+
         <div>
-          <button mat-button matStepperPrevious>Back</button>
-          <button mat-button matStepperNext>Next</button>
+          <button mat-button class="focus:outline-none" matStepperPrevious>Back</button>
+          <button mat-button class="focus:outline-none" matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step [stepControl]="projectForm">
+      <form [formGroup]="projectForm">
+        <ng-template matStepLabel> <span class="text-blue-800">Configure Scan Options </span></ng-template>
+
+        <div class="flex flex-col" [formGroup]="scanOptions">
+          <div class="inline-flex items-center mt-3">
+            <input type="checkbox" formControlName="showSource" class="h-5 w-5">
+            <span class="ml-2 ">Show source code evidence in results</span>
+          </div>
+          <div class="inline-flex items-center mt-3">
+            <input type="checkbox" formControlName="confidentialFilesOnly" class="h-5 w-5">
+            <span class="ml-2 ">Only find sensitive files such as certificates and key stores</span>
+          </div>
+          <div class="inline-flex items-center mt-3">
+            <input type="checkbox" formControlName="calculateChecksums" class="h-5 w-5">
+            <span class="ml-2 ">Calculate checksums of secrets</span>
+          </div>
+          <div class="inline-flex items-center mt-3">
+            <input type="checkbox" formControlName="excludeTestFiles" class="h-5 w-5">
+            <span class="ml-2 ">Exclude test files in scan</span>
+          </div>
+
+        </div>
+
+
+
+        <div>
+          <button mat-button class="focus:outline-none" matStepperPrevious>Back</button>
+          <button mat-button class="focus:outline-none" matStepperNext>Next</button>
         </div>
       </form>
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Done</ng-template>
-      <p>You are now done.</p>
+      <ng-template matStepLabel>Finish</ng-template>
+      <div class="inline-flex items-center mt-3" [formGroup]="scanPolicy">
+        <input type="checkbox" formControlName="configured" class="h-5 w-5">
+        <span class="ml-2 ">Advanced: Configure Scan Policy</span>
+      </div>
       <div>
-        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button class="focus:outline-none" matStepperPrevious>Back</button>
         <button mat-button (click)="stepper.reset()">Reset</button>
       </div>
     </mat-step>
