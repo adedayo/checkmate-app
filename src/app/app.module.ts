@@ -31,6 +31,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { CodeEditorComponent } from './code-editor/code-editor.component';
 
 
 @NgModule({
@@ -44,7 +45,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     SettingsComponent,
     FooterComponent,
     ProjectSummaryComponent,
-    ProjectSetupComponent
+    ProjectSetupComponent,
+    CodeEditorComponent
   ],
   imports: [
     BrowserModule,

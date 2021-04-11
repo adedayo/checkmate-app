@@ -8,6 +8,7 @@
           <input matInput placeholder="Ex. Frontend API" formControlName="projectName" required>
         </mat-form-field>
 
+        <app-code-editor></app-code-editor>
 
         <div>
           <button mat-button class="focus:outline-none" matStepperNext>Next</button>
@@ -102,14 +103,22 @@
     </mat-step>
     <mat-step>
       <ng-template matStepLabel>Finish</ng-template>
-      <div class="inline-flex items-center mt-3" [formGroup]="scanPolicy">
-        <input type="checkbox" formControlName="configured" class="h-5 w-5">
-        <span class="ml-2 ">Advanced: Configure Scan Policy</span>
+      <div class="flex flex-col">
+        <div class="inline-flex items-center mt-3" [formGroup]="scanPolicy">
+          <input type="checkbox" formControlName="configured" class="h-5 w-5">
+          <span class="ml-2 ">Advanced: Configure Scan Policy</span>
+        </div>
+        <div class="mt-3" *ngIf="scanPolicy.value.configured">
+          <div class="h-80 w-full bg-gray-50" #container>
+            <app-code-editor></app-code-editor>
+          </div>
+        </div>
+        <div>
+        </div>
       </div>
-      <div>
-        <button mat-button class="focus:outline-none" matStepperPrevious>Back</button>
-        <button mat-button (click)="stepper.reset()">Reset</button>
-      </div>
+      <button mat-button class="focus:outline-none" matStepperPrevious>Back</button>
+      <button mat-button (click)="stepper.reset()">Reset</button>
+
     </mat-step>
   </mat-vertical-stepper>
 </div>

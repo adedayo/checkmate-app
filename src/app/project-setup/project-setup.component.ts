@@ -3,12 +3,14 @@ import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '
 import { ElectronService } from 'ngx-electron';
 import { ElectronIPC } from '../services/electron.service';
 
+
 @Component({
   selector: 'app-project-setup',
   templateUrl: './project-setup.component.html',
   styleUrls: ['./project-setup.component.scss']
 })
 export class ProjectSetupComponent implements OnInit {
+
 
   projectForm: FormGroup;
   isInElectron = false;
@@ -17,12 +19,17 @@ export class ProjectSetupComponent implements OnInit {
     { type: 'git', value: 'git' },
     { type: 'filesystem', value: 'fs' },
   ];
-
   selectedType = 'git';
+
+
+
+
+
 
   constructor(private fb: FormBuilder, private electronService: ElectronService, private ipc: ElectronIPC) {
     this.isInElectron = electronService.isElectronApp;
   }
+
 
   ngOnInit(): void {
     this.projectForm = this.fb.group({
