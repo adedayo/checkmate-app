@@ -34,7 +34,7 @@ const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`];
 const checkMateAPI = spawn(appPath, cmArgs, {});
 
 
-ipcMain.handle('api-config', (_event) => apiPort);
+ipcMain.handle('api-config', (_event) => new Promise<string>(() => apiPort));
 ipcMain.handle('get-codebase', (_event): Promise<string[]> => dialog.showOpenDialog({
   title: 'CheckMate: Open Code Directory',
   message: 'CheckMate: Open Code Directory',

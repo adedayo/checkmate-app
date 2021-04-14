@@ -1,14 +1,17 @@
 <div class="bg-gray-800 w-full text-blue-800">
   <mat-vertical-stepper [linear]="true" #stepper>
     <mat-step [stepControl]="projectForm">
-      <form [formGroup]="projectForm">
+      <form [formGroup]="projectForm" class="flex flex-col">
         <ng-template matStepLabel><span class="text-purple-800">Fill out a project name</span> </ng-template>
         <mat-form-field class="text-blue-800 focus:outline-none">
           <mat-label>Project Name</mat-label>
           <input matInput placeholder="Ex. Frontend API" formControlName="projectName" required>
         </mat-form-field>
 
-        <app-code-editor></app-code-editor>
+        <div class="h-80 w-full bg-gray-50">
+          <app-code-editor></app-code-editor>
+        </div>
+
 
         <div>
           <button mat-button class="focus:outline-none" matStepperNext>Next</button>

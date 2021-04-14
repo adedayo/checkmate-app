@@ -9,23 +9,14 @@ import { CheckMateService } from '../services/checkmate.service';
 })
 export class ProjectsComponent implements OnInit {
 
-  projectSummaries: ProjectSummary[] = []
-  // summary: ProjectSummary = {
-  //   id: 'id',
-  //   name: 'My Project Name',
-  //   lastScore: {
-  //     grade: 'F',
-  //     metric: 3,
-  //   },
+  projectSummaries: ProjectSummary[] = [];
 
-  // }
   constructor(private checkmateService: CheckMateService) { }
 
   ngOnInit(): void {
     this.checkmateService.getProjectSummaries().subscribe(s => {
-      console.log("Got summaries ", JSON.stringify(s));
-      this.projectSummaries = s
-    })
+      this.projectSummaries = s;
+    });
   }
 
 }

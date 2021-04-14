@@ -1,1 +1,1 @@
-Integrating Monaco editor: https://freesoft.dev/program/162540825
+Integrating Monaco editor: https://freesoft.dev/program/162540825 (https://github.com/prabal77/angularMonacoEditor)

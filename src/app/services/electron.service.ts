@@ -14,7 +14,7 @@ export class ElectronIPC {
   /**
    * getAPIConfig
    */
-  public getAPIConfig(): Promise<any> {
+  public getAPIConfig(): Promise<string> {
     if (this.electronService.isElectronApp) {
       return this.electronService.ipcRenderer.invoke('api-config');
     }

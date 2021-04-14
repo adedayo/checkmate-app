@@ -122,6 +122,7 @@ export class ProjectSummaryComponent implements OnInit {
     console.log('Clicked');
     this.scanning = true;
     const options: ProjectScanOptions = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       ProjectID: this.projectSummary.ID,
     };
     this.checkMateService.runScan(options).subscribe(

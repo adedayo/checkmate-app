@@ -12,14 +12,20 @@ export class CheckMateService {
 
   apiPort = '17283';
   api = `http://localhost:${this.apiPort}/api`;
-  version = '';
-
 
 
   constructor(private http: HttpClient, private electron: ElectronIPC) {
     this.electron.getAPIConfig().then(port => {
+      console.log('setting port here as ', port);
       this.apiPort = JSON.stringify(port);
+      this.api = `http://localhost:${port}/api`;
+    }).catch((err) => {
+      console.log('error getting API port', err);
+      const port = '17283';
+      this.apiPort = JSON.stringify(port);
+      this.api = `http://localhost:${port}/api`;
     });
+
   }
 
   public getVersion(): Observable<string> {
@@ -32,7 +38,7 @@ export class CheckMateService {
 
 
   runScan(options: ProjectScanOptions): WebSocketSubject<ScanResult | ScanProgress | ScanEnd | ProjectScanOptions> {
-    console.log(options);
+    // console.log(options);
     const ws = webSocket<ScanResult | ScanProgress | ScanEnd | ProjectScanOptions>(`ws://localhost:${this.apiPort}/api/secrets/scan`);
     ws.next(options);
     return ws;
