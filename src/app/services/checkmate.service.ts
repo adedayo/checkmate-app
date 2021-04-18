@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ElectronIPC } from './electron.service';
 import { Observable } from 'rxjs';
-import { ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress, ScanResult } from '../models/project-scan';
+import { ProjectDescription, ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress, ScanResult } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 @Injectable({
@@ -32,6 +32,10 @@ export class CheckMateService {
     return this.http.get<string>(`${this.api}/version`);
   }
 
+  getDefaultPolicy(): Observable<string> {
+    return this.http.get<string>(`${this.api}/secrets/defaultpolicy`);
+  }
+
   public getProjectSummaries(): Observable<ProjectSummary[]> {
     return this.http.get<ProjectSummary[]>(`${this.api}/projectsummaries`);
   }
@@ -48,4 +52,10 @@ export class CheckMateService {
     return this.http.get<ProjectSummary>(`${this.api}/projectsummary/${projID}`);
   }
 
+  createProject(projDesc: ProjectDescription): Observable<ProjectSummary> {
+    return this.http.post<ProjectSummary>(
+      `${this.api}/createproject`,
+      projDesc
+    );
+  }
 }

@@ -1,18 +1,15 @@
-<div class="bg-gray-800 w-full text-blue-800">
+<div class="flex flex-col w-full text-blue-800">
+
+  <p class="text-xl text-purple-800">Create New Security Scan Project</p>
+
   <mat-vertical-stepper [linear]="true" #stepper>
     <mat-step [stepControl]="projectForm">
       <form [formGroup]="projectForm" class="flex flex-col">
-        <ng-template matStepLabel><span class="text-purple-800">Fill out a project name</span> </ng-template>
+        <ng-template matStepLabel><span class="text-purple-800">Choose a project name</span> </ng-template>
         <mat-form-field class="text-blue-800 focus:outline-none">
           <mat-label>Project Name</mat-label>
           <input matInput placeholder="Ex. Frontend API" formControlName="projectName" required>
         </mat-form-field>
-
-        <div class="h-80 w-full bg-gray-50">
-          <app-code-editor></app-code-editor>
-        </div>
-
-
         <div>
           <button mat-button class="focus:outline-none" matStepperNext>Next</button>
         </div>
@@ -37,7 +34,7 @@
                   <input matInput placeholder="git@repository-url.git" formControlName="coordinate" required>
                 </mat-form-field>
               </div>
-              <div *ngIf="repository.value.type === 'fs'">
+              <div *ngIf="repository.value.type === 'filesystem'">
                 <div *ngIf="isInElectron;else not_electron">
                   <mat-form-field class="w-96 focus:outline-none">
                     <mat-label>Full Filesystem Path</mat-label>
@@ -74,7 +71,7 @@
     </mat-step>
     <mat-step [stepControl]="projectForm">
       <form [formGroup]="projectForm">
-        <ng-template matStepLabel> <span class="text-blue-800">Configure Scan Options </span></ng-template>
+        <ng-template matStepLabel> <span class="text-purple-800">Configure Scan Options </span></ng-template>
 
         <div class="flex flex-col" [formGroup]="scanOptions">
           <div class="inline-flex items-center mt-3">
@@ -105,22 +102,29 @@
       </form>
     </mat-step>
     <mat-step>
-      <ng-template matStepLabel>Finish</ng-template>
+      <ng-template matStepLabel> <span class="text-purple-800">Finish</span></ng-template>
       <div class="flex flex-col">
-        <div class="inline-flex items-center mt-3" [formGroup]="scanPolicy">
+        <div class="inline-flex items-center my-3" [formGroup]="scanPolicy">
           <input type="checkbox" formControlName="configured" class="h-5 w-5">
-          <span class="ml-2 ">Advanced: Configure Scan Policy</span>
+          <span class="ml-2 ">Configure Advanced Scan Exclusion Policy (Optional)</span>
         </div>
         <div class="mt-3" *ngIf="scanPolicy.value.configured">
-          <div class="h-80 w-full bg-gray-50" #container>
-            <app-code-editor></app-code-editor>
+          <div class="h-80 w-full" [formGroup]="scanPolicy">
+
+            <ngx-codemirror class="w-full" formControlName="policy" [options]="{
+                lineNumbers: true,
+                theme: 'material',
+                mode: 'yaml'
+              }"></ngx-codemirror>
+
           </div>
         </div>
         <div>
         </div>
       </div>
-      <button mat-button class="focus:outline-none" matStepperPrevious>Back</button>
-      <button mat-button (click)="stepper.reset()">Reset</button>
+      <button mat-button class="focus:outline-none mr-3" matStepperPrevious>Back</button>
+      <button mat-button class="focus:outline-none, bg-blue-900 text-purple-50" (click)="createProject()">Create
+        Project</button>
 
     </mat-step>
   </mat-vertical-stepper>

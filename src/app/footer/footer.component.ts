@@ -8,13 +8,13 @@ import { CheckMateService } from '../services/checkmate.service';
 })
 export class FooterComponent implements OnInit {
 
-  version = '0.0.0'
+  version = '0.0.0';
   constructor(private checkmate: CheckMateService) { }
 
   ngOnInit(): void {
     this.checkmate.getVersion().subscribe(v => {
-      this.version = v
-    })
+      this.version = v;
+    });
   }
 
 }

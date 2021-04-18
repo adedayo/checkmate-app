@@ -8,6 +8,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DashboardComponent implements OnInit {
 
+  code = 'console.log("This is a console log");';
   constructor() { }
 
   ngOnInit(): void {

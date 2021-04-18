@@ -32,7 +32,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CodeEditorComponent } from './code-editor/code-editor.component';
-
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 @NgModule({
   declarations: [
@@ -71,6 +71,7 @@ import { CodeEditorComponent } from './code-editor/code-editor.component';
     NgxChartsModule,
     MatSelectModule,
     MatCheckboxModule,
+    CodemirrorModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

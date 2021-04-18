@@ -31,7 +31,10 @@
     "!tsconfig.serve.json",
     "!tsconfig.spec.json",
     "!tsconfig.app.json",
-    "!tslint.json"
+    "!tslint.json",
+    "!**/*.sh",
+    "!notes.txt",
+    "!tailwind.config.js"
   ],
   "win": {
     "icon": "build/icons/CheckMateLogo.ico",
