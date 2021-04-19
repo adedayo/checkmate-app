@@ -1,20 +1,19 @@
-<div class="flex flex-col">
+<div class="relative flex">
 
-  <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-5 mx-5">
+  <div class="grid gap-6 mx-5 mt-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 
-    <div class="overflow-hidden sm:h-96 md:h-auto bg-white w-auto rounded-lg shadow">
-      <div class="flex w-full   bg-purple-800 text-lg text-center">
-        <p class="py-4 pl-2 lg:pl-6 text-purple-50 text-base">Create New Project</p>
+    <div class="w-auto overflow-hidden bg-white rounded-lg shadow sm:h-96 md:h-auto">
+      <div class="flex w-full text-lg text-center bg-purple-800">
+        <p class="py-4 pl-2 text-base lg:pl-6 text-purple-50">Create New Project</p>
       </div>
-      <div class="flex  h-32 min-h-full flex-col items-center justify-center  sm:pb-12 pb-6">
-        <a href="project-setup" class="flex text-6xl  text-purple-900">+</a>
-        <a href="project-setup" class="flex text-purple-900">Add project</a>
+      <div class="z-0 flex flex-col items-center justify-center h-32 min-h-full pb-6 sm:pb-12">
+        <a href="/project-setup" class="flex text-6xl text-purple-900">+</a>
+        <a href="/project-setup" class="flex text-purple-900">Add project</a>
       </div>
     </div>
 
-
     <app-project-summary *ngFor="let summary of projectSummaries"
-      class="overflow-hidden bg-white w-auto rounded-lg shadow" [projectSummary]=summary>
+      class="w-auto overflow-hidden bg-white rounded-lg shadow" [projectSummary]=summary>
     </app-project-summary>
 
 

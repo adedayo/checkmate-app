@@ -50,7 +50,6 @@
     "@tailwindcss/forms": "^0.3.2",
     "@tailwindcss/typography": "^0.4.0",
     "codemirror": "^5.60.0",
-    "monaco-editor": "^0.23.0",
     "ngx-electron": "^2.2.0",
     "rxjs": "~6.6.7",
     "tslib": "^2.0.0",

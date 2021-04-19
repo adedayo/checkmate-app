@@ -119,7 +119,6 @@ export class ProjectSummaryComponent implements OnInit {
   }
 
   runScan() {
-    console.log('Clicked');
     this.scanning = true;
     const options: ProjectScanOptions = {
       // eslint-disable-next-line @typescript-eslint/naming-convention

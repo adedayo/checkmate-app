@@ -1,4 +1,4 @@
-<div class="h-screen flex flex-col">
+<div class="flex flex-col h-screen">
 
   <!-- Top Nav -->
   <div class="flex-none">
@@ -12,12 +12,12 @@
 
 
     <!-- Content -->
-    <div class="flex flex-col p-2 relative w-full">
-      <div class="h-auto overflow-y-auto">
-        <router-outlet class="overflow-y-auto"></router-outlet>
+    <div class="flex flex-col w-full p-2">
+      <div class="relative flex-grow w-full overflow-auto" style="height: 55pc;">
+        <router-outlet></router-outlet>
+        <app-footer></app-footer>
       </div>
-      <div class="flex-grow"></div>
-      <app-footer></app-footer>
+
     </div>
 
   </div>
