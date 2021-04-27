@@ -2,7 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ElectronIPC } from './electron.service';
 import { Observable } from 'rxjs';
-import { ProjectDescription, ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress, ScanResult } from '../models/project-scan';
+import {
+  ProjectDescription, ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress,
+  ScanResult, SecurityDiagnostic
+} from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 
 @Injectable({
@@ -41,9 +44,10 @@ export class CheckMateService {
   }
 
 
-  runScan(options: ProjectScanOptions): WebSocketSubject<ScanResult | ScanProgress | ScanEnd | ProjectScanOptions> {
+  runScan(options: ProjectScanOptions): WebSocketSubject<ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions> {
     // console.log(options);
-    const ws = webSocket<ScanResult | ScanProgress | ScanEnd | ProjectScanOptions>(`ws://localhost:${this.apiPort}/api/secrets/scan`);
+    const ws = webSocket<ScanResult | ScanProgress | SecurityDiagnostic |
+      ScanEnd | ProjectScanOptions>(`ws://localhost:${this.apiPort}/api/secrets/scan`);
     ws.next(options);
     return ws;
   }

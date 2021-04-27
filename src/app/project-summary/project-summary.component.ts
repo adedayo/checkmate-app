@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
-import { ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress, ScanResult } from '../models/project-scan';
+import { ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress, ScanResult, SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 
 @Component({
@@ -15,77 +15,15 @@ export class ProjectSummaryComponent implements OnInit {
   faPlayCircle = faPlayCircle;
   currentFile = '';
   progress = 0;
+  highCount = 0;
+  mediumCount = 0;
+  lowCount = 0;
+  infoCount = 0;
+
   scanning = false;
 
-  multi = [
-    {
-      name: 'Germany',
-      series: [
-        {
-          name: '1990',
-          value: 62000000
-        },
-        {
-          name: '2010',
-          value: 73000000
-        },
-        {
-          name: '2011',
-          value: 89400000
-        }
-      ]
-    },
-
-    {
-      name: 'USA',
-      series: [
-        {
-          name: '1990',
-          value: 250000000
-        },
-        {
-          name: '2010',
-          value: 309000000
-        },
-        {
-          name: '2011',
-          value: 311000000
-        }
-      ]
-    },
-
-    {
-      name: 'France',
-      series: [
-        {
-          name: '1990',
-          value: 58000000
-        },
-        {
-          name: '2010',
-          value: 50000020
-        },
-        {
-          name: '2011',
-          value: 58000000
-        }
-      ]
-    },
-    {
-      name: 'UK',
-      series: [
-        {
-          name: '1990',
-          value: 57000000
-        },
-        {
-          name: '2010',
-          value: 62000000
-        }
-      ]
-    }
-  ];
-  view: any[] = [350, 120];
+  graphData = [];
+  // view: any[] = [350, 120];
 
   // options
   legend = false;
@@ -108,7 +46,7 @@ export class ProjectSummaryComponent implements OnInit {
   constructor(private checkMateService: CheckMateService) { }
 
   ngOnInit(): void {
-
+    this.updateGraph();
   }
 
   displayType(t: string): string {
@@ -120,6 +58,7 @@ export class ProjectSummaryComponent implements OnInit {
 
   runScan() {
     this.scanning = true;
+    this.resetCounts();
     const options: ProjectScanOptions = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       ProjectID: this.projectSummary.ID,
@@ -128,19 +67,41 @@ export class ProjectSummaryComponent implements OnInit {
       msg => {
 
         if (this.isScanProgress(msg)) {
-          console.log('Got progress: ', JSON.stringify(msg));
+          // console.log('Got progress: ', JSON.stringify(msg));
           const prog = msg as ScanProgress;
           this.currentFile = prog.CurrentFile;
           if (prog.Total > 0) {
             this.progress = (100 * prog.Position) / prog.Total;
           }
         } else if (this.isScanEnd(msg)) {
-          console.log('Ending scan');
+          // console.log('Ending scan');
           this.currentFile = '';
           this.scanning = false;
           this.checkMateService.getProjectSummary(this.projectSummary.ID).subscribe(summary => {
             this.projectSummary = summary;
+            this.updateGraph();
           });
+
+        }
+        else if (this.isDiagnostic(msg)) {
+          const diag = msg as SecurityDiagnostic;
+          switch (diag.Justification.Headline.Confidence.toLowerCase()) {
+            case 'high':
+              this.highCount += 1;
+              break;
+            case 'medium':
+              this.mediumCount += 1;
+              break;
+            case 'low':
+              this.lowCount += 1;
+              break;
+            case 'informational':
+              this.infoCount += 1;
+              break;
+            default:
+              break;
+          }
+
         }
       },
       err => {
@@ -154,11 +115,46 @@ export class ProjectSummaryComponent implements OnInit {
 
   }
 
-  isScanProgress(msg: ScanResult | ScanProgress | ScanEnd | ProjectScanOptions): boolean {
+  updateGraph() {
+    if (this.projectSummary.LastScore && this.projectSummary.LastScore.SubMetrics) {
+      const data = [];
+      // console.log(this.projectSummary.LastScore.SubMetrics);
+      {
+        for (const [k, v] of Object.entries(this.projectSummary.LastScore.SubMetrics)) {
+          data.push(
+            {
+              name: k,
+              value: v
+            });
+        }
+        const result = [
+          {
+            name: 'Score',
+            series: [...data]
+          }];
+
+        this.graphData = result;
+      }
+    }
+  }
+
+  isScanProgress(msg: ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions): boolean {
     return (msg as ScanProgress).Position !== undefined;
   }
 
-  isScanEnd(msg: ScanResult | ScanProgress | ScanEnd | ProjectScanOptions): boolean {
+  isScanEnd(msg: ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions): boolean {
     return (msg as ScanEnd).Message !== undefined;
+  }
+
+  isDiagnostic(msg: ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions): boolean {
+    return (msg as SecurityDiagnostic).Justification !== undefined;
+  }
+
+  resetCounts() {
+    this.progress = 0;
+    this.highCount = 0;
+    this.mediumCount = 0;
+    this.lowCount = 0;
+    this.infoCount = 0;
   }
 }

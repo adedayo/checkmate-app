@@ -76,3 +76,18 @@ export interface ScanProgress {
   Total: number;
   CurrentFile: string;
 }
+
+export interface SecurityDiagnostic {
+  Justification: Justification;
+  Location: string;
+}
+
+export interface Justification {
+  Headline: Evidence;
+  Confidence: string;
+}
+
+export interface Evidence {
+  Description: string;
+  Confidence: string;
+}

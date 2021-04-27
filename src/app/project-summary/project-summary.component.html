@@ -3,6 +3,7 @@
     <p class="py-4 text-base text-purple-50 min-w-max">{{projectSummary.Name}}</p>
     <fa-icon class="self-center text-purple-50" size="lg" [icon]="faCog"></fa-icon>
   </div>
+  <!-- Grade  -->
   <div *ngIf='projectSummary.LastScore' class="flex pl-2 bg-purple-50">
     <p class="absolute self-center text-xl font-bold text-purple-900">Grade</p>
     <span class="w-full"></span>
@@ -10,13 +11,15 @@
       {{projectSummary.LastScore.Grade}}</div>
     <span class="w-full"></span>
   </div>
+  <!-- Chart -->
   <div class="flex items-center w-full bg-gray-200">
     <ngx-charts-line-chart class="w-full py-2 pl-2" [scheme]="colorScheme" [legend]="legend"
       [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxis]="xAxis" [yAxis]="yAxis"
       [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel" [timeline]="timeline" [autoScale]="autoScale"
-      [results]="multi">
+      [results]="graphData">
     </ngx-charts-line-chart>
   </div>
+  <!-- Code repositories -->
   <div class="h-full px-2 py-2 bg-purple-50">
     <div class="h-full">
       <div class="text-sm font-medium text-purple-800 truncate">Code Repositories</div>
@@ -29,6 +32,34 @@
       </div>
     </div>
   </div>
+  <!-- Issues Badges -->
+  <div class="flex justify-between px-2 py-2">
+    <div class="">
+      <span class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-red-600">
+        High</span>
+      <span class="ml-2 text-xs font-semibold text-purple-800">{{highCount}}</span>
+    </div>
+
+    <div class="">
+      <span class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-yellow-600">
+        Med</span>
+      <span class="ml-2 text-xs font-semibold text-purple-800">{{mediumCount}}</span>
+    </div>
+
+    <div class="">
+      <span class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-blue-600">
+        Low</span>
+      <span class="ml-2 text-xs font-semibold text-purple-800">{{lowCount}}</span>
+    </div>
+
+    <div class="">
+      <span class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-green-600">
+        Info</span>
+      <span class="ml-2 text-xs font-semibold text-purple-800">{{infoCount}}</span>
+    </div>
+
+  </div>
+  <!-- Scan progress -->
   <div class="flex flex-col px-2 py-2 bg-gray-200">
     <div class="flex items-center">
       <div class="text-xs text-gray-700">Scanning</div>
@@ -41,6 +72,7 @@
       </div>
     </div>
   </div>
+  <!-- Scan -->
   <div class="flex justify-between px-2 py-4 bg-purple-100">
     <div *ngIf='projectSummary.LastScan' class="flex w-full">
       <div class="text-sm font-bold text-purple-900 min-w-max">Last Scan:</div>
