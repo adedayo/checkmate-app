@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 import { ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress, ScanResult, SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
@@ -43,7 +44,7 @@ export class ProjectSummaryComponent implements OnInit {
   };
 
 
-  constructor(private checkMateService: CheckMateService) { }
+  constructor(private checkMateService: CheckMateService, private router: Router) { }
 
   ngOnInit(): void {
     this.updateGraph();
@@ -85,7 +86,7 @@ export class ProjectSummaryComponent implements OnInit {
         }
         else if (this.isDiagnostic(msg)) {
           const diag = msg as SecurityDiagnostic;
-          switch (diag.Justification.Headline.Confidence.toLowerCase()) {
+          switch (diag.justification.headline.confidence.toLowerCase()) {
             case 'high':
               this.highCount += 1;
               break;
@@ -136,6 +137,17 @@ export class ProjectSummaryComponent implements OnInit {
         this.graphData = result;
       }
     }
+    this.updateMetrics();
+  }
+
+  updateMetrics() {
+    if (this.projectSummary.LastScanSummary && this.projectSummary.LastScanSummary.AdditionalInfo) {
+      const summary = this.projectSummary.LastScanSummary;
+      this.highCount = summary.AdditionalInfo.highcount;
+      this.mediumCount = summary.AdditionalInfo.mediumcount;
+      this.lowCount = summary.AdditionalInfo.lowcount;
+      this.infoCount = summary.AdditionalInfo.informationalcount;
+    }
   }
 
   isScanProgress(msg: ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions): boolean {
@@ -147,7 +159,7 @@ export class ProjectSummaryComponent implements OnInit {
   }
 
   isDiagnostic(msg: ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions): boolean {
-    return (msg as SecurityDiagnostic).Justification !== undefined;
+    return (msg as SecurityDiagnostic).justification !== undefined;
   }
 
   resetCounts() {
@@ -156,5 +168,10 @@ export class ProjectSummaryComponent implements OnInit {
     this.mediumCount = 0;
     this.lowCount = 0;
     this.infoCount = 0;
+  }
+
+  loadProject() {
+    console.log('called load project');
+    this.router.navigate(['project-detail']);
   }
 }

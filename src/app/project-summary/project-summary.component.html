@@ -1,6 +1,7 @@
 <div class="relative flex flex-col h-full min-w-full bg-white rounded-lg shadow ">
   <div class="flex justify-between px-2 text-lg text-center bg-purple-800">
-    <p class="py-4 text-base text-purple-50 min-w-max">{{projectSummary.Name}}</p>
+    <a [routerLink]="['/project-detail', projectSummary.ID]"
+      class="py-4 text-base text-purple-50 min-w-max">{{projectSummary.Name}}</a>
     <fa-icon class="self-center text-purple-50" size="lg" [icon]="faCog"></fa-icon>
   </div>
   <!-- Grade  -->

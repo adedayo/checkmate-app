@@ -7,6 +7,8 @@ import {
   ScanResult, SecurityDiagnostic
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import { PaginatedSearch, Project } from '../models/project';
+import { Issue } from '../models/issues';
 
 @Injectable({
   providedIn: 'root'
@@ -28,7 +30,6 @@ export class CheckMateService {
       this.apiPort = JSON.stringify(port);
       this.api = `http://localhost:${port}/api`;
     });
-
   }
 
   public getVersion(): Observable<string> {
@@ -54,6 +55,15 @@ export class CheckMateService {
 
   getProjectSummary(projID: string): Observable<ProjectSummary> {
     return this.http.get<ProjectSummary>(`${this.api}/projectsummary/${projID}`);
+  }
+
+  getProject(projID: string): Observable<Project> {
+    return this.http.get<Project>(`${this.api}/project/${projID}`);
+  }
+
+
+  getIssues(paginated: PaginatedSearch): Observable<SecurityDiagnostic[]> {
+    return this.http.post<SecurityDiagnostic[]>(`${this.api}/project/issues`, paginated);
   }
 
   createProject(projDesc: ProjectDescription): Observable<ProjectSummary> {

@@ -1,24 +1,24 @@
 <div [@onSideNavChange]="sidebarState" (mouseenter)="toggleSideNav()" (mouseleave)="toggleSideNavOnLeave()"
-  class="z-0 flex bg-purple-800 text-purple-100 w-64 space-y-6 px-2  min-h-full h-full">
+  class="z-0 flex w-64 h-full min-h-full px-2 space-y-6 text-purple-100 bg-purple-800">
 
 
-  <nav class="flex flex-col text-lg w-full">
+  <nav class="flex flex-col w-full text-lg">
     <div class="flex-grow">
       <a routerLinkActive="active-list-item" routerLink="dashboard" title="Incidents"
-        class="flex mb-2 py-2.5 px-2 hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
-        <mat-icon class="icon self-center items-start" [@iconAnimation]="sidebarState">privacy_tip</mat-icon>
+        class="flex mb-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        <mat-icon class="items-start self-center icon" [@iconAnimation]="sidebarState">privacy_tip</mat-icon>
         <div class="pl-4" [@labelAnimation]="sidebarState">Incidents</div>
       </a>
       <a routerLinkActive="active-list-item" routerLink="projects" title="Projects"
-        class="flex my-2 py-2.5 px-2 hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
-        <mat-icon class="icon self-center items-start" [@iconAnimation]="sidebarState">source</mat-icon>
+        class="flex my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        <mat-icon class="items-start self-center icon" [@iconAnimation]="sidebarState">source</mat-icon>
         <div class="pl-4" [@labelAnimation]="sidebarState">Projects</div>
       </a>
     </div>
-    <div class="flex-none min-w-full w-full">
+    <div class="flex-none w-full min-w-full">
       <a routerLinkActive="active-list-item" routerLink="settings" title="Settings"
-        class="flex my-2 py-2.5 px-2 hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
-        <mat-icon class="icon self-center items-start" [@iconAnimation]="sidebarState">settings</mat-icon>
+        class="flex my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        <mat-icon class="items-start self-center icon" [@iconAnimation]="sidebarState">settings</mat-icon>
         <div class="pl-4 mr-18" [@labelAnimation]="sidebarState">Settings</div>
       </a>
     </div>

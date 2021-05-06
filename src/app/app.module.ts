@@ -33,6 +33,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CodeEditorComponent } from './code-editor/code-editor.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { ProjectDetailComponent } from './project-detail/project-detail.component';
+import { MatCardModule } from '@angular/material/card';
+import { TabControlModule } from './directives';
+import { IncidentListItemComponent } from './incident-list-item/incident-list-item.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +50,9 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
     FooterComponent,
     ProjectSummaryComponent,
     ProjectSetupComponent,
-    CodeEditorComponent
+    CodeEditorComponent,
+    ProjectDetailComponent,
+    IncidentListItemComponent
   ],
   imports: [
     BrowserModule,
@@ -72,6 +78,8 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
     MatSelectModule,
     MatCheckboxModule,
     CodemirrorModule,
+    MatCardModule,
+    TabControlModule
   ],
   providers: [],
   bootstrap: [AppComponent]

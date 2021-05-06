@@ -6,6 +6,7 @@ export interface ProjectSummary {
   LastScan?: Date;
   LastScanID?: string;
   LastScore?: ScanResult;
+  LastScanSummary?: ScanSummary;
   IsBeingScanned?: boolean;
   CreationDate?: Date;
   LastModification?: Date;
@@ -44,6 +45,27 @@ export interface ScanResult {
   SubMetrics?: Map<string, number>;
 }
 
+export interface ScanSummary {
+  Score: ScanResult;
+  AdditionalInfo: AdditionalInfo;
+}
+
+export interface AdditionalInfo {
+  averageperfile: number;
+  filecount: number;
+  grade: string;
+  highcount: number;
+  informationalcount: number;
+  issuespertype: number;
+  lowcount: number;
+  mediumcount: number;
+  numberofsecretsreuse: number;
+  reusedsecretscount: number;
+  showsource: boolean;
+  skippedcount: number;
+  timestamp: string;
+}
+
 
 export interface Repository {
   Location: string;
@@ -78,16 +100,19 @@ export interface ScanProgress {
 }
 
 export interface SecurityDiagnostic {
-  Justification: Justification;
-  Location: string;
+  justification: Justification;
+  location: string;
+  source: string;
+  sha256: string;
+  tags: string[];
 }
 
 export interface Justification {
-  Headline: Evidence;
-  Confidence: string;
+  headline: Evidence;
+  reasons: Evidence[];
 }
 
 export interface Evidence {
-  Description: string;
-  Confidence: string;
+  description: string;
+  confidence: string;
 }

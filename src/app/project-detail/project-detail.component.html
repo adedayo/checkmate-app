@@ -1,0 +1,34 @@
+<div *ngIf="project" class="flex flex-col">
+
+  <div class="text-xl font-bold">
+    <span class="text-blue-800 uppercase ">Project</span>
+    <span class="ml-2 text-purple-800">{{project.Name}}</span>
+
+  </div>
+  <div class="flex">
+    <div class="w-full bg-blue-100 h-80"> Summary Graph</div>
+    <div class="w-full bg-purple-100 h-80"> Trending Graph</div>
+  </div>
+
+  <div class="flex flex-col p-2 mt-4 border-2 border-purple-200 border-solid rounded-md">
+    <div class="text-xl font-bold text-blue-800 uppercase">Incidents</div>
+    <!-- incident list -->
+    <div tabControl class="w-full mt-2 overflow-y-auto shadow-xl max-h-96">
+      <div (focusout)="focusOut()" class="grid grid-cols-1" *ngFor="let issue of issues; let i=index">
+        <app-incident-list-item tabindex="0" arrowIndex="{{i}}" [issue]="issue" (focus)="focussed(issue)"
+          ngClass="{{'hover:shadow-lg focus:bg-gray-500 focus:outline-none'+addClass(i)}}">
+        </app-incident-list-item>
+      </div>
+    </div>
+    <!-- code evidence -->
+    <div *ngIf="issueFocussed" class="flex flex-col w-full my-4">
+      <div class="text-sm italic text-blue-500">Code Evidence</div>
+      <ngx-codemirror class="w-full" [ngModel]="currentIssue.source" [options]="{
+        lineNumbers: false,
+        mode: 'yaml'
+      }"></ngx-codemirror>
+    </div>
+  </div>
+
+
+</div>
