@@ -10,22 +10,96 @@
     <div class="w-full bg-purple-100 h-80"> Trending Graph</div>
   </div>
 
-  <div class="flex flex-col p-2 mt-4 border-2 border-purple-200 border-solid rounded-md">
-    <div class="text-xl font-bold text-blue-800 uppercase">Incidents</div>
+  <div *ngIf="pagedResult" class="flex flex-col p-2 mt-4 border-2 border-purple-200 border-solid rounded-md">
+    <div class="flex items-center justify-between">
+      <div class="text-xl font-bold text-blue-800 uppercase">Incidents</div>
+
+      <div class="flex items-center text-sm">
+        <div class="flex items-center pr-4 space-x-1">
+          <div class="text-purple-800">Page Size</div>
+          <div [formGroup]="pagingForm" class="flex items-center py-2">
+            <select formControlName="size"
+              class="h-10 px-4 py-2 pr-8 mr-2 text-sm leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+              <option *ngFor="let size of defaultPageSizes" [ngValue]="size">{{size}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="pr-2 text-sm text-purple-800">Page {{pagedResult.Page + 1}} of {{ pagedResult.Total % pageSizeValue
+          === 0 ?
+          pagedResult.Total/pageSizeValue :
+          truncate(pagedResult.Total / pageSizeValue) + 1 }}</div>
+      </div>
+    </div>
     <!-- incident list -->
-    <div tabControl class="w-full mt-2 overflow-y-auto shadow-xl max-h-96">
-      <div (focusout)="focusOut()" class="grid grid-cols-1" *ngFor="let issue of issues; let i=index">
+    <div tabControl (pageEnd)="pageListener($event)" class="w-full mt-2 overflow-y-auto shadow-lg max-h-96" #incidents>
+      <div (focusout)="focusOut()" class="grid grid-cols-1" *ngFor="let issue of pagedResult.Diagnostics; let i=index">
         <app-incident-list-item tabindex="0" arrowIndex="{{i}}" [issue]="issue" (focus)="focussed(issue)"
-          ngClass="{{'hover:shadow-lg focus:bg-gray-500 focus:outline-none'+addClass(i)}}">
+          ngClass="{{'hover:shadow-lg focus:bg-blue-300 focus:outline-none'+addClass(i)}}">
         </app-incident-list-item>
       </div>
     </div>
     <!-- code evidence -->
     <div *ngIf="issueFocussed" class="flex flex-col w-full my-4">
-      <div class="text-sm italic text-blue-500">Code Evidence</div>
-      <ngx-codemirror class="w-full" [ngModel]="currentIssue.source" [options]="{
-        lineNumbers: false,
-        mode: 'yaml'
+
+      <hr class="my-2">
+
+      <div>
+        <div class="flex text-xs">
+          <div class="flex">
+            <span class="pr-1 font-bold text-blue-500">Confidence</span>
+            <span *ngIf="currentIssue.justification.headline.confidence === 'High'"
+              class="inline-block px-2 font-semibold tracking-wide text-white uppercase bg-red-600">
+              High</span>
+            <span *ngIf="currentIssue.justification.headline.confidence === 'Medium'"
+              class="inline-block px-2 font-semibold tracking-wide text-white uppercase bg-yellow-600">
+              Medium</span>
+            <span *ngIf="currentIssue.justification.headline.confidence === 'Low'"
+              class="inline-block px-2 font-semibold tracking-wide text-white uppercase bg-blue-600">
+              Low</span>
+            <span *ngIf="currentIssue.justification.headline.confidence === 'Informational'"
+              class="inline-block px-2 font-semibold tracking-wide text-white uppercase bg-green-600">
+              Informational</span>
+          </div>
+
+
+
+          <div *ngIf="currentIssue.tags" class="pl-2 text-xs">
+            <span class="pr-1 font-bold text-blue-500">Tags</span>
+            <span class="text-purple-800">{{currentIssue.tags.join(',')}}</span>
+          </div>
+
+          <div class="flex pl-2">
+            <div class="pr-1 font-bold text-blue-500">Description</div>
+            <div class="text-purple-800">{{currentIssue.justification.headline.description}}</div>
+
+          </div>
+
+        </div>
+      </div>
+      <div class="flex text-xs">
+        <span class="pr-1 font-bold text-blue-500">Location</span>
+        <span class="pl-2 text-purple-800">{{currentIssue.location}}</span>
+      </div>
+      <div class="flex items-center justify-between mt-2">
+        <div class="text-xs font-bold text-gray-500">Code Evidence</div>
+        <div class="flex">
+          <div class="flex items-center pr-4 space-x-1">
+            <div class="text-xs text-purple-800">Fix</div>
+            <div [formGroup]="fixForm" class="flex items-center py-2">
+              <select formControlName="fix"
+                class="h-8 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+                <option *ngFor="let fix of fixes" [ngValue]="fix.fix">{{fix.description}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ngx-codemirror class="w-full mt-2" [ngModel]="currentIssue.source" [options]="{
+        lineNumbers: true,
+        firstLineNumber: currentIssue.range.start.line,
+        mode: 'yaml',
+        readOnly: true
+
       }"></ngx-codemirror>
     </div>
   </div>

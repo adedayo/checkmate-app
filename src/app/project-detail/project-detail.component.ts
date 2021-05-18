@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ThrowStmt } from '@angular/compiler';
 import {
-  AfterViewChecked, Component, ChangeDetectorRef, ElementRef,
-  OnInit, QueryList, ViewChildren
+  AfterViewChecked, Component, ElementRef,
+  OnInit, ViewChild
 } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Issue } from '../models/issues';
-import { Project } from '../models/project';
+import { PagedResult, Project } from '../models/project';
 import { SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 
@@ -16,104 +16,120 @@ import { CheckMateService } from '../services/checkmate.service';
   styleUrls: ['./project-detail.component.scss']
 })
 export class ProjectDetailComponent implements OnInit, AfterViewChecked {
-
-  @ViewChildren('incidents') incidents: QueryList<ElementRef>;
-  elementRefs: ElementRef[];
   project: Project;
   code = '';
   issueFocussed = false;
-  typesOfShoes: string[] = ['Boots', 'Clogs', 'Loafers',
-    'Moccasins', 'Sneakers', 'another', 'type', 'of', 'shoe',
+  pagingForm: FormGroup;
+  fixForm: FormGroup;
 
+  pagedResult: PagedResult;
+  pageSizeValue = 10;
+  defaultPageSizes = [10, 20, 50, 100];
+  fixes: fixTypes[] = [
+    {
+      fix: 'ignore_here',
+      description: 'Ignore this issue in this file'
+    },
+    {
+      fix: 'ignore_everywhere',
+      description: 'Ignore this issue everywhere'
+    },
+    {
+      fix: 'ignore_file',
+      description: 'Ignore this file'
+    },
   ];
-  issues: SecurityDiagnostic[];
   currentIssue: SecurityDiagnostic;
-
-  constructor(private router: Router,
-    private checkMateService: CheckMateService,
-    private cd: ChangeDetectorRef
-  ) { }
-
-  ngAfterViewChecked(): void {
+  currentScanID: string;
+  reselect = false;
 
 
-    // console.log('incidents', this.incidents);
-    // console.log('length ', this.incidents.length);
-    this.elementRefs = [];
-    this.incidents.forEach((item, index) => {
-      this.elementRefs.push(item);
-
-      // console.log('item', index, item);
-
+  constructor(private fb: FormBuilder, private router: Router,
+    private checkMateService: CheckMateService) {
+    this.pagingForm = this.fb.group({
+      size: [10],
     });
 
-
+    this.fixForm = this.fb.group({
+      fix: [''],
+    });
   }
 
-  ngOnInit() {
+  ngAfterViewChecked(): void { }
 
+  ngOnInit() {
     const path = this.router.url;
     if (path) {
+      //get project ID from the route
       const subPaths = path.split('/');
       const projectID = subPaths[subPaths.length - 1];
       this.checkMateService.getProject(projectID).subscribe(proj => {
         this.project = proj;
-        this.paginateIssues(5, 0, this.project.ScanIDs[0]);
+        this.currentScanID = this.project.ScanIDs[0];
+        this.paginateIssues(0);
       });
-
-
     }
+
+    this.pagingForm.get('size').valueChanges.subscribe(x => {
+      this.pageSizeValue = x;
+      let currentPage = 0;
+      if (this.pagedResult) {
+        currentPage = this.pagedResult.Page;
+      }
+      this.paginateIssues(currentPage);
+    });
+  }
+
+  get pageSize(): FormControl {
+    return this.pagingForm.get('size') as FormControl;
   }
 
 
-  paginateIssues(pageSize: number, page: number, scanID: string) {
+  paginateIssues(page: number) {
     this.checkMateService.getIssues(
       {
         ProjectID: this.project.ID,
-        ScanID: scanID,
-        PageSize: pageSize,
+        ScanID: this.currentScanID,
+        PageSize: this.pageSizeValue,
         Page: page,
-      }).subscribe(issues => {
-        this.issues = issues;
-        // console.log('got issues', issues);
-
+      }).subscribe(result => {
+        this.pagedResult = result;
+        this.reselect = true;
       });
   }
 
+  selectNextPageStart() {
+    // console.log('next page', this.incidents);
+    // if (this.incidents) {
+    //   const elements = this.incidents.nativeElement.querySelectorAll<HTMLElement>('[ng-reflect-arrow-index]');
+    //   // console.log('Elements', elements);
+    //   if (!!elements) {
+    //     const sorted = Array.from(elements).sort((a, b) => this.getTabIndex(a) - this.getTabIndex(b));
+    //     console.log('sorted', sorted[0], sorted.pop());
+    //     // this.incidents.nativeElement.focus();
+    //     sorted[0].focus();
+    //   }
 
-  // keyPressed(event: Event, i: number) {
-  //   console.log(event);
-  //   // if (event.key === 'ArrowDown') {
-  //   const tab = new KeyboardEvent('keydown', {
-  //     bubbles: true,
-  //     key: 'Tab',
-  //     code: 'Tab',
-  //   });
-  //   event.preventDefault();
-  //   // console.log('path', event.composedPath());
-  //   // document.dispatchEvent(tab);
-  //   if (i < 8) {
-  //     const e = (this.elementRefs[i + 1].nativeElement as HTMLElement);
-  //     // e.dispatchEvent(tab);
-  //     console.log('about to focus', e);
-  //     // e.dispatchEvent(tab);
-  //     e.focus();
+    // }
 
-  //     // setTimeout(() => e.click(), 0);
+    // console.log('about to focus on ', this.elements[0]);
+    // const tab = new KeyboardEvent('keydown', {
+    //   bubbles: true,
+    //   key: 'Tab',
+    //   code: 'Tab',
+    // });
+    // // this.incidents.nativeElement.dispatchEvent(tab);
+    // this.elements[0].focus();
+    // this.elements[0].focus();
+    // this.elements[0].focus();
+    // this.reselect = false;
+  }
 
-  //   }
-  //   // event.composedPath()[2].dispatchEvent(tab);
-
-  //   // event.target.dispatchEvent(tab);
-  //   // window.dispatchEvent(tab);
-  //   // const e = event.target.dispatchEvent(tab);
-  //   // console.log(`outcome of dispatch = ${e}`);
+  getTabIndex(e: Element): number {
+    return Number.parseInt(e.getAttribute('ng-reflect-arrow-index') || '', 10);
+  }
 
 
-  //   // this.incidents.nativeElement.dispatchEvent(tab);
-  //   // }
-
-  // }
 
   focussed(issue: SecurityDiagnostic) {
     if (issue) {
@@ -122,19 +138,46 @@ export class ProjectDetailComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  focusOut() {
+  pageListener(event: string) {
     this.issueFocussed = false;
+    if (event === 'top') {
+      if (this.pagedResult) {
+        if (this.pagedResult.Page > 0) {
+          this.paginateIssues(this.pagedResult.Page - 1);
+        }
+      }
+    } else {
+      if (this.pagedResult) {
+        if (this.pagedResult.Page * (this.pagingForm.get('size').value as number) < this.pagedResult.Total) {
+          this.paginateIssues(this.pagedResult.Page + 1);
+        }
+      }
+    }
+
   }
 
   focusIn() {
     this.issueFocussed = true;
   }
 
+  focusOut() {
+  }
+
   addClass(i: number): string {
     if (i % 2 === 0) {
-      return ' bg-gray-200 ';
+      return ' bg-blue-100 ';
     }
     return '';
   }
 
+  truncate(x: number): number {
+    return Math.floor(x);
+  }
+
+}
+
+
+interface fixTypes {
+  fix: string;
+  description: string;
 }

@@ -101,6 +101,7 @@ export interface ScanProgress {
 
 export interface SecurityDiagnostic {
   justification: Justification;
+  range: CodeRange;
   location: string;
   source: string;
   sha256: string;
@@ -115,4 +116,14 @@ export interface Justification {
 export interface Evidence {
   description: string;
   confidence: string;
+}
+
+export interface CodeRange {
+  start: point;
+  end: point;
+}
+
+interface point {
+  line: number;
+  character: number;
 }

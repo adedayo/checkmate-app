@@ -1,4 +1,4 @@
-import { Repository, ScanPolicy } from './project-scan';
+import { Repository, ScanPolicy, SecurityDiagnostic } from './project-scan';
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface Project {
@@ -15,4 +15,10 @@ export interface PaginatedSearch {
   ScanID: string;
   PageSize: number;
   Page: number;
+}
+
+export interface PagedResult {
+  Total: number;
+  Page: number;
+  Diagnostics: SecurityDiagnostic[];
 }

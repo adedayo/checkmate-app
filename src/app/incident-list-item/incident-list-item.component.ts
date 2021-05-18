@@ -10,7 +10,6 @@ export class IncidentListItemComponent implements OnInit {
 
   @Input() arrowIndex: string;
   @Input() issue: SecurityDiagnostic;
-  @Input() styling: string;
 
   constructor() { }
 

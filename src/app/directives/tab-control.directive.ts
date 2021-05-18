@@ -1,22 +1,32 @@
-import { Directive, ElementRef, HostListener, AfterViewChecked } from '@angular/core';
+/* eslint-disable @angular-eslint/directive-selector */
+import { Directive, ElementRef, HostListener, AfterViewChecked, Output, EventEmitter } from '@angular/core';
 
 @Directive({
   selector: '[tabControl]'
 })
 export class TabControlDirective implements AfterViewChecked {
 
+  @Output() pageEnd = new EventEmitter<string>();
   private tabs: HTMLElement[] = [];
 
   constructor(private eref: ElementRef<HTMLElement>) { }
 
   @HostListener('keydown', ['$event'])
   public down(event: KeyboardEvent) {
-    if ((event.code === 'ArrowDown') || (event.code === 'ArrowUp')) {
+    if ((event.code === 'ArrowDown') || (event.code === 'ArrowUp') || (event.code === 'ArrowLeft') || (event.code === 'ArrowRight')) {
       event.preventDefault();
       const current = this.tabs.find((t) => t === event.target);
       if (!!current) {
         const index = this.getTabIndex(current);
-        const move = (event.code === 'ArrowUp') ? this.getPrevious(index) : this.getNext(index);
+        const up = ((event.code === 'ArrowUp') || (event.code === 'ArrowLeft'));
+        const move = up ? this.getPrevious(index) : this.getNext(index);
+        if (move === undefined) {
+          if (up) {
+            this.pageEnd.emit('top');
+          } else {
+            this.pageEnd.emit('bottom');
+          }
+        }
         if (!!move) {
           move.focus();
         }
@@ -29,6 +39,12 @@ export class TabControlDirective implements AfterViewChecked {
     const indexes = this.eref.nativeElement.querySelectorAll<HTMLElement>('[ng-reflect-arrow-index]');
     if (!!indexes) {
       this.tabs = Array.from(indexes).sort((a, b) => this.getTabIndex(a) - this.getTabIndex(b));
+      // if (this.autoselect) {
+      //   console.log('setting focus to ', this.tabs[0]);
+
+      //   this.tabs[0].focus();
+      //   this.autoselect = false;
+      // }
     }
   }
 
