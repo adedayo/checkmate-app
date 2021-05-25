@@ -22,3 +22,14 @@ export interface PagedResult {
   Page: number;
   Diagnostics: SecurityDiagnostic[];
 }
+
+export interface ExcludeRequirement {
+  What: string;
+  Issue: SecurityDiagnostic;
+  ProjectID: string;
+}
+
+export interface PolicyUpdateResult {
+  Status: string;
+  NewPolicy: string;
+}

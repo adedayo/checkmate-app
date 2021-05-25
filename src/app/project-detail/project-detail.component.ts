@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ThrowStmt } from '@angular/compiler';
 import {
-  AfterViewChecked, Component, ElementRef,
-  OnInit, ViewChild
+  AfterViewChecked, Component, OnInit
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PagedResult, Project } from '../models/project';
-import { SecurityDiagnostic } from '../models/project-scan';
+import { ExcludeRequirement, PagedResult, Project } from '../models/project';
+import { ScanPolicy, SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 
 @Component({
@@ -15,13 +13,14 @@ import { CheckMateService } from '../services/checkmate.service';
   templateUrl: './project-detail.component.html',
   styleUrls: ['./project-detail.component.scss']
 })
-export class ProjectDetailComponent implements OnInit, AfterViewChecked {
+export class ProjectDetailComponent implements OnInit {
   project: Project;
   code = '';
+  policy = '';
   issueFocussed = false;
   pagingForm: FormGroup;
+  showPolicy = false;
   fixForm: FormGroup;
-
   pagedResult: PagedResult;
   pageSizeValue = 10;
   defaultPageSizes = [10, 20, 50, 100];
@@ -39,6 +38,7 @@ export class ProjectDetailComponent implements OnInit, AfterViewChecked {
       description: 'Ignore this file'
     },
   ];
+  selectedFix = 'ignore_here';
   currentIssue: SecurityDiagnostic;
   currentScanID: string;
   reselect = false;
@@ -47,15 +47,15 @@ export class ProjectDetailComponent implements OnInit, AfterViewChecked {
   constructor(private fb: FormBuilder, private router: Router,
     private checkMateService: CheckMateService) {
     this.pagingForm = this.fb.group({
-      size: [10],
+      size: [this.pageSizeValue],
     });
 
     this.fixForm = this.fb.group({
-      fix: [''],
+      fix: [this.selectedFix],
+      advancedFix: [false],
     });
   }
 
-  ngAfterViewChecked(): void { }
 
   ngOnInit() {
     const path = this.router.url;
@@ -63,11 +63,8 @@ export class ProjectDetailComponent implements OnInit, AfterViewChecked {
       //get project ID from the route
       const subPaths = path.split('/');
       const projectID = subPaths[subPaths.length - 1];
-      this.checkMateService.getProject(projectID).subscribe(proj => {
-        this.project = proj;
-        this.currentScanID = this.project.ScanIDs[0];
-        this.paginateIssues(0);
-      });
+
+      this.checkMateService.getProject(projectID).subscribe(proj => this.setProject(proj));
     }
 
     this.pagingForm.get('size').valueChanges.subscribe(x => {
@@ -78,12 +75,33 @@ export class ProjectDetailComponent implements OnInit, AfterViewChecked {
       }
       this.paginateIssues(currentPage);
     });
+
+    this.fixForm.get('fix').valueChanges.subscribe(x => {
+      this.selectedFix = x;
+    });
+
+    this.fixForm.get('advancedFix').valueChanges.subscribe(x => {
+      this.showPolicy = x;
+    });
   }
 
   get pageSize(): FormControl {
     return this.pagingForm.get('size') as FormControl;
   }
 
+  setProject(proj: Project) {
+    console.log('got project', proj);
+
+    if (proj.ID === '') {
+      return;
+    }
+    this.project = proj;
+    if (proj.ScanPolicy && proj.ScanPolicy.Policy) {
+      this.policy = JSON.stringify(proj.ScanPolicy.Policy, null, ' ');
+    }
+    this.currentScanID = this.project.ScanIDs[0];
+    this.paginateIssues(0);
+  }
 
   paginateIssues(page: number) {
     this.checkMateService.getIssues(
@@ -96,6 +114,20 @@ export class ProjectDetailComponent implements OnInit, AfterViewChecked {
         this.pagedResult = result;
         this.reselect = true;
       });
+  }
+
+  savePolicy() {
+    this.checkMateService.updateProject(this.project.ID, {
+      Name: this.project.Name,
+      Repositories: this.project.Repositories,
+      ScanPolicy: {
+        ID: this.project.ScanPolicy.ID,
+        Config: this.project.ScanPolicy.Config,
+        Policy: this.policy
+      }
+    }).subscribe(proj => {
+      this.setProject(proj);
+    });
   }
 
   selectNextPageStart() {
@@ -161,6 +193,25 @@ export class ProjectDetailComponent implements OnInit, AfterViewChecked {
   }
 
   focusOut() {
+  }
+
+  fixIssue() {
+    if (this.currentIssue) {
+      const fix: ExcludeRequirement = {
+        Issue: this.currentIssue,
+        ProjectID: this.project.ID,
+        What: this.selectedFix,
+      };
+
+      this.checkMateService.fixIssue(fix).subscribe(x => {
+        console.log('Got Fix response', x);
+        if (x.Status === 'success') {
+          this.policy = x.NewPolicy;
+        }
+      });
+    }
+
+
   }
 
   addClass(i: number): string {

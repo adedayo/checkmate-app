@@ -7,7 +7,7 @@ import {
   ScanResult, SecurityDiagnostic
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { PagedResult, PaginatedSearch, Project } from '../models/project';
+import { ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
 import { Issue } from '../models/issues';
 
 @Injectable({
@@ -66,9 +66,23 @@ export class CheckMateService {
     return this.http.post<PagedResult>(`${this.api}/project/issues`, paginated);
   }
 
+  fixIssue(fix: ExcludeRequirement): Observable<PolicyUpdateResult> {
+    return this.http.post<PolicyUpdateResult>(`${this.api}/project/issues/fix`, fix);
+  }
+
+
   createProject(projDesc: ProjectDescription): Observable<ProjectSummary> {
     return this.http.post<ProjectSummary>(
       `${this.api}/createproject`,
+      projDesc
+    );
+  }
+
+  updateProject(projectID: string, projDesc: ProjectDescription): Observable<Project> {
+    console.log('sending', projectID, projDesc);
+
+    return this.http.post<Project>(
+      `${this.api}/updateproject/${projectID}`,
       projDesc
     );
   }
