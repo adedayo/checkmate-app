@@ -5,7 +5,7 @@ import {
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ExcludeRequirement, PagedResult, Project } from '../models/project';
-import { ScanPolicy, SecurityDiagnostic } from '../models/project-scan';
+import { ProjectSummary, ScanPolicy, SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 
 @Component({
@@ -15,6 +15,8 @@ import { CheckMateService } from '../services/checkmate.service';
 })
 export class ProjectDetailComponent implements OnInit {
   project: Project;
+  projectSummary: ProjectSummary;
+
   code = '';
   policy = '';
   issueFocussed = false;
@@ -44,6 +46,24 @@ export class ProjectDetailComponent implements OnInit {
   reselect = false;
 
 
+  issueCounts: any[] = this.graph(0, 0, 0, 0);
+
+  view: any[] = [250, 290];
+
+  // options
+  showXAxis = true;
+  showYAxis = true;
+  gradient = false;
+  showLegend = false;
+  showXAxisLabel = false;
+  yAxisLabel = 'Issues';
+  showYAxisLabel = true;
+  xAxisLabel = 'Confidence';
+
+  colorScheme = {
+    domain: ['red', 'gold', 'blue', 'green']
+  };
+
   constructor(private fb: FormBuilder, private router: Router,
     private checkMateService: CheckMateService) {
     this.pagingForm = this.fb.group({
@@ -54,6 +74,8 @@ export class ProjectDetailComponent implements OnInit {
       fix: [this.selectedFix],
       advancedFix: [false],
     });
+
+
   }
 
 
@@ -65,6 +87,10 @@ export class ProjectDetailComponent implements OnInit {
       const projectID = subPaths[subPaths.length - 1];
 
       this.checkMateService.getProject(projectID).subscribe(proj => this.setProject(proj));
+      this.checkMateService.getProjectSummary(projectID).subscribe(x => {
+        this.setProjectSummary(x);
+      }
+      );
     }
 
     this.pagingForm.get('size').valueChanges.subscribe(x => {
@@ -85,12 +111,21 @@ export class ProjectDetailComponent implements OnInit {
     });
   }
 
+  setProjectSummary(x: ProjectSummary) {
+    this.projectSummary = x;
+    if (x.LastScanSummary && x.LastScanSummary.AdditionalInfo) {
+      const data = x.LastScanSummary.AdditionalInfo;
+      this.issueCounts = this.graph(data.highcount, data.mediumcount, data.lowcount, data.informationalcount);
+    }
+    console.log('Summary', x);
+
+  }
+
   get pageSize(): FormControl {
     return this.pagingForm.get('size') as FormControl;
   }
 
   setProject(proj: Project) {
-    console.log('got project', proj);
 
     if (proj.ID === '') {
       return;
@@ -102,6 +137,9 @@ export class ProjectDetailComponent implements OnInit {
     this.currentScanID = this.project.ScanIDs[0];
     this.paginateIssues(0);
   }
+
+
+
 
   paginateIssues(page: number) {
     this.checkMateService.getIssues(
@@ -224,6 +262,41 @@ export class ProjectDetailComponent implements OnInit {
   truncate(x: number): number {
     return Math.floor(x);
   }
+
+  graph(high: number, med: number, low: number, info: number): any[] {
+    return [
+      {
+        name: 'High',
+        value: high
+      },
+      {
+        name: 'Med',
+        value: med
+      },
+      {
+        name: 'Low',
+        value: low
+      },
+      {
+        name: 'Info',
+        value: info
+      }
+    ];
+  }
+
+
+  onSelect(data): void {
+    console.log('Item clicked', JSON.parse(JSON.stringify(data)));
+  }
+
+  onActivate(data): void {
+    console.log('Activate', JSON.parse(JSON.stringify(data)));
+  }
+
+  onDeactivate(data): void {
+    console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+  }
+
 
 }
 

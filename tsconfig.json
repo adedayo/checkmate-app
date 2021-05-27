@@ -12,6 +12,12 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
+    "paths": {
+      "ngx-liquid-gauge": [
+        "dist/ngx-liquid-gauge/ngx-liquid-gauge",
+        "dist/ngx-liquid-gauge"
+      ]
+    },
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "es2015",
