@@ -4,9 +4,10 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ExcludeRequirement, PagedResult, Project } from '../models/project';
-import { ProjectSummary, ScanPolicy, SecurityDiagnostic } from '../models/project-scan';
+import { ExcludeRequirement, IssueFilter, PagedResult, PaginatedSearch, Project } from '../models/project';
+import { ProjectSummary, ScanPolicy, ScanSummary, SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
+import { curveBumpX } from 'd3-shape';
 
 @Component({
   selector: 'app-project-detail',
@@ -16,6 +17,15 @@ import { CheckMateService } from '../services/checkmate.service';
 export class ProjectDetailComponent implements OnInit {
   project: Project;
   projectSummary: ProjectSummary;
+  scanSummary: ScanSummary;
+  selectedFix = 'ignore_here';
+  currentIssue: SecurityDiagnostic;
+  currentScanID: string;
+  reselect = false;
+
+  filter: IssueFilter = {
+    Confidence: []
+  };
 
   code = '';
   policy = '';
@@ -40,14 +50,13 @@ export class ProjectDetailComponent implements OnInit {
       description: 'Ignore this file'
     },
   ];
-  selectedFix = 'ignore_here';
-  currentIssue: SecurityDiagnostic;
-  currentScanID: string;
-  reselect = false;
 
 
+
+  curve: any = curveBumpX;
+  graphData = [];
+  view0: any[] = [570, 350];
   issueCounts: any[] = this.graph(0, 0, 0, 0);
-
   view: any[] = [250, 290];
 
   // options
@@ -59,6 +68,13 @@ export class ProjectDetailComponent implements OnInit {
   yAxisLabel = 'Issues';
   showYAxisLabel = true;
   xAxisLabel = 'Confidence';
+  //see https://github.com/swimlane/ngx-charts/issues/498
+  animations = true; //set this to false for bar charts error when any bar has value zero
+  roundEdges = false; //or set this to false for bar charts error when any bar has value zero
+
+  colorScheme0 = {
+    domain: ['#178BCA', 'gold', 'purple', 'green']
+  };
 
   colorScheme = {
     domain: ['red', 'gold', 'blue', 'green']
@@ -111,14 +127,50 @@ export class ProjectDetailComponent implements OnInit {
     });
   }
 
+
+  updateGraph() {
+    if (this.projectSummary.LastScore && this.projectSummary.LastScore.SubMetrics) {
+      const data = [];
+      {
+        for (const [k, v] of Object.entries(this.projectSummary.LastScore.SubMetrics)) {
+          const x = k.split(';');
+          const tStamp = x[1];
+          data.push(
+            {
+              name: tStamp,
+              value: v,
+              extra: {
+                scanID: x[0]
+              }
+            });
+        }
+        const result = [
+          {
+            name: 'Score',
+            series: [...data]
+          }];
+
+        this.graphData = result;
+      }
+    }
+  }
+
+
   setProjectSummary(x: ProjectSummary) {
     this.projectSummary = x;
-    if (x.LastScanSummary && x.LastScanSummary.AdditionalInfo) {
-      const data = x.LastScanSummary.AdditionalInfo;
-      this.issueCounts = this.graph(data.highcount, data.mediumcount, data.lowcount, data.informationalcount);
-    }
-    console.log('Summary', x);
+    this.setScanSummary(x.LastScanSummary);
+    this.updateGraph();
+  }
 
+  setScanSummary(x: ScanSummary) {
+    // console.log('Summary', x);
+    if (x) {
+      this.scanSummary = x;
+      if (x.AdditionalInfo) {
+        const data = x.AdditionalInfo;
+        this.issueCounts = this.graph(data.highcount, data.mediumcount, data.lowcount, data.informationalcount);
+      }
+    }
   }
 
   get pageSize(): FormControl {
@@ -134,24 +186,29 @@ export class ProjectDetailComponent implements OnInit {
     if (proj.ScanPolicy && proj.ScanPolicy.Policy) {
       this.policy = JSON.stringify(proj.ScanPolicy.Policy, null, ' ');
     }
-    this.currentScanID = this.project.ScanIDs[0];
+    this.setScanID(this.project.ScanIDs[0]);
+
+  }
+
+  setScanID(id: string) {
+    this.currentScanID = id;
     this.paginateIssues(0);
   }
 
-
-
-
   paginateIssues(page: number) {
-    this.checkMateService.getIssues(
-      {
-        ProjectID: this.project.ID,
-        ScanID: this.currentScanID,
-        PageSize: this.pageSizeValue,
-        Page: page,
-      }).subscribe(result => {
-        this.pagedResult = result;
-        this.reselect = true;
-      });
+    const search: PaginatedSearch = {
+      ProjectID: this.project.ID,
+      ScanID: this.currentScanID,
+      PageSize: this.pageSizeValue,
+      Page: page,
+      Filter: this.filter
+    };
+    console.log('search', search);
+
+    this.checkMateService.getIssues(search).subscribe(result => {
+      this.pagedResult = result;
+      this.reselect = true;
+    });
   }
 
   savePolicy() {
@@ -287,10 +344,24 @@ export class ProjectDetailComponent implements OnInit {
 
   onSelect(data): void {
     console.log('Item clicked', JSON.parse(JSON.stringify(data)));
+    const f = data.name;
+    if (this.filter.Confidence.includes(f)) {
+      this.filter.Confidence.splice(this.filter.Confidence.indexOf(f));
+    } else {
+      this.filter.Confidence.push(f);
+    }
+    this.paginateIssues(0);
   }
 
-  onActivate(data): void {
-    console.log('Activate', JSON.parse(JSON.stringify(data)));
+  onSelectScan(data): void {
+    console.log(data.extra.scanID);
+    const scanID = data.extra.scanID;
+    this.checkMateService.getScanSummary(this.project.ID, scanID).subscribe(x => {
+      // console.log('Got scan summary', x);
+      this.setScanSummary(x);
+    });
+    this.setScanID(scanID);
+
   }
 
   onDeactivate(data): void {

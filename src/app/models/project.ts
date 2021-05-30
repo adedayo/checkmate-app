@@ -15,6 +15,11 @@ export interface PaginatedSearch {
   ScanID: string;
   PageSize: number;
   Page: number;
+  Filter?: IssueFilter;
+}
+
+export interface IssueFilter {
+  Confidence: string[];
 }
 
 export interface PagedResult {

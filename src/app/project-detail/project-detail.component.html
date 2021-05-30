@@ -1,14 +1,21 @@
 <div *ngIf="project" class="flex flex-col">
 
   <div class="text-xl font-bold">
-    <span class="text-blue-800 uppercase ">Project</span>
-    <span class="ml-2 text-purple-800">{{project.Name}}</span>
+    <span class="text-purple-800 uppercase ">Project</span>
+    <span class="ml-2 text-blue-600">{{project.Name}}</span>
 
   </div>
   <div class="flex">
     <div class="w-full border-r-2 border-purple-200 h-80">
       <div class="flex flex-col">
         <span class="pl-2 text-xs font-bold text-gray-500 uppercase">Trend</span>
+        <div class="flex justify-center w-full">
+          <ngx-charts-line-chart class="w-auto py-2 pl-2" [view]="view0" [scheme]="colorScheme0" [legend]="false"
+            [showXAxisLabel]="false" [showYAxisLabel]="false" [xAxis]="true" [yAxis]="true" [xAxisLabel]="xAxisLabel"
+            [yAxisLabel]="yAxisLabel" [timeline]="true" [autoScale]="true" [results]="graphData" [curve]="curve"
+            (select)="onSelectScan($event)">
+          </ngx-charts-line-chart>
+        </div>
       </div>
     </div>
     <div class="w-full h-80">
@@ -18,41 +25,40 @@
 
         <div class="flex justify-around pl-6">
 
-          <div *ngIf="projectSummary && projectSummary.LastScanSummary"
-            class="flex flex-col items-center justify-center">
-            <span class="text-2xl text-purple-800">Grade
-              {{projectSummary.LastScanSummary.Score.Grade}} </span>
-            <lib-ngx-liquid-gauge [value]="projectSummary.LastScanSummary.Score.Metric * 100" [minValue]="0"
-              [maxValue]="100" [circleThickness]="0.05" [circleFillGap]="0.05" [circleColor]="'#178BCA'"
-              [waveHeight]="0.05" [waveCount]="1" [waveRiseTime]="1000" [waveAnimateTime]="2000" [waveRise]="true"
+          <div *ngIf="scanSummary" class="flex flex-col items-center justify-center">
+            <span class="text-2xl text-blue-600">Grade
+              {{scanSummary.Score.Grade}} </span>
+            <lib-ngx-liquid-gauge [value]="scanSummary.Score.Metric * 100" [minValue]="0" [maxValue]="100"
+              [circleThickness]="0.05" [circleFillGap]="0.05" [circleColor]="'#178BCA'" [waveHeight]="0.05"
+              [waveCount]="1" [waveRiseTime]="1000" [waveAnimateTime]="2000" [waveRise]="true"
               [waveHeightScaling]="true" [waveAnimate]="true" [waveColor]="'#178BCA'" [waveOffset]="0"
               [textVertPosition]=".5" [textSize]="1" [valueCountUp]="true" [displayPercent]="true"
               [textColor]="'#045681'" [waveTextColor]="'#A4DBf8'">
             </lib-ngx-liquid-gauge>
             <div class="grid grid-cols-12 mt-2 text-xs">
               <div class="col-span-10 text-gray-500 w-max">Unique reused secrets</div>
-              <div class="col-span-2 pl-2 text-purple-800">
-                {{projectSummary.LastScanSummary.AdditionalInfo.reusedsecretscount}}</div>
+              <div class="col-span-2 pl-2 text-blue-600">
+                {{scanSummary.AdditionalInfo.reusedsecretscount}}</div>
 
               <div class="col-span-10 text-gray-500">Secrets reuse count</div>
-              <div class="col-span-2 pl-2 text-purple-800">
-                {{projectSummary.LastScanSummary.AdditionalInfo.numberofsecretsreuse}}</div>
+              <div class="col-span-2 pl-2 text-blue-600">
+                {{scanSummary.AdditionalInfo.numberofsecretsreuse}}</div>
 
               <div class="col-span-10 text-gray-500">Files processed</div>
-              <div class="col-span-2 pl-2 text-purple-800">
-                {{projectSummary.LastScanSummary.AdditionalInfo.filecount}}</div>
+              <div class="col-span-2 pl-2 text-blue-600">
+                {{scanSummary.AdditionalInfo.filecount}}</div>
 
             </div>
             <div class="flex justify-around mt-2 text-xs w-max">
               <div class="text-gray-500">Scan Date</div>
-              <div class="pl-2 text-purple-800">{{projectSummary.LastScanSummary.AdditionalInfo.timestamp}}</div>
+              <div class="pl-2 text-blue-600">{{scanSummary.AdditionalInfo.timestamp}}</div>
             </div>
           </div>
 
           <ngx-charts-bar-vertical [view]="view" [scheme]="colorScheme" [results]="issueCounts" [gradient]="gradient"
             [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend" [showXAxisLabel]="showXAxisLabel"
             [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel"
-            (select)="onSelect($event)" (activate)="onActivate($event)" (deactivate)="onDeactivate($event)">
+            [animations]="animations" [roundEdges]="roundEdges" (select)="onSelect($event)">
           </ngx-charts-bar-vertical>
 
 
@@ -66,7 +72,7 @@
 
   <div *ngIf="pagedResult" class="flex flex-col p-2 mt-4 mb-8 border-2 border-purple-200 border-solid rounded-md">
     <div class="flex items-center justify-between">
-      <div class="text-xl font-bold text-blue-800 uppercase">Incidents</div>
+      <div class="text-xl font-bold text-purple-800 uppercase">Incidents</div>
 
       <div class="flex items-center text-sm">
         <div class="flex items-center pr-4 space-x-1">

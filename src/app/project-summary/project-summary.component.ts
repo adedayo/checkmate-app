@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 import { ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress, ScanResult, SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
-
+import { curveBumpX } from 'd3-shape';
 @Component({
   selector: 'app-project-summary',
   templateUrl: './project-summary.component.html',
@@ -39,6 +39,7 @@ export class ProjectSummaryComponent implements OnInit {
   timeline = false;
   autoScale = true;
 
+  curve: any = curveBumpX;
   colorScheme = {
     domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
   };
@@ -119,12 +120,11 @@ export class ProjectSummaryComponent implements OnInit {
   updateGraph() {
     if (this.projectSummary.LastScore && this.projectSummary.LastScore.SubMetrics) {
       const data = [];
-      // console.log(this.projectSummary.LastScore.SubMetrics);
       {
         for (const [k, v] of Object.entries(this.projectSummary.LastScore.SubMetrics)) {
           data.push(
             {
-              name: k,
+              name: k.split(';')[1],
               value: v
             });
         }
