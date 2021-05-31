@@ -8,7 +8,7 @@ let win: BrowserWindow = null;
 const args = process.argv.slice(1);
 const serve = args.some(val => val === '--serve');
 let cmExec = 'checkmate';
-let os = 'darwin';
+let os = 'linux';
 switch (platform()) {
   case 'darwin':
     os = 'darwin';
@@ -51,6 +51,7 @@ ipcMain.handle('get-codebase', (_event): Promise<string[]> => dialog.showOpenDia
   return [];
 }));
 
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function createWindow(): BrowserWindow {
 
   const electronScreen = screen;
@@ -78,7 +79,6 @@ function createWindow(): BrowserWindow {
   });
 
   if (serve) {
-    // win.webContents.openDevTools(); // open with CMD + ALT + I
     require('electron-reload')(__dirname, {
       electron: require(`${__dirname}/node_modules/electron`)
     });
