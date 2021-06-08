@@ -38,6 +38,7 @@ import { MatCardModule } from '@angular/material/card';
 import { TabControlModule } from './directives';
 import { IncidentListItemComponent } from './incident-list-item/incident-list-item.component';
 import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 
 @NgModule({
@@ -82,7 +83,8 @@ import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
     CodemirrorModule,
     MatCardModule,
     TabControlModule,
-    NgxLiquidGaugeModule
+    NgxLiquidGaugeModule,
+    MatExpansionModule
   ],
   providers: [],
   bootstrap: [AppComponent]

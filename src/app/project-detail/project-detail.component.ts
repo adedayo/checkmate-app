@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import {
-  AfterViewChecked, Component, OnInit
+  Component, OnDestroy, OnInit
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ExcludeRequirement, IssueFilter, PagedResult, PaginatedSearch, Project } from '../models/project';
-import { ProjectSummary, ScanPolicy, ScanSummary, SecurityDiagnostic } from '../models/project-scan';
+import { ProjectSummary, ScanSummary, SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-project-detail',
   templateUrl: './project-detail.component.html',
   styleUrls: ['./project-detail.component.scss']
 })
-export class ProjectDetailComponent implements OnInit {
+export class ProjectDetailComponent implements OnInit, OnDestroy {
   project: Project;
   projectSummary: ProjectSummary;
   scanSummary: ScanSummary;
@@ -22,6 +23,8 @@ export class ProjectDetailComponent implements OnInit {
   currentIssue: SecurityDiagnostic;
   currentScanID: string;
   reselect = false;
+
+  expandReusedSecretsPanel = false;
 
   filter: IssueFilter = {
     Confidence: []
@@ -35,8 +38,8 @@ export class ProjectDetailComponent implements OnInit {
   fixForm: FormGroup;
   pagedResult: PagedResult;
   pageSizeValue = 10;
-  defaultPageSizes = [10, 20, 50, 100];
-  fixes: fixTypes[] = [
+  defaultPageSizes = [10, 20, 50, 100, 500];
+  fixes: FixTypes[] = [
     {
       fix: 'ignore_here',
       description: 'Ignore this issue in this file'
@@ -55,7 +58,7 @@ export class ProjectDetailComponent implements OnInit {
 
   curve: any = curveBumpX;
   graphData = [];
-  view0: any[] = [570, 350];
+  timelineView: any[] = [570, 300];
   issueCounts: any[] = this.graph(0, 0, 0, 0);
   view: any[] = [250, 290];
 
@@ -79,6 +82,11 @@ export class ProjectDetailComponent implements OnInit {
   colorScheme = {
     domain: ['red', 'gold', 'blue', 'green']
   };
+  project$: Subscription;
+  projectSummary$: Subscription;
+  size$: Subscription;
+  fix$: Subscription;
+  advancedFix$: Subscription;
 
   constructor(private fb: FormBuilder, private router: Router,
     private checkMateService: CheckMateService) {
@@ -95,6 +103,7 @@ export class ProjectDetailComponent implements OnInit {
   }
 
 
+
   ngOnInit() {
     const path = this.router.url;
     if (path) {
@@ -102,14 +111,15 @@ export class ProjectDetailComponent implements OnInit {
       const subPaths = path.split('/');
       const projectID = subPaths[subPaths.length - 1];
 
-      this.checkMateService.getProject(projectID).subscribe(proj => this.setProject(proj));
-      this.checkMateService.getProjectSummary(projectID).subscribe(x => {
+      this.project$ = this.checkMateService.getProject(projectID).subscribe(proj => this.setProject(proj));
+
+      this.projectSummary$ = this.checkMateService.getProjectSummary(projectID).subscribe(x => {
         this.setProjectSummary(x);
       }
       );
     }
 
-    this.pagingForm.get('size').valueChanges.subscribe(x => {
+    this.size$ = this.pagingForm.get('size').valueChanges.subscribe(x => {
       this.pageSizeValue = x;
       let currentPage = 0;
       if (this.pagedResult) {
@@ -118,15 +128,33 @@ export class ProjectDetailComponent implements OnInit {
       this.paginateIssues(currentPage);
     });
 
-    this.fixForm.get('fix').valueChanges.subscribe(x => {
+    this.fix$ = this.fixForm.get('fix').valueChanges.subscribe(x => {
       this.selectedFix = x;
     });
 
-    this.fixForm.get('advancedFix').valueChanges.subscribe(x => {
+    this.advancedFix$ = this.fixForm.get('advancedFix').valueChanges.subscribe(x => {
       this.showPolicy = x;
     });
   }
 
+
+  ngOnDestroy(): void {
+    if (this.project$) {
+      this.project$.unsubscribe();
+    }
+    if (this.projectSummary$) {
+      this.projectSummary$.unsubscribe();
+    }
+    if (this.size$) {
+      this.size$.unsubscribe();
+    }
+    if (this.fix$) {
+      this.fix$.unsubscribe();
+    }
+    if (this.advancedFix$) {
+      this.advancedFix$.unsubscribe();
+    }
+  }
 
   updateGraph() {
     if (this.projectSummary.LastScore && this.projectSummary.LastScore.SubMetrics) {
@@ -134,7 +162,7 @@ export class ProjectDetailComponent implements OnInit {
       {
         for (const [k, v] of Object.entries(this.projectSummary.LastScore.SubMetrics)) {
           const x = k.split(';');
-          const tStamp = x[1];
+          const tStamp = new Date(x[1]);
           data.push(
             {
               name: tStamp,
@@ -163,7 +191,6 @@ export class ProjectDetailComponent implements OnInit {
   }
 
   setScanSummary(x: ScanSummary) {
-    // console.log('Summary', x);
     if (x) {
       this.scanSummary = x;
       if (x.AdditionalInfo) {
@@ -178,13 +205,12 @@ export class ProjectDetailComponent implements OnInit {
   }
 
   setProject(proj: Project) {
-
-    if (proj.ID === '') {
+    if (!proj || proj.ID === '') {
       return;
     }
     this.project = proj;
-    if (proj.ScanPolicy && proj.ScanPolicy.Policy) {
-      this.policy = JSON.stringify(proj.ScanPolicy.Policy, null, ' ');
+    if (proj.ScanPolicy && proj.ScanPolicy.PolicyString) {
+      this.policy = proj.ScanPolicy.PolicyString;
     }
     this.setScanID(this.project.ScanIDs[0]);
 
@@ -203,7 +229,6 @@ export class ProjectDetailComponent implements OnInit {
       Page: page,
       Filter: this.filter
     };
-    console.log('search', search);
 
     this.checkMateService.getIssues(search).subscribe(result => {
       this.pagedResult = result;
@@ -218,7 +243,8 @@ export class ProjectDetailComponent implements OnInit {
       ScanPolicy: {
         ID: this.project.ScanPolicy.ID,
         Config: this.project.ScanPolicy.Config,
-        Policy: this.policy
+        Policy: JSON.stringify(this.project.ScanPolicy.Policy),
+        PolicyString: this.policy
       }
     }).subscribe(proj => {
       this.setProject(proj);
@@ -372,7 +398,7 @@ export class ProjectDetailComponent implements OnInit {
 }
 
 
-interface fixTypes {
+interface FixTypes {
   fix: string;
   description: string;
 }

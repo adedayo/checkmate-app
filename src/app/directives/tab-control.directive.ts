@@ -14,9 +14,11 @@ export class TabControlDirective implements AfterViewChecked {
   @HostListener('keydown', ['$event'])
   public down(event: KeyboardEvent) {
     if ((event.code === 'ArrowDown') || (event.code === 'ArrowUp') || (event.code === 'ArrowLeft') || (event.code === 'ArrowRight')) {
+
       event.preventDefault();
       const current = this.tabs.find((t) => t === event.target);
       if (!!current) {
+
         const index = this.getTabIndex(current);
         const up = ((event.code === 'ArrowUp') || (event.code === 'ArrowLeft'));
         const move = up ? this.getPrevious(index) : this.getNext(index);
@@ -36,11 +38,10 @@ export class TabControlDirective implements AfterViewChecked {
 
 
   public ngAfterViewChecked() {
-    const indexes = this.eref.nativeElement.querySelectorAll<HTMLElement>('[ng-reflect-arrow-index]');
+    const indexes = this.eref.nativeElement.querySelectorAll<HTMLElement>('[tabindex]');
     if (!!indexes) {
       this.tabs = Array.from(indexes).sort((a, b) => this.getTabIndex(a) - this.getTabIndex(b));
       // if (this.autoselect) {
-      //   console.log('setting focus to ', this.tabs[0]);
 
       //   this.tabs[0].focus();
       //   this.autoselect = false;
@@ -50,7 +51,7 @@ export class TabControlDirective implements AfterViewChecked {
 
 
   private getTabIndex(e: Element): number {
-    return Number.parseInt(e.getAttribute('ng-reflect-arrow-index') || '', 10);
+    return Number.parseInt(e.getAttribute('tabindex') || '', 10);
   }
 
   private getPrevious(index: number): HTMLElement | undefined {

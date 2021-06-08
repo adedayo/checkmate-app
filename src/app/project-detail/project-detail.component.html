@@ -10,7 +10,7 @@
       <div class="flex flex-col">
         <span class="pl-2 text-xs font-bold text-gray-500 uppercase">Trend</span>
         <div class="flex justify-center w-full">
-          <ngx-charts-line-chart class="w-auto py-2 pl-2" [view]="view0" [scheme]="colorScheme0" [legend]="false"
+          <ngx-charts-line-chart class="w-auto py-2 pl-2" [view]="timelineView" [scheme]="colorScheme0" [legend]="false"
             [showXAxisLabel]="false" [showYAxisLabel]="false" [xAxis]="true" [yAxis]="true" [xAxisLabel]="xAxisLabel"
             [yAxisLabel]="yAxisLabel" [timeline]="true" [autoScale]="true" [results]="graphData" [curve]="curve"
             (select)="onSelectScan($event)">
@@ -28,7 +28,7 @@
           <div *ngIf="scanSummary" class="flex flex-col items-center justify-center">
             <span class="text-2xl text-blue-600">Grade
               {{scanSummary.Score.Grade}} </span>
-            <lib-ngx-liquid-gauge [value]="scanSummary.Score.Metric * 100" [minValue]="0" [maxValue]="100"
+            <lib-ngx-liquid-gauge [value]="scanSummary.Score.Metric" [minValue]="0" [maxValue]="100"
               [circleThickness]="0.05" [circleFillGap]="0.05" [circleColor]="'#178BCA'" [waveHeight]="0.05"
               [waveCount]="1" [waveRiseTime]="1000" [waveAnimateTime]="2000" [waveRise]="true"
               [waveHeightScaling]="true" [waveAnimate]="true" [waveColor]="'#178BCA'" [waveOffset]="0"
@@ -69,7 +69,22 @@
 
   </div>
 
+  <!-- Reused Secrets -->
 
+  <div class="flex flex-col border-2 border-purple-200 border-solid rounded-md">
+    <div class="flex flex-col px-2 py-1 border border-b-0 bg-purple-50">
+      <div (click)="expandReusedSecretsPanel = !expandReusedSecretsPanel"
+        class="text-xs font-bold text-gray-500 uppercase cursor-pointer focus:outline-none">
+        Reused Secrets
+      </div>
+    </div>
+    <div *ngIf="expandReusedSecretsPanel" class="px-10 py-6">
+      secret, production, test
+    </div>
+  </div>
+
+
+  <!-- Incidents -->
   <div *ngIf="pagedResult" class="flex flex-col p-2 mt-4 mb-8 border-2 border-purple-200 border-solid rounded-md">
     <div class="flex items-center justify-between">
       <div class="text-xl font-bold text-purple-800 uppercase">Incidents</div>
@@ -91,9 +106,9 @@
       </div>
     </div>
     <!-- incident list -->
-    <div tabControl (pageEnd)="pageListener($event)" class="w-full mt-2 overflow-y-auto shadow-lg max-h-96" #incidents>
+    <div tabControl (pageEnd)="pageListener($event)" class="w-full mt-2 overflow-y-auto shadow-lg max-h-96">
       <div (focusout)="focusOut()" class="grid grid-cols-1" *ngFor="let issue of pagedResult.Diagnostics; let i=index">
-        <app-incident-list-item tabindex="0" arrowIndex="{{i}}" [issue]="issue" (focus)="focussed(issue)"
+        <app-incident-list-item tabindex="{{i}}" [issue]="issue" (focus)="focussed(issue)"
           ngClass="{{'hover:shadow-lg focus:bg-blue-300 focus:outline-none'+addClass(i)}}">
         </app-incident-list-item>
       </div>
@@ -110,6 +125,16 @@
             (click)="savePolicy()">Save Policy</button>
         </div>
       </div>
+
+      <!-- Policy -->
+      <div *ngIf="showPolicy && project.ScanPolicy && project.ScanPolicy.Policy" class="w-auto mt-2 mb-6">
+        <ngx-codemirror [(ngModel)]="policy" [options]="{
+      lineNumbers: true,
+      theme: 'material',
+      mode: 'yaml'
+    }"></ngx-codemirror>
+      </div>
+
     </div>
     <!-- code evidence -->
     <div *ngIf="issueFocussed" class="flex flex-col w-full my-4">
@@ -171,7 +196,7 @@
       <div class="w-auto mt-2 mb-6">
         <ngx-codemirror [ngModel]="currentIssue.source" [options]="{
         lineNumbers: true,
-        firstLineNumber: currentIssue.range.start.line,
+        firstLineNumber: currentIssue.range.start.line+1,
         mode: 'yaml',
         readOnly: true
 
@@ -179,13 +204,6 @@
       </div>
     </div>
 
-    <div *ngIf="showPolicy && project.ScanPolicy && project.ScanPolicy.Policy" class="w-auto mt-2 mb-6">
-      <ngx-codemirror [(ngModel)]="policy" [options]="{
-      lineNumbers: true,
-      theme: 'material',
-      mode: 'yaml'
-    }"></ngx-codemirror>
-    </div>
   </div>
 
 

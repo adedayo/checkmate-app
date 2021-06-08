@@ -14,12 +14,12 @@ export class ElectronIPC {
   /**
    * getAPIConfig
    */
-  public getAPIConfig(): Promise<string> {
+  public getAPIConfig(): Promise<number> {
     if (this.electronService.isElectronApp) {
       return this.electronService.ipcRenderer.invoke('api-config');
     }
     return new Promise(() =>
-      '17283' //default port chosen
+      17283 //default port chosen
     );
   }
 

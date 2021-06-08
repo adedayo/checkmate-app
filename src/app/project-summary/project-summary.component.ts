@@ -1,15 +1,16 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 import { ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress, ScanResult, SecurityDiagnostic } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
+import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-project-summary',
   templateUrl: './project-summary.component.html',
   styleUrls: ['./project-summary.component.scss']
 })
-export class ProjectSummaryComponent implements OnInit {
+export class ProjectSummaryComponent implements OnInit, OnDestroy {
 
   @Input() projectSummary: ProjectSummary;
   faCog = faCog;
@@ -44,11 +45,20 @@ export class ProjectSummaryComponent implements OnInit {
     domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
   };
 
+  runScan$: Subscription;
+
 
   constructor(private checkMateService: CheckMateService, private router: Router) { }
 
+
   ngOnInit(): void {
     this.updateGraph();
+  }
+
+  ngOnDestroy(): void {
+    if (this.runScan$) {
+      this.runScan$.unsubscribe();
+    }
   }
 
   displayType(t: string): string {
@@ -65,7 +75,12 @@ export class ProjectSummaryComponent implements OnInit {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       ProjectID: this.projectSummary.ID,
     };
-    this.checkMateService.runScan(options).subscribe(
+
+    if (this.runScan$) {
+      this.runScan$.unsubscribe();
+    }
+
+    this.runScan$ = this.checkMateService.runScan(options).subscribe(
       msg => {
 
         if (this.isScanProgress(msg)) {
@@ -122,9 +137,10 @@ export class ProjectSummaryComponent implements OnInit {
       const data = [];
       {
         for (const [k, v] of Object.entries(this.projectSummary.LastScore.SubMetrics)) {
+
           data.push(
             {
-              name: k.split(';')[1],
+              name: new Date(k.split(';')[1]),
               value: v
             });
         }
@@ -133,7 +149,6 @@ export class ProjectSummaryComponent implements OnInit {
             name: 'Score',
             series: [...data]
           }];
-
         this.graphData = result;
       }
     }

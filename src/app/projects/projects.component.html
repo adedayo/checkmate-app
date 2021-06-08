@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <app-project-summary *ngFor="let summary of projectSummaries"
+    <app-project-summary *ngFor="let summary of projectSummaries$ | async"
       class="w-auto overflow-hidden bg-white rounded-lg shadow" [projectSummary]=summary>
     </app-project-summary>
 

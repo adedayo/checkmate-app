@@ -160,8 +160,14 @@ export class ProjectSetupComponent implements OnInit {
   }
 
   getScanOptions(): SecretSearchOptions {
-    const options: SecretSearchOptions = {};
-    return options;
+    return {
+      ShowSource: this.scanOptions.get('showSource').value as boolean,
+      CalculateChecksum: this.scanOptions.get('calculateChecksums').value as boolean,
+      ConfidentialFilesOnly: this.scanOptions.get('confidentialFilesOnly').value as boolean,
+      ExcludeTestFiles: this.scanOptions.get('excludeTestFiles').value as boolean,
+      Verbose: false,
+      ReportIgnored: false
+    };
   }
 
   getExcludePolicy(): string {

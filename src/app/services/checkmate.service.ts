@@ -8,26 +8,24 @@ import {
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
-import { Issue } from '../models/issues';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CheckMateService {
 
-  apiPort = '17283';
+  apiPort = 17283;
   api = `http://localhost:${this.apiPort}/api`;
 
 
   constructor(private http: HttpClient, private electron: ElectronIPC) {
     this.electron.getAPIConfig().then(port => {
-      console.log('setting port here as ', port);
-      this.apiPort = JSON.stringify(port);
+      this.apiPort = port;
       this.api = `http://localhost:${port}/api`;
     }).catch((err) => {
-      console.log('error getting API port', err);
-      const port = '17283';
-      this.apiPort = JSON.stringify(port);
+      const port = 17283;
+      this.apiPort = port;
+      console.log(`error getting API port but attempting default port ${port}`, err);
       this.api = `http://localhost:${port}/api`;
     });
   }
@@ -83,7 +81,7 @@ export class CheckMateService {
   }
 
   updateProject(projectID: string, projDesc: ProjectDescription): Observable<Project> {
-    console.log('sending', projectID, projDesc);
+    // console.log('sending', projectID, projDesc);
 
     return this.http.post<Project>(
       `${this.api}/updateproject/${projectID}`,

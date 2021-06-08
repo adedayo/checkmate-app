@@ -8,7 +8,7 @@ let win: BrowserWindow = null;
 const args = process.argv.slice(1);
 const serve = args.some(val => val === '--serve');
 let cmExec = 'checkmate';
-let os = 'linux';
+let os = '';
 switch (platform()) {
   case 'darwin':
     os = 'darwin';
@@ -34,7 +34,10 @@ const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`];
 const checkMateAPI = spawn(appPath, cmArgs, {});
 
 
-ipcMain.handle('api-config', (_event) => new Promise<string>(() => apiPort));
+ipcMain.handle('api-config', (_event, ..._args) => apiPort);
+
+
+
 ipcMain.handle('get-codebase', (_event): Promise<string[]> => dialog.showOpenDialog({
   title: 'CheckMate: Open Code Directory',
   message: 'CheckMate: Open Code Directory',
@@ -71,7 +74,7 @@ function createWindow(): BrowserWindow {
     minHeight: 500,
     webPreferences: {
       nodeIntegration: true,
-      devTools: (serve) ? true : false,
+      // devTools: (serve) ? true : false,
       allowRunningInsecureContent: false,
       contextIsolation: false,  // false if you want to run 2e2 test with Spectron
       enableRemoteModule: true // true if you want to run 2e2 test  with Spectron or use remote module in renderer context (ie. Angular)

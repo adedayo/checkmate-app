@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable, Subscription } from 'rxjs';
 import { ProjectSummary } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 
@@ -9,14 +10,13 @@ import { CheckMateService } from '../services/checkmate.service';
 })
 export class ProjectsComponent implements OnInit {
 
-  projectSummaries: ProjectSummary[] = [];
+  projectSummaries$: Observable<ProjectSummary[]>;
+  // projectSummaries: ProjectSummary[] = [];
 
   constructor(private checkmateService: CheckMateService) { }
 
   ngOnInit(): void {
-    this.checkmateService.getProjectSummaries().subscribe(s => {
-      this.projectSummaries = s;
-    });
+    this.projectSummaries$ = this.checkmateService.getProjectSummaries();
   }
 
 }

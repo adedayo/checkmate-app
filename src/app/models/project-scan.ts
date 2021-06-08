@@ -21,6 +21,7 @@ export interface ProjectDescription {
 export interface ScanPolicy {
   ID?: string;
   Policy?: string;
+  PolicyString?: string;
   Config?: Map<string, any>;
 }
 

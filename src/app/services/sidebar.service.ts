@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 export class SidebarService {
   private sidebarState = 'open';
   private sidebarStateChanged$ = new BehaviorSubject<string>(this.sidebarState);
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   public sidebarStateObservable$ = this.sidebarStateChanged$.asObservable();
 
   constructor() {
