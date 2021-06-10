@@ -65,8 +65,19 @@ export interface AdditionalInfo {
   showsource: boolean;
   skippedcount: number;
   timestamp: string;
+  prodandnonprodsecretreuse: ReusedSecret[];
 }
 
+export interface ReusedSecret {
+  secret: string;
+  productionlocations: SecretLocation;
+  nonproductionlocations: SecretLocation;
+}
+
+export interface SecretLocation {
+  location: string;
+  highlightrange: CodeRange;
+}
 
 export interface Repository {
   Location: string;

@@ -26,6 +26,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   expandReusedSecretsPanel = false;
 
+  filterForm: FormGroup;
   filter: IssueFilter = {
     Confidence: []
   };
@@ -87,6 +88,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   size$: Subscription;
   fix$: Subscription;
   advancedFix$: Subscription;
+  filterForm$: Subscription;
 
   constructor(private fb: FormBuilder, private router: Router,
     private checkMateService: CheckMateService) {
@@ -99,6 +101,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       advancedFix: [false],
     });
 
+    this.filterForm = this.fb.group({
+      high: [false],
+      med: [false],
+      low: [false],
+      info: [false]
+    });
 
   }
 
@@ -135,6 +143,26 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.advancedFix$ = this.fixForm.get('advancedFix').valueChanges.subscribe(x => {
       this.showPolicy = x;
     });
+
+    this.filterForm$ = this.filterForm.valueChanges.subscribe(x => {
+      this.filter.Confidence = [];
+      if (x.high) {
+        this.filter.Confidence.push('high');
+      }
+      if (x.med) {
+        this.filter.Confidence.push('med');
+      }
+      if (x.low) {
+        this.filter.Confidence.push('low');
+      }
+      if (x.info) {
+        this.filter.Confidence.push('info');
+      }
+      this.paginateIssues(0);
+    });
+
+
+
   }
 
 
@@ -192,6 +220,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   setScanSummary(x: ScanSummary) {
     if (x) {
+      console.log('Scan Summary', x);
+
       this.scanSummary = x;
       if (x.AdditionalInfo) {
         const data = x.AdditionalInfo;
@@ -222,6 +252,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   paginateIssues(page: number) {
+    if (!this.project) {
+      return;
+    }
     const search: PaginatedSearch = {
       ProjectID: this.project.ID,
       ScanID: this.currentScanID,
@@ -325,7 +358,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       };
 
       this.checkMateService.fixIssue(fix).subscribe(x => {
-        console.log('Got Fix response', x);
+        // console.log('Got Fix response', x);
         if (x.Status === 'success') {
           this.policy = x.NewPolicy;
         }
@@ -369,14 +402,28 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
 
   onSelect(data): void {
-    console.log('Item clicked', JSON.parse(JSON.stringify(data)));
-    const f = data.name;
-    if (this.filter.Confidence.includes(f)) {
-      this.filter.Confidence.splice(this.filter.Confidence.indexOf(f));
-    } else {
-      this.filter.Confidence.push(f);
-    }
+    // console.log('Item clicked', JSON.parse(JSON.stringify(data)));
+    const f = (data.name as string).toLowerCase();
+    this.toggleFilter(f);
+    // if (this.filter.Confidence.includes(f)) {
+    //   this.filter.Confidence.splice(this.filter.Confidence.indexOf(f));
+    // } else {
+    //   this.filter.Confidence.push(f);
+    // }
     this.paginateIssues(0);
+  }
+
+  toggleFilter(filter: string) {
+
+    if (filter === 'high') {
+      this.filterForm.patchValue({ high: !(this.filterForm.get('high').value as boolean) });
+    } else if (filter === 'med') {
+      this.filterForm.patchValue({ med: !(this.filterForm.get('med').value as boolean) });
+    } else if (filter === 'low') {
+      this.filterForm.patchValue({ low: !(this.filterForm.get('low').value as boolean) });
+    } else if (filter === 'info') {
+      this.filterForm.patchValue({ info: !(this.filterForm.get('info').value as boolean) });
+    }
   }
 
   onSelectScan(data): void {

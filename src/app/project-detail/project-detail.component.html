@@ -79,7 +79,43 @@
       </div>
     </div>
     <div *ngIf="expandReusedSecretsPanel" class="px-10 py-6">
-      secret, production, test
+      <div
+        *ngIf="scanSummary && scanSummary.AdditionalInfo && scanSummary.AdditionalInfo.prodandnonprodsecretreuse;else no_reuse">
+
+        <div class="flex flex-col overflow-y-auto max-h-32"
+          *ngFor="let sec of scanSummary.AdditionalInfo.prodandnonprodsecretreuse; let i = index">
+          <div class="flex space-x-2">
+            <div class="flex flex-col">
+              <span *ngIf="i == 0" class="text-xs text-purple-800 uppercase">Secret</span>
+              <div class="text-xs text-gray-500">{{sec.secret}}</div>
+            </div>
+            <div class="flex flex-col text-xs">
+              <span *ngIf="i == 0" class="text-purple-800 uppercase">Production</span>
+              <div class="flex space-x-1" *ngFor="let loc of sec.productionlocations; let j = index">
+                <span class="text-gray-500">{{j+1}}.</span>
+                <div class="text-xs text-gray-500">{{loc.location}}</div>
+              </div>
+            </div>
+            <div class="flex flex-col text-xs">
+              <span *ngIf="i == 0" class="text-purple-800 uppercase">Non-Production</span>
+              <div class="flex space-x-1" *ngFor="let loc of sec.nonproductionlocations; let j = index">
+                <span class="text-gray-500">{{j+1}}.</span>
+                <div class="text-sm text-gray-500">{{loc.location}}</div>
+              </div>
+            </div>
+          </div>
+          <hr class="my-2">
+        </div>
+
+      </div>
+      <ng-template #no_reuse>
+        <div class="flex items-center space-x-1">
+          <span class="text-xs text-gray-500">Codebase does not reuse secrets across production and non-production
+            environments</span>
+          <mat-icon class="text-red-800">emoji_events</mat-icon>
+        </div>
+      </ng-template>
+
     </div>
   </div>
 
@@ -90,6 +126,21 @@
       <div class="text-xl font-bold text-purple-800 uppercase">Incidents</div>
 
       <div class="flex items-center text-sm">
+        <div class="flex items-center pr-2">
+          <span class="pr-1 text-gray-500">Filter</span>
+          <div class="flex flex-col pl-2 border-l-2">
+            <div class="grid grid-cols-4 text-xs" [formGroup]="filterForm">
+              <input type="checkbox" formControlName="high" class="w-3 h-3">
+              <span class="pr-2 -ml-2 text-gray-500">High</span>
+              <input type="checkbox" formControlName="med" class="w-3 h-3">
+              <span class="-ml-2 text-gray-500">Med</span>
+              <input type="checkbox" formControlName="low" class="w-3 h-3">
+              <span class="pr-2 -ml-2 text-gray-500">Low</span>
+              <input type="checkbox" formControlName="info" class="w-3 h-3">
+              <span class="-ml-2 text-gray-500">Info</span>
+            </div>
+          </div>
+        </div>
         <div class="flex items-center pr-4 space-x-1">
           <div class="text-purple-800">Page Size</div>
           <div [formGroup]="pagingForm" class="flex items-center py-2">
