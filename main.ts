@@ -4,6 +4,8 @@ import * as path from 'path';
 import * as url from 'url';
 import { platform } from 'os';
 
+import * as fs from 'fs';
+
 let win: BrowserWindow = null;
 const args = process.argv.slice(1);
 const serve = args.some(val => val === '--serve');
@@ -38,7 +40,7 @@ ipcMain.handle('api-config', (_event, ..._args) => apiPort);
 
 
 
-ipcMain.handle('get-codebase', (_event): Promise<string[]> => dialog.showOpenDialog({
+ipcMain.handle('get-codebase', (_event): Promise<string[]> => dialog.showOpenDialog(win, {
   title: 'CheckMate: Open Code Directory',
   message: 'CheckMate: Open Code Directory',
   properties: ['openFile', 'openDirectory', 'showHiddenFiles', 'treatPackageAsDirectory']
@@ -53,6 +55,31 @@ ipcMain.handle('get-codebase', (_event): Promise<string[]> => dialog.showOpenDia
   console.log(`Unable to load directory: ${reason}`);
   return [];
 }));
+
+
+ipcMain.handle('save-report', (_event, file): Promise<string> => dialog.showSaveDialog(win, {
+  title: 'CheckMate: Save Scan Report',
+  message: 'CheckMate: Save Scan Report',
+  defaultPath: file as string,
+  properties: ['showOverwriteConfirmation', 'createDirectory', 'showHiddenFiles', 'treatPackageAsDirectory']
+}).then(
+  x => {
+    if (!x.canceled) {
+      const srcFile = file as string;
+      if (x.filePath !== srcFile) {
+        //only copy file if the destination path is different
+        fs.copyFile(srcFile, x.filePath, () => { });
+      }
+      return x.filePath;
+    }
+    return '';
+  }
+).catch(reason => {
+  console.log(`Unable to load directory: ${reason}`);
+  return '';
+}));
+
+
 
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function createWindow(): BrowserWindow {

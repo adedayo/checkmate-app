@@ -24,11 +24,18 @@ export class ElectronIPC {
   }
 
   getCodePath(): Promise<string[]> {
-
     if (this.electronService.isElectronApp) {
       return this.electronService.ipcRenderer.invoke('get-codebase');
     }
+    return new Promise(() =>
+      []
+    );
+  }
 
+  saveScanreport(path: string): Promise<string> {
+    if (this.electronService.isElectronApp) {
+      return this.electronService.ipcRenderer.invoke('save-report', path);
+    }
     return new Promise(() =>
       []
     );

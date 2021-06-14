@@ -38,7 +38,8 @@ import { MatCardModule } from '@angular/material/card';
 import { TabControlModule } from './directives';
 import { IncidentListItemComponent } from './incident-list-item/incident-list-item.component';
 import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 
 @NgModule({
@@ -84,7 +85,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
     MatCardModule,
     TabControlModule,
     NgxLiquidGaugeModule,
-    MatExpansionModule
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -12,6 +12,7 @@ export interface ProjectSummary {
   LastModification?: Date;
 }
 
+export type ScanStatus = ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions;
 export interface ProjectDescription {
   Name: string;
   Repositories?: Repository[];

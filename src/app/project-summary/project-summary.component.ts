@@ -1,7 +1,10 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
-import { ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress, ScanResult, SecurityDiagnostic } from '../models/project-scan';
+import {
+  ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress,
+  SecurityDiagnostic, ScanStatus
+} from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
 import { Subscription } from 'rxjs';
@@ -122,10 +125,10 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
         }
       },
       err => {
-        console.log('Error', err);
+        // console.log('Error', err);
       },
       () => {
-        console.log('Socket closed');
+        // console.log('Socket closed');
       }
     );
 
@@ -165,15 +168,15 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
     }
   }
 
-  isScanProgress(msg: ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions): boolean {
+  isScanProgress(msg: ScanStatus): boolean {
     return (msg as ScanProgress).Position !== undefined;
   }
 
-  isScanEnd(msg: ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions): boolean {
+  isScanEnd(msg: ScanStatus): boolean {
     return (msg as ScanEnd).Message !== undefined;
   }
 
-  isDiagnostic(msg: ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions): boolean {
+  isDiagnostic(msg: ScanStatus): boolean {
     return (msg as SecurityDiagnostic).justification !== undefined;
   }
 

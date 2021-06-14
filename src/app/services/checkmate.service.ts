@@ -72,6 +72,9 @@ export class CheckMateService {
     return this.http.post<PolicyUpdateResult>(`${this.api}/project/issues/fix`, fix);
   }
 
+  downloadReport(projID: string, scanID: string): Observable<string> {
+    return this.http.get<string>(`${this.api}/scanreport/${projID}/${scanID}`);
+  }
 
   createProject(projDesc: ProjectDescription): Observable<ProjectSummary> {
     return this.http.post<ProjectSummary>(

@@ -5,10 +5,18 @@ import {
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ExcludeRequirement, IssueFilter, PagedResult, PaginatedSearch, Project } from '../models/project';
-import { ProjectSummary, ScanSummary, SecurityDiagnostic } from '../models/project-scan';
+import {
+  ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress,
+  ScanSummary, SecurityDiagnostic, ScanStatus
+} from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
 import { Subscription } from 'rxjs';
+import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
+import { ElectronService } from 'ngx-electron';
+import { ElectronIPC } from '../services/electron.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 
 @Component({
   selector: 'app-project-detail',
@@ -23,12 +31,19 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   currentIssue: SecurityDiagnostic;
   currentScanID: string;
   reselect = false;
+  showSpinner = false;
 
   expandReusedSecretsPanel = false;
+  expandRescanPanel = false;
+  faCog = faCog;
+  faPlayCircle = faPlayCircle;
+  currentFile = '';
+  progress = 0;
 
   filterForm: FormGroup;
   filter: IssueFilter = {
-    Confidence: []
+    Confidence: [],
+    Tags: ['test', 'prod'],
   };
 
   code = '';
@@ -89,9 +104,17 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   fix$: Subscription;
   advancedFix$: Subscription;
   filterForm$: Subscription;
+  scanning: boolean;
+  runScan$: any;
+
+  isInElectron = false;
 
   constructor(private fb: FormBuilder, private router: Router,
-    private checkMateService: CheckMateService) {
+    private checkMateService: CheckMateService,
+    electronService: ElectronService, private ipc: ElectronIPC,
+    private snackBar: MatSnackBar) {
+
+    this.isInElectron = electronService.isElectronApp;
     this.pagingForm = this.fb.group({
       size: [this.pageSizeValue],
     });
@@ -105,7 +128,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       high: [false],
       med: [false],
       low: [false],
-      info: [false]
+      info: [false],
+      prod: [true],
+      test: [true]
     });
 
   }
@@ -118,13 +143,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       //get project ID from the route
       const subPaths = path.split('/');
       const projectID = subPaths[subPaths.length - 1];
-
-      this.project$ = this.checkMateService.getProject(projectID).subscribe(proj => this.setProject(proj));
-
-      this.projectSummary$ = this.checkMateService.getProjectSummary(projectID).subscribe(x => {
-        this.setProjectSummary(x);
-      }
-      );
+      this.refreshProject(projectID);
     }
 
     this.size$ = this.pagingForm.get('size').valueChanges.subscribe(x => {
@@ -146,6 +165,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
     this.filterForm$ = this.filterForm.valueChanges.subscribe(x => {
       this.filter.Confidence = [];
+      this.filter.Tags = [];
       if (x.high) {
         this.filter.Confidence.push('high');
       }
@@ -158,6 +178,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       if (x.info) {
         this.filter.Confidence.push('info');
       }
+      if (x.test) {
+        this.filter.Tags.push('test');
+      }
+      if (x.prod) {
+        this.filter.Tags.push('prod');
+      }
       this.paginateIssues(0);
     });
 
@@ -165,6 +191,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   }
 
+  refreshProject(projectID: string) {
+    this.project$ = this.checkMateService.getProject(projectID).subscribe(proj => this.setProject(proj));
+    this.projectSummary$ = this.checkMateService.getProjectSummary(projectID).subscribe(x => this.setProjectSummary(x));
+  }
 
   ngOnDestroy(): void {
     if (this.project$) {
@@ -181,6 +211,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     }
     if (this.advancedFix$) {
       this.advancedFix$.unsubscribe();
+    }
+    if (this.filterForm$) {
+      this.filterForm$.unsubscribe();
     }
   }
 
@@ -216,11 +249,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.projectSummary = x;
     this.setScanSummary(x.LastScanSummary);
     this.updateGraph();
+    this.setScanID(x.LastScanID);
   }
 
   setScanSummary(x: ScanSummary) {
     if (x) {
-      console.log('Scan Summary', x);
+      // console.log('Scan Summary', x);
 
       this.scanSummary = x;
       if (x.AdditionalInfo) {
@@ -242,7 +276,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if (proj.ScanPolicy && proj.ScanPolicy.PolicyString) {
       this.policy = proj.ScanPolicy.PolicyString;
     }
-    this.setScanID(this.project.ScanIDs[0]);
+
 
   }
 
@@ -342,12 +376,32 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   }
 
+  downloadReport() {
+    this.showSpinner = true;
+    this.checkMateService.downloadReport(this.project.ID, this.currentScanID).subscribe(x => {
+      this.showSpinner = false;
+      this.ipc.saveScanreport(x).then(val => {
+        console.log('Saved report at', val);
+      });
+
+    },
+      err => {
+        this.showSpinner = false;
+        const message = err.error as string;
+        if (message.includes('asciidoctor')) {
+          this.snackBar.open('Install asciidoctor-pdf to get PDF reports and ensure that it is in your PATH environment variable.' +
+            ' Installation detail may be found at https://github.com/asciidoctor/asciidoctor-pdf/#getting-started', 'close');
+        }
+      }
+    );
+  }
+
   focusIn() {
     this.issueFocussed = true;
   }
 
-  focusOut() {
-  }
+  // focusOut() {
+  // }
 
   fixIssue() {
     if (this.currentIssue) {
@@ -358,14 +412,11 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       };
 
       this.checkMateService.fixIssue(fix).subscribe(x => {
-        // console.log('Got Fix response', x);
         if (x.Status === 'success') {
           this.policy = x.NewPolicy;
         }
       });
     }
-
-
   }
 
   addClass(i: number): string {
@@ -402,14 +453,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
 
   onSelect(data): void {
-    // console.log('Item clicked', JSON.parse(JSON.stringify(data)));
     const f = (data.name as string).toLowerCase();
     this.toggleFilter(f);
-    // if (this.filter.Confidence.includes(f)) {
-    //   this.filter.Confidence.splice(this.filter.Confidence.indexOf(f));
-    // } else {
-    //   this.filter.Confidence.push(f);
-    // }
     this.paginateIssues(0);
   }
 
@@ -437,9 +482,56 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   }
 
-  onDeactivate(data): void {
-    console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+  // onDeactivate(data): void {
+  //   console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+  // }
+
+  runScan() {
+    this.scanning = true;
+    const options: ProjectScanOptions = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ProjectID: this.projectSummary.ID,
+    };
+
+    if (this.runScan$) {
+      this.runScan$.unsubscribe();
+    }
+
+    this.runScan$ = this.checkMateService.runScan(options).subscribe(
+      msg => {
+
+        if (this.isScanProgress(msg)) {
+          const prog = msg as ScanProgress;
+          this.currentFile = prog.CurrentFile;
+          if (prog.Total > 0) {
+            this.progress = (100 * prog.Position) / prog.Total;
+          }
+        } else if (this.isScanEnd(msg)) {
+          this.currentFile = '';
+          this.scanning = false;
+          this.refreshProject(this.project.ID);
+        }
+      });
+
+
   }
+
+
+
+
+  isScanProgress(msg: ScanStatus): boolean {
+    return (msg as ScanProgress).Position !== undefined;
+  }
+
+  isScanEnd(msg: ScanStatus): boolean {
+    return (msg as ScanEnd).Message !== undefined;
+  }
+
+  isDiagnostic(msg: ScanStatus): boolean {
+    return (msg as SecurityDiagnostic).justification !== undefined;
+  }
+
+
 
 
 }

@@ -19,7 +19,8 @@ export interface PaginatedSearch {
 }
 
 export interface IssueFilter {
-  Confidence: string[];
+  Confidence?: string[];
+  Tags?: string[];
 }
 
 export interface PagedResult {
