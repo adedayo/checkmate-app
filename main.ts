@@ -33,7 +33,8 @@ console.log('Remote path (exe):', appPath, 'Env: ', process.env.NODE_ENV);
 
 const apiPort = 17283;
 const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`];
-const checkMateAPI = spawn(appPath, cmArgs, {});
+
+const checkMateAPI = spawn(appPath, cmArgs, { stdio: [process.stdin, process.stdout, process.stderr] });
 
 
 ipcMain.handle('api-config', (_event, ..._args) => apiPort);

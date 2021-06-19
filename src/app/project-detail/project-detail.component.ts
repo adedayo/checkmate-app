@@ -254,7 +254,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   setScanSummary(x: ScanSummary) {
     if (x) {
-      // console.log('Scan Summary', x);
+      console.log('Scan Summary', x);
 
       this.scanSummary = x;
       if (x.AdditionalInfo) {
@@ -400,8 +400,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.issueFocussed = true;
   }
 
-  // focusOut() {
-  // }
+  focusOut() { }
 
   fixIssue() {
     if (this.currentIssue) {
