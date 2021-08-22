@@ -15,6 +15,9 @@ mkdir -p "${downloadDir}"
 if [ ! -f "${darwinDir}/checkmate" ]; then
 #Only do this if we don't have a darwin executable
 
+rm -rf "${downloadDir}"
+mkdir -p "${downloadDir}"
+
 artefacts=$(curl -s https://api.github.com/repos/adedayo/checkmate/releases/latest | jq -r ".assets[].browser_download_url")
 
 
