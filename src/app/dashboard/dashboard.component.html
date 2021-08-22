@@ -1,3 +1,191 @@
 <div class="flex flex-col w-full">
-  <p class="w-full bg-gray-400">Welcome to the Dashboard</p>
+  <div class="absolute top-1/2 left-1/2" *ngIf="showSpinner">
+    <mat-spinner></mat-spinner>
+  </div>
+
+
+  <div *ngIf="!noWorkspace;else nil_workspace" class="py-2">
+
+    <div *ngIf="currentWorkspace" class="flex flex-grow">
+
+      <!-- Timeline chart -->
+      <div class="w-full border-r-2 border-purple-200 h-80">
+        <div class="flex flex-col">
+          <div class="flex items-center justify-between">
+            <span class="pl-2 text-xs font-bold text-gray-500 uppercase">Trend</span>
+            <div class="flex">
+              <div class="flex items-center pr-4 space-x-1">
+                <div [formGroup]="workspaceForm" class="flex items-center py-1">
+                  <select formControlName="wspace" [(ngModel)]="currentWorkspaceName"
+                    class="px-4 py-2 pr-8 mr-2 text-xs leading-tight text-gray-500 bg-white border border-gray-400 rounded shadow h-9 hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+                    <option *ngFor="let wspace of workspaceNames" [ngValue]="wspace">
+                      {{wspace}}</option>
+                  </select>
+                  <span class="text-xs font-bold text-gray-500 uppercase">Workspace</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-center w-full">
+            <ngx-charts-line-chart class="w-auto py-2 pl-2" [view]="timelineView" [scheme]="colorScheme0"
+              [legend]="false" [showXAxisLabel]="false" [showYAxisLabel]="false" [xAxis]="true" [yAxis]="true"
+              [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel" [timeline]="true" [autoScale]="true"
+              [results]="graphData" [curve]="curve" (select)="onSelectScan($event)">
+            </ngx-charts-line-chart>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="w-full h-80">
+
+        <!-- Scan Summary  Charts-->
+        <div class="w-full h-80">
+          <div class="flex flex-col">
+            <span class="pt-3.5 pl-2 text-xs font-bold text-gray-500 uppercase">Summary</span>
+
+
+            <div class="flex justify-around pl-6">
+              <div *ngIf="scanSummary" class="flex flex-col items-center justify-center">
+                <span class="text-2xl text-blue-600">Grade
+                  {{scanSummary.Score.Grade}} </span>
+                <lib-ngx-liquid-gauge [value]="scanSummary.Score.Metric" [minValue]="0" [maxValue]="100"
+                  [circleThickness]="0.05" [circleFillGap]="0.05" [circleColor]="'#178BCA'" [waveHeight]="0.05"
+                  [waveCount]="1" [waveRiseTime]="1000" [waveAnimateTime]="2000" [waveRise]="true"
+                  [waveHeightScaling]="true" [waveAnimate]="true" [waveColor]="'#178BCA'" [waveOffset]="0"
+                  [textVertPosition]=".5" [textSize]="1" [valueCountUp]="true" [displayPercent]="true"
+                  [textColor]="'#045681'" [waveTextColor]="'#A4DBf8'">
+                </lib-ngx-liquid-gauge>
+                <div *ngIf="scanSummary.AdditionalInfo" class="grid grid-cols-12 mt-2 text-xs">
+
+                  <div class="col-span-10 text-gray-500 w-max">Production leaked certs and keys</div>
+                  <div class="col-span-2 pl-2 text-blue-600">
+                    {{scanSummary.AdditionalInfo.productionConfidentialFilesCount}}</div>
+
+                  <div class="col-span-10 text-gray-500 w-max">Unique reused secrets</div>
+                  <div class="col-span-2 pl-2 text-blue-600">
+                    {{scanSummary.AdditionalInfo.reusedSecretsCount}}</div>
+
+                  <div class="col-span-10 text-gray-500">Secrets reuse count</div>
+                  <div class="col-span-2 pl-2 text-blue-600">
+                    {{scanSummary.AdditionalInfo.numberOfSecretsReuse}}</div>
+
+                  <div class="col-span-10 text-gray-500">Files processed</div>
+                  <div class="col-span-2 pl-2 text-blue-600">
+                    {{scanSummary.AdditionalInfo.fileCount}}</div>
+
+
+                  <!-- <div *ngIf="isInElectron" class="flex items-center justify-between col-span-12">
+                    <div class="inset-x-0 text-gray-500 ">Download report</div>
+                    <mat-icon class="text-blue-600 cursor-pointer" (click)="downloadReport()">download</mat-icon>
+                  </div> -->
+
+                </div>
+                <div *ngIf="scanSummary.AdditionalInfo" class="flex justify-around mt-2 text-xs w-max">
+                  <div class="text-gray-500">Last Scan</div>
+                  <div class="pl-2 text-blue-600">{{scanSummary.AdditionalInfo.timeStamp}}</div>
+                </div>
+
+              </div>
+
+              <ngx-charts-bar-vertical [view]="view" [scheme]="colorScheme" [results]="issueCounts"
+                [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="showLegend"
+                [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="xAxisLabel"
+                [yAxisLabel]="yAxisLabel" [animations]="animations" [roundEdges]="roundEdges"
+                (select)="onSelect($event)">
+              </ngx-charts-bar-vertical>
+
+
+            </div>
+
+          </div>
+        </div>
+
+
+      </div>
+
+    </div>
+
+    <!-- Project List -->
+    <div *ngIf="currentWorkspace" class="flex flex-col pt-2 ">
+      <a *ngFor="let proj of currentWorkspace.ProjectSummaries" [routerLink]="['/project-detail', proj.ID]"
+        class="z-0 text-sm min-w-max bg-gradient-to-r from-purple-100 to-blue-300">
+        <div class="z-10 grid grid-cols-12 hover:bg-blue-300 ">
+          <div class="font-semibold text-blue-600">Grade {{proj.LastScore.Grade}} </div>
+          <div class="col-span-5">
+            <div *ngIf="proj.LastScanSummary.AdditionalInfo;else not_scanned" class="flex">
+              <div class="grid grid-cols-2">
+                <span
+                  class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-purple-600">
+                  Critical</span>
+                <span
+                  class="ml-2 text-xs font-semibold text-purple-800">{{valueOrZero(proj.LastScanSummary.AdditionalInfo.criticalCount)}}</span>
+              </div>
+
+
+              <div class="grid grid-cols-2">
+                <span class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-red-600">
+                  High</span>
+                <span
+                  class="ml-2 text-xs font-semibold text-purple-800">{{valueOrZero(proj.LastScanSummary.AdditionalInfo.highCount)}}</span>
+              </div>
+
+              <div class="grid grid-cols-2">
+                <span
+                  class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-yellow-600">
+                  Med</span>
+                <span
+                  class="ml-2 text-xs font-semibold text-purple-800">{{valueOrZero(proj.LastScanSummary.AdditionalInfo.mediumCount)}}</span>
+              </div>
+
+              <div class="grid grid-cols-2">
+                <span class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-blue-600">
+                  Low</span>
+                <span
+                  class="ml-2 text-xs font-semibold text-purple-800">{{valueOrZero(proj.LastScanSummary.AdditionalInfo.lowCount)}}</span>
+              </div>
+
+              <div class="grid grid-cols-2">
+                <span
+                  class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-green-600">
+                  Info</span>
+                <span
+                  class="ml-2 text-xs font-semibold text-purple-800">{{valueOrZero(proj.LastScanSummary.AdditionalInfo.infoCount)}}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-span-5">{{proj.Name}}</div>
+        </div>
+      </a>
+
+    </div>
+
+
+  </div>
+
+  <ng-template #not_scanned class="">
+    <div class="grid w-full ">
+      <span class="font-semibold text-center text-gray-600 uppercase">Not yet scanned</span>
+    </div>
+  </ng-template>
+
+  <ng-template #nil_workspace>
+    <div class="flex flex-col items-center text-xl text-blue-600">
+      <div>
+        No Results Yet! Create a project and run a scan first to see results here!
+      </div>
+
+      <div class="absolute w-48 overflow-hidden bg-white rounded-lg shadow top-1/2 left-1/2 sm:h-96 md:h-auto">
+        <div class="flex w-full text-lg text-center bg-purple-800">
+          <p class="py-4 pl-2 text-base lg:pl-6 text-purple-50">Create New Project</p>
+        </div>
+        <div class="z-0 flex flex-col items-center justify-center h-32 min-h-full pb-6 sm:pb-12">
+          <a [routerLink]="['/project-setup']" class="flex text-6xl text-purple-900">+</a>
+          <a [routerLink]="['/project-setup']" class="flex text-purple-900">Add project</a>
+        </div>
+      </div>
+
+
+    </div>
+  </ng-template>
 </div>

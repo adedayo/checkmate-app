@@ -40,6 +40,8 @@ import { IncidentListItemComponent } from './incident-list-item/incident-list-it
 import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { ProjectNameFilterPipe } from './pipes/project-filter.pipe';
+import { IssueFilterPipe } from './pipes/issue-filter.pipe';
 
 
 @NgModule({
@@ -56,7 +58,9 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
     ProjectSetupComponent,
     CodeEditorComponent,
     ProjectDetailComponent,
-    IncidentListItemComponent
+    IncidentListItemComponent,
+    ProjectNameFilterPipe,
+    IssueFilterPipe
   ],
   imports: [
     BrowserModule,

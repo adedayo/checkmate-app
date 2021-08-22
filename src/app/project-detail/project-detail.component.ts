@@ -12,7 +12,7 @@ import {
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
 import { Subscription } from 'rxjs';
-import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faPlayCircle, faSave, faFileDownload, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { ElectronService } from 'ngx-electron';
 import { ElectronIPC } from '../services/electron.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -36,7 +36,11 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   expandReusedSecretsPanel = false;
   expandRescanPanel = false;
   faCog = faCog;
+  faFileDownload = faFileDownload;
+  faSave = faSave;
   faPlayCircle = faPlayCircle;
+  issueSearch = '';
+  faSearch = faSearch;
   currentFile = '';
   progress = 0;
 
@@ -44,6 +48,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   filter: IssueFilter = {
     Confidence: [],
     Tags: ['test', 'prod'],
+    ConfidentialFilesOnly: false,
   };
 
   code = '';
@@ -54,7 +59,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   fixForm: FormGroup;
   pagedResult: PagedResult;
   pageSizeValue = 10;
-  defaultPageSizes = [10, 20, 50, 100, 500];
+  defaultPageSizes = [10, 20, 50, 100, 500, 1000, 2000];
   fixes: FixTypes[] = [
     {
       fix: 'ignore_here',
@@ -75,7 +80,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   curve: any = curveBumpX;
   graphData = [];
   timelineView: any[] = [570, 300];
-  issueCounts: any[] = this.graph(0, 0, 0, 0);
+  issueCounts: any[] = this.graph(0, 0, 0, 0, 0);
   view: any[] = [250, 290];
 
   // options
@@ -96,7 +101,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   };
 
   colorScheme = {
-    domain: ['red', 'gold', 'blue', 'green']
+    domain: ['purple', 'red', 'gold', 'blue', 'green']
   };
   project$: Subscription;
   projectSummary$: Subscription;
@@ -108,6 +113,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   runScan$: any;
 
   isInElectron = false;
+  debug = false;
 
   constructor(private fb: FormBuilder, private router: Router,
     private checkMateService: CheckMateService,
@@ -125,12 +131,14 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     });
 
     this.filterForm = this.fb.group({
+      critical: [false],
       high: [false],
       med: [false],
       low: [false],
       info: [false],
       prod: [true],
-      test: [true]
+      test: [true],
+      conf: [false],
     });
 
   }
@@ -164,7 +172,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     });
 
     this.filterForm$ = this.filterForm.valueChanges.subscribe(x => {
+      // console.log(`clicked`, x);
+
       this.filter.Confidence = [];
+      if (x.critical) {
+        this.filter.Confidence.push('critical');
+      }
       this.filter.Tags = [];
       if (x.high) {
         this.filter.Confidence.push('high');
@@ -183,6 +196,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       }
       if (x.prod) {
         this.filter.Tags.push('prod');
+      }
+      if (x.conf) {
+        this.filter.Tags.push('confidential');
       }
       this.paginateIssues(0);
     });
@@ -254,12 +270,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   setScanSummary(x: ScanSummary) {
     if (x) {
-      console.log('Scan Summary', x);
-
       this.scanSummary = x;
       if (x.AdditionalInfo) {
         const data = x.AdditionalInfo;
-        this.issueCounts = this.graph(data.highcount, data.mediumcount, data.lowcount, data.informationalcount);
+        this.issueCounts = this.graph(data.criticalCount, data.highCount, data.mediumCount, data.lowCount, data.informationalCount);
       }
     }
   }
@@ -306,6 +320,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   savePolicy() {
     this.checkMateService.updateProject(this.project.ID, {
       Name: this.project.Name,
+      Workspace: this.project.Workspace,
       Repositories: this.project.Repositories,
       ScanPolicy: {
         ID: this.project.ScanPolicy.ID,
@@ -360,7 +375,16 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   pageListener(event: string) {
     this.issueFocussed = false;
-    if (event === 'top') {
+    if (event === 'KeyI') {
+      this.selectedFix = this.fixes[0].fix;
+      this.fixIssue();
+    } else if (event === 'KeyE') {
+      this.selectedFix = this.fixes[1].fix;
+      this.fixIssue();
+    } else if (event === 'KeyF') {
+      this.selectedFix = this.fixes[2].fix;
+      this.fixIssue();
+    } else if (event === 'top') {
       if (this.pagedResult) {
         if (this.pagedResult.Page > 0) {
           this.paginateIssues(this.pagedResult.Page - 1);
@@ -373,7 +397,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         }
       }
     }
-
   }
 
   downloadReport() {
@@ -396,6 +419,11 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     );
   }
 
+  downloadPolicy() {
+    this.ipc.savePolicy(`${this.project.Name.toLowerCase().replace(' ', '-')}_allow-list.yaml`,
+      this.project.ScanPolicy.PolicyString).then(val => console.log('Saved Policy as ', val));
+  }
+
   focusIn() {
     this.issueFocussed = true;
   }
@@ -413,6 +441,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       this.checkMateService.fixIssue(fix).subscribe(x => {
         if (x.Status === 'success') {
           this.policy = x.NewPolicy;
+          this.snackBar.open(`Issue successfully remediated`, 'close');
+          setTimeout(() => this.snackBar.dismiss(), 4000);
         }
       });
     }
@@ -429,8 +459,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     return Math.floor(x);
   }
 
-  graph(high: number, med: number, low: number, info: number): any[] {
+  graph(critical: number, high: number, med: number, low: number, info: number): any[] {
     return [
+      {
+        name: 'Critical',
+        value: critical
+      },
       {
         name: 'High',
         value: high
@@ -459,7 +493,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   toggleFilter(filter: string) {
 
-    if (filter === 'high') {
+    if (filter === 'critical') {
+      this.filterForm.patchValue({ critical: !(this.filterForm.get('critical').value as boolean) });
+    } else if (filter === 'high') {
       this.filterForm.patchValue({ high: !(this.filterForm.get('high').value as boolean) });
     } else if (filter === 'med') {
       this.filterForm.patchValue({ med: !(this.filterForm.get('med').value as boolean) });
@@ -471,10 +507,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   onSelectScan(data): void {
-    console.log(data.extra.scanID);
+    // console.log(data.extra.scanID);
     const scanID = data.extra.scanID;
     this.checkMateService.getScanSummary(this.project.ID, scanID).subscribe(x => {
-      // console.log('Got scan summary', x);
       this.setScanSummary(x);
     });
     this.setScanID(scanID);
@@ -510,7 +545,17 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
           this.scanning = false;
           this.refreshProject(this.project.ID);
         }
-      });
+      },
+      err => {
+
+        if ((err as CloseEvent).type !== undefined) {
+          if ((err as CloseEvent).type === 'close') {
+            return;
+          }
+        }
+        console.error('Error:', err);
+      },
+      () => { });
 
 
   }

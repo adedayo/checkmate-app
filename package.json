@@ -25,6 +25,7 @@
     "electron:local": "npm run build:prod && npx electron .",
     "electron:build": "npm run download:checkmate && npm i && npm run build:prod && electron-builder build",
     "electron:build:dev": "npm run download:checkmate && npm i && npm run build:dev && electron-builder build",
+    "release": "electron-builder --publish onTag",
     "test": "ng test --watch=false",
     "test:watch": "ng test",
     "e2e": "npm run build:prod && cross-env TS_NODE_PROJECT='e2e/tsconfig.e2e.json' mocha --timeout 300000 --require ts-node/register e2e/**/*.e2e.ts",

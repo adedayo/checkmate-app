@@ -81,6 +81,25 @@ ipcMain.handle('save-report', (_event, file): Promise<string> => dialog.showSave
 }));
 
 
+ipcMain.handle('save-policy', (_event, file, policy): Promise<string> => dialog.showSaveDialog(win, {
+  title: 'CheckMate: Save Policy',
+  message: 'CheckMate: Save Policy',
+  defaultPath: file as string,
+  properties: ['showOverwriteConfirmation', 'createDirectory', 'showHiddenFiles', 'treatPackageAsDirectory']
+}).then(
+  x => {
+    if (!x.canceled) {
+      const pol = policy as string;
+      fs.writeFile(x.filePath, pol, () => { });
+      return x.filePath;
+    }
+    return '';
+  }
+).catch(reason => {
+  console.log(`Unable to load directory: ${reason}`);
+  return '';
+}));
+
 
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function createWindow(): BrowserWindow {

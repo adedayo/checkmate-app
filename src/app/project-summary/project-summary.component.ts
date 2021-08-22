@@ -20,6 +20,7 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
   faPlayCircle = faPlayCircle;
   currentFile = '';
   progress = 0;
+  criticalCount = 0;
   highCount = 0;
   mediumCount = 0;
   lowCount = 0;
@@ -101,7 +102,6 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
             this.projectSummary = summary;
             this.updateGraph();
           });
-
         }
         else if (this.isDiagnostic(msg)) {
           const diag = msg as SecurityDiagnostic;
@@ -121,18 +121,20 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
             default:
               break;
           }
-
         }
       },
       err => {
-        // console.log('Error', err);
+        if ((err as CloseEvent).type !== undefined) {
+          if ((err as CloseEvent).type === 'close') {
+            return;
+          }
+        }
+        console.error('Error:', err);
       },
       () => {
         // console.log('Socket closed');
       }
     );
-
-
   }
 
   updateGraph() {
@@ -161,10 +163,11 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
   updateMetrics() {
     if (this.projectSummary.LastScanSummary && this.projectSummary.LastScanSummary.AdditionalInfo) {
       const summary = this.projectSummary.LastScanSummary;
-      this.highCount = summary.AdditionalInfo.highcount;
-      this.mediumCount = summary.AdditionalInfo.mediumcount;
-      this.lowCount = summary.AdditionalInfo.lowcount;
-      this.infoCount = summary.AdditionalInfo.informationalcount;
+      this.criticalCount = summary.AdditionalInfo.criticalCount;
+      this.highCount = summary.AdditionalInfo.highCount;
+      this.mediumCount = summary.AdditionalInfo.mediumCount;
+      this.lowCount = summary.AdditionalInfo.lowCount;
+      this.infoCount = summary.AdditionalInfo.informationalCount;
     }
   }
 

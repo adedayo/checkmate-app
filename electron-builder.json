@@ -40,18 +40,27 @@
     "icon": "build/icons/CheckMateLogo.ico",
     "target": [
       "portable"
+    ],
+    "publish": [
+      "github"
     ]
   },
   "mac": {
     "icon": "build/icons/CheckMateLogo.icns",
     "target": [
       "dmg"
+    ],
+    "publish": [
+      "github"
     ]
   },
   "linux": {
     "icon": "build/icons/CheckMateLogo.png",
     "target": [
       "AppImage"
+    ],
+    "publish": [
+      "github"
     ]
   },
   "extraResources": [
@@ -62,8 +71,5 @@
         "**/*"
       ]
     }
-  ],
-  "publish": [
-    "github"
   ]
 }

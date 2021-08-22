@@ -11,7 +11,10 @@
           <span class="text-purple-800">{{issue.tags.join(',')}}</span>
         </div>
         <div class="flex text-xs">
-          <span class="pr-1 font-bold text-gray-500">Confidence</span>
+          <span class="pr-1 font-bold text-gray-500">Severity</span>
+          <span *ngIf="issue.justification.headline.confidence === 'Critical'"
+            class="inline-block w-24 px-2 font-semibold tracking-wide text-white uppercase bg-purple-600 min-w-min ">
+            Critical</span>
           <span *ngIf="issue.justification.headline.confidence === 'High'"
             class="inline-block w-24 px-2 font-semibold tracking-wide text-white uppercase bg-red-600 min-w-min ">
             High</span>
@@ -21,7 +24,7 @@
           <span *ngIf="issue.justification.headline.confidence === 'Low'"
             class="inline-block w-24 px-2 font-semibold tracking-wide text-white uppercase bg-blue-600 min-w-min">
             Low</span>
-          <span *ngIf="issue.justification.headline.confidence === 'Informational'"
+          <span *ngIf="issue.justification.headline.confidence === 'Info'"
             class="inline-block w-24 px-2 font-semibold tracking-wide text-white uppercase bg-green-600 min-w-min">
             Informational</span>
         </div>

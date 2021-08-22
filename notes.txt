@@ -1,3 +1,13 @@
 Integrating Monaco editor: https://freesoft.dev/program/162540825 (https://github.com/prabal77/angularMonacoEditor)
 
 Integrating various text editor utilities: https://www.syncfusion.com/blogs/post/how-to-integrate-third-party-libraries-into-angular-rich-text-editor.aspx
+
+
+Colour pallete: https://coolors.co/7400b8-6930c3-5e60ce-5390d9-4ea8de-48bfe3-56cfe1-64dfdf-72efdd-80ffdb
+
+
+packaging
+
+nvm use v12.18.4
+npm run electron:build
+npm run release

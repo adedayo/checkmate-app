@@ -41,4 +41,12 @@ export class ElectronIPC {
     );
   }
 
+  savePolicy(path: string, policy: string): Promise<string> {
+    if (this.electronService.isElectronApp) {
+      return this.electronService.ipcRenderer.invoke('save-policy', path, policy);
+    }
+    return new Promise(() =>
+      []
+    );
+  }
 }

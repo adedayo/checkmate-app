@@ -15,6 +15,7 @@ export interface ProjectSummary {
 export type ScanStatus = ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions;
 export interface ProjectDescription {
   Name: string;
+  Workspace: string;
   Repositories?: Repository[];
   ScanPolicy?: ScanPolicy;
 }
@@ -26,25 +27,21 @@ export interface ScanPolicy {
   Config?: Map<string, any>;
 }
 
-// export interface ExcludeDefinition {
-//   //These specify regular expressions of matching strings that should be ignored as secrets anywhere they are found
-//   GloballyExcludedRegExs: string;
-//   //These specify strings that should be ignored as secrets anywhere they are found
-//   GloballyExcludedStrings: string[];
-//   //These specify regular expressions that ignore files whose paths match
-//   PathExclusionRegExs: string[];
-//   //These specify sets of strings that should be excluded in a given file. That is filepath -> Set(strings)
-//   PerFileExcludedStrings: Map<string, string[]>;
-//   //These specify sets of regular expressions that if matched on a path
-//   //matched by the filepath key should be ignored. That is filepath_regex -> Set(regex)
-//   //This is a quite versatile construct and can model the four above
-//   PathRegexExcludedRegExs: Map<string, string[]>;
-// }
 
 export interface ScanResult {
   Grade: string;
   Metric: number;
   SubMetrics?: Map<string, number>;
+}
+
+export interface Workspace {
+  // Details: Map<string, WorkspaceDetail>;
+  Details: { [key: string]: WorkspaceDetail };
+}
+
+export interface WorkspaceDetail {
+  Summary: ScanSummary;
+  ProjectSummaries: ProjectSummary[];
 }
 
 export interface ScanSummary {
@@ -56,11 +53,12 @@ export interface AdditionalInfo {
   averageperfile: number;
   filecount: number;
   grade: string;
-  highcount: number;
-  informationalcount: number;
+  criticalCount: number;
+  highCount: number;
+  informationalCount: number;
   issuespertype: number;
-  lowcount: number;
-  mediumcount: number;
+  lowCount: number;
+  mediumCount: number;
   numberofsecretsreuse: number;
   reusedsecretscount: number;
   showsource: boolean;

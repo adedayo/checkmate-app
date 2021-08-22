@@ -1,6 +1,6 @@
 <div class="flex flex-col w-full text-blue-800">
 
-  <p class="text-xl text-purple-800">Create New Security Scan Project</p>
+  <p class="text-xl text-gray-500">Create New Security Scan Project</p>
 
   <mat-vertical-stepper [linear]="true" #stepper>
     <mat-step [stepControl]="projectForm">
@@ -10,6 +10,34 @@
           <mat-label>Project Name</mat-label>
           <input matInput placeholder="Ex. Frontend API" formControlName="projectName" required>
         </mat-form-field>
+        <div>
+          <button mat-button class="focus:outline-none" matStepperNext>Next</button>
+        </div>
+      </form>
+    </mat-step>
+    <mat-step [stepControl]="projectForm">
+      <form [formGroup]="projectForm" class="flex flex-col">
+        <ng-template matStepLabel><span class="text-purple-800">Add project to workspace</span> </ng-template>
+        <div class="flex flex-col ">
+          <div class="flex items-center space-x-1">
+            <div class="">Choose existing workspace</div>
+            <select formControlName="workspace"
+              class="h-8 px-4 py-2 pr-8 mr-2 text-sm leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+              <option *ngFor="let ws of existingWorkspaces" [ngValue]="ws">{{ws}}</option>
+            </select>
+          </div>
+          <div>
+            <div class="inline-flex items-center mt-3">
+              <input type="checkbox" formControlName="newWorkspace" class="w-5 h-5">
+              <span class="ml-2 ">Create New Workspace</span>
+            </div>
+          </div>
+          <mat-form-field *ngIf="newWorkspace" class="text-blue-800 focus:outline-none">
+            <mat-label>New Workspace Name</mat-label>
+            <input matInput placeholder="Ex. Backend Services" formControlName="newWorkspaceValue">
+          </mat-form-field>
+
+        </div>
         <div>
           <button mat-button class="focus:outline-none" matStepperNext>Next</button>
         </div>

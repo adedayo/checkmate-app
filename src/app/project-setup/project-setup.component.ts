@@ -25,6 +25,8 @@ export class ProjectSetupComponent implements OnInit {
   ];
   selectedType = 'git';
 
+  existingWorkspaces: string[] = ['Default'];
+
   constructor(private fb: FormBuilder,
     electronService: ElectronService,
     private ipc: ElectronIPC,
@@ -34,11 +36,19 @@ export class ProjectSetupComponent implements OnInit {
   }
 
 
+  public get newWorkspace(): boolean {
+    return this.projectForm.get('newWorkspace').value as boolean;
+  }
+
+
   ngOnInit(): void {
 
     this.checkMateService.getDefaultPolicy().subscribe(pol => {
       this.projectForm = this.fb.group({
         projectName: ['', Validators.required],
+        workspace: ['Default'],
+        newWorkspace: [false],
+        newWorkspaceValue: [''],
         repositories: this.fb.array([]),
         scanOptions: this.fb.group({
           showSource: [true],
@@ -55,6 +65,9 @@ export class ProjectSetupComponent implements OnInit {
 
     this.projectForm = this.fb.group({
       projectName: ['', Validators.required],
+      workspace: ['Default'],
+      newWorkspace: [false],
+      newWorkspaceValue: [''],
       repositories: this.fb.array([]),
       scanOptions: this.fb.group({
         showSource: [true],
@@ -121,6 +134,9 @@ export class ProjectSetupComponent implements OnInit {
 
     const projDesc: ProjectDescription = {
       Name: this.projectForm.get('projectName').value as string,
+      Workspace: this.newWorkspace ?
+        this.projectForm.get('newWorkspaceValue').value as string :
+        this.projectForm.get('workspace').value as string,
       Repositories: this.getRepos(),
       ScanPolicy: this.getScanPolicy(),
     };

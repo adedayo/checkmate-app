@@ -11,7 +11,7 @@ export class SidebarService {
   public sidebarStateObservable$ = this.sidebarStateChanged$.asObservable();
 
   constructor() {
-    this.sidebarStateChanged$.next('open');
+    this.sidebarStateChanged$.next('close');
   }
 
   toggle() {

@@ -4,7 +4,7 @@ import { ElectronIPC } from './electron.service';
 import { Observable } from 'rxjs';
 import {
   ProjectDescription, ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress,
-  ScanResult, ScanSummary, SecurityDiagnostic
+  ScanResult, ScanSummary, SecurityDiagnostic, Workspace
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
@@ -44,7 +44,6 @@ export class CheckMateService {
 
 
   runScan(options: ProjectScanOptions): WebSocketSubject<ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions> {
-    // console.log(options);
     const ws = webSocket<ScanResult | ScanProgress | SecurityDiagnostic |
       ScanEnd | ProjectScanOptions>(`ws://localhost:${this.apiPort}/api/secrets/scan`);
     ws.next(options);
@@ -53,6 +52,10 @@ export class CheckMateService {
 
   getProjectSummary(projID: string): Observable<ProjectSummary> {
     return this.http.get<ProjectSummary>(`${this.api}/projectsummary/${projID}`);
+  }
+
+  getWorkspaceSummaries(): Observable<Workspace> {
+    return this.http.get<Workspace>(`${this.api}/workspaces`);
   }
 
   getScanSummary(projID: string, scanID: string): Observable<ScanSummary> {

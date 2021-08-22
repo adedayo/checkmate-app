@@ -4,6 +4,7 @@ import { Repository, ScanPolicy, SecurityDiagnostic } from './project-scan';
 export interface Project {
   ID: string;
   Name: string;
+  Workspace: string;
   Repositories: Repository[];
   ScanIDs: string[];
   ScanPolicy: ScanPolicy;
@@ -21,6 +22,7 @@ export interface PaginatedSearch {
 export interface IssueFilter {
   Confidence?: string[];
   Tags?: string[];
+  ConfidentialFilesOnly?: boolean;
 }
 
 export interface PagedResult {
