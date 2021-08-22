@@ -1,12 +1,12 @@
 {
   "name": "checkmate-app",
   "description": "Security static analysis tool. Find secrets in source code and configuration files",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "main.js",
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adedayo/checkmate.git"
+    "url": "git+https://github.com/adedayo/checkmate-app.git"
   },
   "author": "Dr. Adedayo Adetoye (aka Dayo)",
   "scripts": {
@@ -25,7 +25,7 @@
     "electron:local": "npm run build:prod && npx electron .",
     "electron:build": "npm run download:checkmate && npm i && npm run build:prod && electron-builder build",
     "electron:build:dev": "npm run download:checkmate && npm i && npm run build:dev && electron-builder build",
-    "release": "electron-builder --publish onTag",
+    "release": "electron-builder --publish always",
     "test": "ng test --watch=false",
     "test:watch": "ng test",
     "e2e": "npm run build:prod && cross-env TS_NODE_PROJECT='e2e/tsconfig.e2e.json' mocha --timeout 300000 --require ts-node/register e2e/**/*.e2e.ts",
@@ -108,8 +108,83 @@
   "engines": {
     "node": ">=12.0.0"
   },
-  "bugs": {
-    "url": "https://github.com/adedayo/checkmate/issues"
+  "build": {
+    "productName": "CheckMate",
+    "appId": "com.securityauditlabs.checkmate",
+    "directories": {
+      "output": "release/"
+    },
+    "files": [
+      "**/*",
+      "!**/dist/builder-debug.yml",
+      "!**/dist/builder-effective-config.yml",
+      "!**/dist/CheckMate*",
+      "!**/dist/mac/*",
+      "!**/dist/win/*",
+      "!**/dist/linux/*",
+      "!checkmate-binary/*",
+      "!**/.metals",
+      "!**/.vscode",
+      "!.browserslistrc",
+      "!**/*.ts",
+      "!*.code-workspace",
+      "!LICENSE.md",
+      "!package.json",
+      "!package-lock.json",
+      "!src/",
+      "!e2e/",
+      "!hooks/",
+      "!angular.json",
+      "!_config.yml",
+      "!karma.conf.js",
+      "!tsconfig.json",
+      "!tsconfig.serve.json",
+      "!tsconfig.spec.json",
+      "!tsconfig.app.json",
+      "!tslint.json",
+      "!**/*.sh",
+      "!notes.txt",
+      "!tailwind.config.js"
+    ],
+    "win": {
+      "icon": "build/icons/CheckMateLogo.ico",
+      "target": [
+        "portable"
+      ],
+      "publish": [
+        "github"
+      ]
+    },
+    "mac": {
+      "icon": "build/icons/CheckMateLogo.icns",
+      "target": [
+        "dmg"
+      ],
+      "publish": [
+        "github"
+      ]
+    },
+    "linux": {
+      "icon": "build/icons/CheckMateLogo.png",
+      "target": [
+        "AppImage"
+      ],
+      "publish": [
+        "github"
+      ]
+    },
+    "extraResources": [
+      {
+        "from": "checkmate-binary/darwin/checkmate",
+        "to": "checkmate",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
   },
-  "homepage": "https://github.com/adedayo/checkmate#readme"
+  "bugs": {
+    "url": "https://github.com/adedayo/checkmate-app/issues"
+  },
+  "homepage": "https://github.com/adedayo/checkmate-app#readme"
 }
