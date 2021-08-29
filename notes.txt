@@ -12,9 +12,11 @@ change the version number (in package.json to x.y.z) and tag accordingly
 
 git commit -am commit notes"
 git tag -a vx.y.z -m "Version x.y.z"
-git push
-git push --tags
+#git push
+#git push --tags
 
 nvm use v12.18.4
 npm run electron:build
+git commit -am "commit notes"
+git tag -a vx.y.z -m "Version x.y.z"
 npm run release

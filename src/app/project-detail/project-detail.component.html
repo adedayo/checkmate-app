@@ -1,4 +1,4 @@
-<div *ngIf="project" class="container flex flex-col h-screen overflow-y-auto">
+<div *ngIf="project" class="flex flex-col w-full h-screen px-2 pb-4 overflow-y-auto ">
   <div class="absolute top-1/2 left-1/2" *ngIf="showSpinner">
     <mat-spinner></mat-spinner>
   </div>
@@ -33,11 +33,11 @@
           <div *ngIf="scanSummary" class="flex flex-col items-center justify-center">
             <span class="text-2xl text-blue-600">Grade
               {{scanSummary.Score.Grade}} </span>
-            <lib-ngx-liquid-gauge [value]="scanSummary.Score.Metric" [minValue]="0" [maxValue]="100"
+            <lib-ngx-liquid-gauge [value]="trimDecimal(scanSummary.Score.Metric)" [minValue]="0" [maxValue]="100"
               [circleThickness]="0.05" [circleFillGap]="0.05" [circleColor]="'#178BCA'" [waveHeight]="0.05"
               [waveCount]="1" [waveRiseTime]="1000" [waveAnimateTime]="2000" [waveRise]="true"
               [waveHeightScaling]="true" [waveAnimate]="true" [waveColor]="'#178BCA'" [waveOffset]="0"
-              [textVertPosition]=".5" [textSize]="1" [valueCountUp]="true" [displayPercent]="true"
+              [textVertPosition]=".5" [textSize]="1" [valueCountUp]="true" [displayPercent]="false"
               [textColor]="'#045681'" [waveTextColor]="'#A4DBf8'">
             </lib-ngx-liquid-gauge>
             <div *ngIf="scanSummary.AdditionalInfo" class="grid grid-cols-12 mt-2 text-xs">
@@ -179,9 +179,10 @@
   </div>
 
 
+
   <!-- Incidents -->
-  <div *ngIf="pagedResult" class="flex flex-col p-2 mt-4 mb-8 border-2 border-purple-200 border-solid rounded-md">
-    <div class="flex items-center justify-between">
+  <div *ngIf="pagedResult" class="grid grid-cols-2 p-2 mt-4 mb-8 border-2 border-purple-200 border-solid rounded-md">
+    <div class="flex items-center justify-between col-span-2">
       <div class="flex items-center">
         <div class="text-xl font-bold text-purple-800 uppercase">Incidents</div>
 
@@ -241,60 +242,28 @@
       </div>
     </div>
     <!-- incident list -->
-    <div tabControl (pageEnd)="pageListener($event)" class="w-full overflow-y-auto shadow-lg max-h-96">
+    <div tabControl (pageEnd)="pageListener($event)" [ngClass]="issueFocussed? 'col-span-1':'col-span-2'"
+      class="flex-grow w-full overflow-y-auto shadow-lg max-h-96">
       <div (focusout)="focusOut()" class="grid grid-cols-1"
         *ngFor="let issue of pagedResult.Diagnostics | issueFilter:issueSearch; let i=index">
         <app-incident-list-item tabindex="{{i}}" [issue]="issue" (focus)="focussed(issue)"
-          ngClass="{{'hover:shadow-lg focus:bg-blue-300 focus:outline-none'+addClass(i)}}">
+          [ngClass]="'hover:shadow-lg focus:bg-blue-300 focus:outline-none' + (i%2===0 ? ' bg-blue-100 ' : '')">
         </app-incident-list-item>
       </div>
     </div>
-    <div class="mt-3">
-      <div class="flex items-center justify-between pt-3" [formGroup]="fixForm">
-        <div class="flex items-center">
-          <span class="pr-2 text-sm ">Advanced Policy</span>
-          <input type="checkbox" formControlName="advancedFix" class="w-3 h-3 text-purple-500 border-purple-500 ">
-        </div>
-        <span *ngIf="debug" class="pr-2 text-xs">{{currentIssue | json}}</span>
-        <div class="flex items-center space-x-2">
-          <button mat-button *ngIf="showPolicy" class="text-purple-700 border-purple-700 focus:outline-none "
-            (click)="downloadPolicy()">
-            <div class="flex items-center space-x-1">
-              <fa-icon class="text-purple-800" title="Scan" size="lg" [icon]="faFileDownload">
-              </fa-icon>
-              <span> Download Policy</span>
-            </div>
-          </button>
-          <button mat-button *ngIf="showPolicy" class="text-purple-700 border-purple-700 focus:outline-none"
-            (click)="savePolicy()">
-            <div class="flex items-center space-x-1">
-              <fa-icon class="text-purple-800" title="Scan" size="lg" [icon]="faSave">
-              </fa-icon>
-              <span>Save Policy</span>
-            </div>
-          </button>
-        </div>
-      </div>
 
-      <!-- Policy -->
-      <div *ngIf="showPolicy && project.ScanPolicy && project.ScanPolicy.Policy" class="w-auto mt-2 mb-6">
-        <ngx-codemirror [(ngModel)]="policy" [options]="{
-      lineNumbers: true,
-      theme: 'material',
-      mode: 'yaml'
-    }"></ngx-codemirror>
-      </div>
+    <!-- Code Evidence -->
+    <div *ngIf="issueFocussed" class="flex flex-col w-full h-auto ml-2 max-h-96">
 
-    </div>
-    <!-- code evidence -->
-    <div *ngIf="issueFocussed" class="flex flex-col w-full my-4">
-
-      <hr class="my-2">
+      <!-- <hr class="my-2"> -->
 
       <div>
         <div class="flex text-xs">
           <div class="flex">
-            <span class="pr-1 font-bold text-blue-500">Confidence</span>
+            <span class="pr-1 font-bold text-blue-500">Severity</span>
+            <span *ngIf="currentIssue.justification.headline.confidence === 'Critical'"
+              class="inline-block w-24 px-2 font-semibold tracking-wide text-white uppercase bg-purple-600 min-w-min ">
+              Critical</span>
             <span *ngIf="currentIssue.justification.headline.confidence === 'High'"
               class="inline-block px-2 font-semibold tracking-wide text-white uppercase bg-red-600">
               High</span>
@@ -355,6 +324,49 @@
       </div>
     </div>
 
+
+    <!-- Policy Area-->
+    <div class="col-span-2 mt-3">
+      <div class="flex items-center justify-between pt-3" [formGroup]="fixForm">
+        <div class="flex items-center">
+          <span class="pr-2 text-sm text-purple-800">Advanced Policy</span>
+          <input type="checkbox" formControlName="advancedFix" class="w-3 h-3 text-purple-500 border-purple-500 ">
+        </div>
+        <span *ngIf="debug" class="pr-2 text-xs">{{currentIssue | json}}</span>
+        <div class="flex items-center space-x-2">
+          <button mat-button *ngIf="showPolicy" class="text-purple-700 border-purple-700 focus:outline-none "
+            (click)="downloadPolicy()">
+            <div class="flex items-center space-x-1">
+              <fa-icon class="text-purple-800" title="Scan" size="lg" [icon]="faFileDownload">
+              </fa-icon>
+              <span>Download Policy</span>
+            </div>
+          </button>
+          <button mat-button *ngIf="showPolicy" class="text-purple-700 border-purple-700 focus:outline-none"
+            (click)="savePolicy()">
+            <div class="flex items-center space-x-1">
+              <fa-icon class="text-purple-800" title="Scan" size="lg" [icon]="faSave">
+              </fa-icon>
+              <span>Save Policy</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Policy -->
+      <div *ngIf="showPolicy && project.ScanPolicy && project.ScanPolicy.Policy" class="w-auto mt-2 mb-6">
+        <ngx-codemirror [(ngModel)]="policy" [options]="{
+      lineNumbers: true,
+      theme: 'material',
+      mode: 'yaml'
+    }"></ngx-codemirror>
+      </div>
+
+    </div>
+
   </div>
+
+
+
 
 </div>

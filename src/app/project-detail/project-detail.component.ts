@@ -63,15 +63,15 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   fixes: FixTypes[] = [
     {
       fix: 'ignore_here',
-      description: 'Ignore this issue in this file'
+      description: 'Ignore this issue in this file (i)'
     },
     {
       fix: 'ignore_everywhere',
-      description: 'Ignore this issue everywhere'
+      description: 'Ignore this issue everywhere (e)'
     },
     {
       fix: 'ignore_file',
-      description: 'Ignore this file'
+      description: 'Ignore this file (f)'
     },
   ];
 
@@ -172,8 +172,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     });
 
     this.filterForm$ = this.filterForm.valueChanges.subscribe(x => {
-      // console.log(`clicked`, x);
-
       this.filter.Confidence = [];
       if (x.critical) {
         this.filter.Confidence.push('critical');
@@ -263,9 +261,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   setProjectSummary(x: ProjectSummary) {
     this.projectSummary = x;
-    this.setScanSummary(x.LastScanSummary);
-    this.updateGraph();
     this.setScanID(x.LastScanID);
+    this.setScanSummary(x.LastScanSummary);
   }
 
   setScanSummary(x: ScanSummary) {
@@ -275,6 +272,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         const data = x.AdditionalInfo;
         this.issueCounts = this.graph(data.criticalCount, data.highCount, data.mediumCount, data.lowCount, data.informationalCount);
       }
+      this.updateGraph();
     }
   }
 
@@ -448,12 +446,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  addClass(i: number): string {
-    if (i % 2 === 0) {
-      return ' bg-blue-100 ';
-    }
-    return '';
-  }
 
   truncate(x: number): number {
     return Math.floor(x);
@@ -507,7 +499,6 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   onSelectScan(data): void {
-    // console.log(data.extra.scanID);
     const scanID = data.extra.scanID;
     this.checkMateService.getScanSummary(this.project.ID, scanID).subscribe(x => {
       this.setScanSummary(x);
@@ -535,7 +526,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       msg => {
 
         if (this.isScanProgress(msg)) {
-          const prog = msg as ScanProgress;
+          const prog = msg;
           this.currentFile = prog.CurrentFile;
           if (prog.Total > 0) {
             this.progress = (100 * prog.Position) / prog.Total;
@@ -543,6 +534,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         } else if (this.isScanEnd(msg)) {
           this.currentFile = '';
           this.scanning = false;
+          this.progress = 0;
           this.refreshProject(this.project.ID);
         }
       },
@@ -562,20 +554,30 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
 
 
+  isProject(msg: ScanStatus): msg is Project {
+    return (msg as Project).ID !== undefined;
+  }
 
-  isScanProgress(msg: ScanStatus): boolean {
+  isScanSummary(msg: ScanStatus): msg is ScanSummary {
+    return (msg as ScanSummary).Score !== undefined;
+  }
+
+
+  isScanProgress(msg: ScanStatus): msg is ScanProgress {
     return (msg as ScanProgress).Position !== undefined;
   }
 
-  isScanEnd(msg: ScanStatus): boolean {
+  isScanEnd(msg: ScanStatus): msg is ScanEnd {
     return (msg as ScanEnd).Message !== undefined;
   }
 
-  isDiagnostic(msg: ScanStatus): boolean {
+  isDiagnostic(msg: ScanStatus): msg is SecurityDiagnostic {
     return (msg as SecurityDiagnostic).justification !== undefined;
   }
 
-
+  trimDecimal(x: number): number {
+    return Math.floor(x);
+  }
 
 
 }

@@ -1,3 +1,5 @@
+import { Project } from './project';
+
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface ProjectSummary {
   ID: string;
@@ -12,7 +14,8 @@ export interface ProjectSummary {
   LastModification?: Date;
 }
 
-export type ScanStatus = ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd | ProjectScanOptions;
+export type ScanStatus = ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd |
+  ProjectScanOptions | Project | ScanSummary;
 export interface ProjectDescription {
   Name: string;
   Workspace: string;

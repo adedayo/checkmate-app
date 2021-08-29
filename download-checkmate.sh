@@ -12,7 +12,7 @@ mkdir -p "${linuxDir}"
 mkdir -p "${windowsDir}"
 mkdir -p "${downloadDir}"
 
-if [ ! -f "${darwinDir}/checkmate" ]; then
+# if [ ! -f "${darwinDir}/checkmate" ]; then #remove this constraint. This is only done during release
 #Only do this if we don't have a darwin executable
 
 rm -rf "${downloadDir}"
@@ -48,4 +48,4 @@ for x in $artefacts; do
     IFS=' '
   fi
 done
-fi
+# fi

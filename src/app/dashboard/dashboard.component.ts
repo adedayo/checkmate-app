@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
   graphData = [];
   timelineView: any[] = [570, 275];
   issueCounts: any[] = this.graph(0, 0, 0, 0, 0);
-  view: any[] = [250, 290];
+  view: any[] = [270, 290];
 
   // options
   showXAxis = true;
@@ -108,6 +108,11 @@ export class DashboardComponent implements OnInit {
       }
       this.showSpinner = false;
     });
+  }
+
+
+  trimDecimal(x: number): number {
+    return Math.floor(x);
   }
 
   updateMetrics() {
