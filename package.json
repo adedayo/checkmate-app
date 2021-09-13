@@ -1,7 +1,7 @@
 {
   "name": "checkmate-app",
   "description": "Security static analysis tool. Find secrets in source code and configuration files",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "main": "main.js",
   "license": "BSD-3-Clause",
   "repository": {
