@@ -19,5 +19,6 @@ nvm use v12.18.4
 change version of package.json to x.y.z
 git commit -am "commit notes"
 git tag -a vx.y.z -m "Version x.y.z"
+git push
 npm run electron:build
 npm run release
