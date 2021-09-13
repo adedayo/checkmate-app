@@ -78,6 +78,10 @@ export class CheckMateService {
     return this.http.get<string>(`${this.api}/scanreport/${projID}/${scanID}`);
   }
 
+  downloadCSVReport(projID: string, scanID: string): Observable<string> {
+    return this.http.get<string>(`${this.api}/csvscanreport/${projID}/${scanID}`);
+  }
+
   createProject(projDesc: ProjectDescription): Observable<ProjectSummary> {
     return this.http.post<ProjectSummary>(
       `${this.api}/createproject`,

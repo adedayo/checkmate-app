@@ -33,7 +33,8 @@ export class TabControlDirective implements AfterViewChecked {
           move.focus();
         }
       }
-    } else if ((event.code === 'KeyI') || (event.code === 'KeyE') || (event.code === 'KeyF')) {
+    } else if ((event.code === 'KeyI') || (event.code === 'KeyE') || (event.code === 'KeyF') ||
+      (event.code === 'KeyA') || (event.code === 'KeyS')) {
       this.pageEnd.emit(event.code);
       const current = this.tabs.find((t) => t === event.target);
       const index = this.getTabIndex(current);

@@ -66,8 +66,16 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       description: 'Ignore this issue in this file (i)'
     },
     {
+      fix: 'ignore_sha2_here',
+      description: 'Ignore checksum in this file (a)'
+    },
+    {
       fix: 'ignore_everywhere',
       description: 'Ignore this issue everywhere (e)'
+    },
+    {
+      fix: 'ignore_sha2_everywhere',
+      description: 'Ignore checksum everywhere (s)'
     },
     {
       fix: 'ignore_file',
@@ -79,7 +87,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   curve: any = curveBumpX;
   graphData = [];
-  timelineView: any[] = [570, 300];
+  timelineView: any[] = [650, 300];
   issueCounts: any[] = this.graph(0, 0, 0, 0, 0);
   view: any[] = [250, 290];
 
@@ -139,6 +147,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       prod: [true],
       test: [true],
       conf: [false],
+      unique: [false],
     });
 
   }
@@ -197,6 +206,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       }
       if (x.conf) {
         this.filter.Tags.push('confidential');
+      }
+      if (x.unique) {
+        this.filter.Tags.push('unique');
       }
       this.paginateIssues(0);
     });
@@ -301,6 +313,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if (!this.project) {
       return;
     }
+    this.showSpinner = true;
     const search: PaginatedSearch = {
       ProjectID: this.project.ID,
       ScanID: this.currentScanID,
@@ -312,6 +325,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.checkMateService.getIssues(search).subscribe(result => {
       this.pagedResult = result;
       this.reselect = true;
+      this.showSpinner = false;
     });
   }
 
@@ -376,11 +390,17 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if (event === 'KeyI') {
       this.selectedFix = this.fixes[0].fix;
       this.fixIssue();
-    } else if (event === 'KeyE') {
+    } else if (event === 'KeyA') {
       this.selectedFix = this.fixes[1].fix;
       this.fixIssue();
-    } else if (event === 'KeyF') {
+    } else if (event === 'KeyE') {
       this.selectedFix = this.fixes[2].fix;
+      this.fixIssue();
+    } else if (event === 'KeyS') {
+      this.selectedFix = this.fixes[3].fix;
+      this.fixIssue();
+    } else if (event === 'KeyF') {
+      this.selectedFix = this.fixes[4].fix;
       this.fixIssue();
     } else if (event === 'top') {
       if (this.pagedResult) {
@@ -397,14 +417,28 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  downloadCSVReport() {
+    this.showSpinner = true;
+    this.checkMateService.downloadCSVReport(this.project.ID, this.currentScanID).subscribe(x => {
+      this.showSpinner = false;
+      this.ipc.saveScanreport(x).then(val => {
+        this.snackBar.open(`Saved report at ${val}`, 'close');
+      });
+    },
+      err => {
+        this.showSpinner = false;
+        this.snackBar.open('Error generating CSV report ' + err.error, 'close');
+      }
+    );
+  }
+
   downloadReport() {
     this.showSpinner = true;
     this.checkMateService.downloadReport(this.project.ID, this.currentScanID).subscribe(x => {
       this.showSpinner = false;
       this.ipc.saveScanreport(x).then(val => {
-        console.log('Saved report at', val);
+        this.snackBar.open(`Saved report at ${val}`, 'close');
       });
-
     },
       err => {
         this.showSpinner = false;

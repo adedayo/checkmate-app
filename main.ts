@@ -1,5 +1,5 @@
 import { spawn } from 'child_process';
-import { app, BrowserWindow, ipcMain, screen, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, dialog, autoUpdater } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import { platform } from 'os';
@@ -34,6 +34,7 @@ console.log('Remote path (exe):', appPath, 'Env: ', process.env.NODE_ENV);
 const apiPort = 17283;
 const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`];
 
+//TODO: Add environment PATH variable to allow the location of asciidoctor-pdf
 const checkMateAPI = spawn(appPath, cmArgs, { stdio: [process.stdin, process.stdout, process.stderr] });
 
 
@@ -156,7 +157,10 @@ try {
   // Some APIs can only be used after this event occurs.
   // Added 400 ms to fix the black background issue while using transparent window.
   // More detail at https://github.com/electron/electron/issues/15947
-  app.on('ready', () => setTimeout(createWindow, 400));
+  app.on('ready', () => {
+    setTimeout(createWindow, 400);
+    //TODO: implement auto-update
+  });
 
   // Quit when all windows are closed.
   app.on('window-all-closed', () => {

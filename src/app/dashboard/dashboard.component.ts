@@ -24,6 +24,9 @@ export class DashboardComponent implements OnInit {
   wspace$: any;
   public set workspaceName(name: string) {
     this.currentWorkspaceName = name;
+    if (this.workspaceForm.get('wspace').value as string !== name) {
+      this.workspaceForm.patchValue({ wspace: name });
+    }
     if (this.currentWorkspace) {
       this.setScanSummary(this.currentWorkspace.Summary);
       this.updateGraph();

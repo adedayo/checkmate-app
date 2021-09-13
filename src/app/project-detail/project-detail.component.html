@@ -60,10 +60,20 @@
 
               <div *ngIf="isInElectron" class="grid justify-between grid-cols-12 col-span-12">
                 <div class="inset-x-0 col-span-10 text-gray-500">Download report</div>
-                <mat-icon class="col-span-2 text-blue-600 cursor-pointer" (click)="downloadReport()">download</mat-icon>
+                <div class="flex flex-col items-center">
+                  <span class="text-xs text-gray-500">PDF</span>
+                  <mat-icon class="col-span-1 text-blue-600 cursor-pointer" (click)="downloadReport()">download
+                  </mat-icon>
+
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="text-xs text-gray-500">CSV</span>
+                  <mat-icon class="col-span-1 text-blue-600 cursor-pointer" (click)="downloadCSVReport()">download
+                  </mat-icon>
+                </div>
               </div>
 
-              <div *ngIf="scanSummary.AdditionalInfo" class="flex justify-around mt-2 text-xs w-max">
+              <div *ngIf="scanSummary.AdditionalInfo" class="flex justify-around mt-1 text-xs w-max">
                 <div class="text-gray-500">Scan Date</div>
                 <div class="pl-2 text-blue-600">{{scanSummary.AdditionalInfo.timeStamp}}</div>
               </div>
@@ -111,12 +121,9 @@
       </div>
       <!-- Scan -->
       <div class="flex justify-between px-2 py-4 bg-purple-100">
-        <div *ngIf='projectSummary.LastScan' class="flex w-full">
+        <div *ngIf='scanSummary.AdditionalInfo' class="flex w-full">
           <div class="text-sm font-bold text-purple-900 min-w-max">Last Scan:</div>
-          <div class="pl-2 text-sm text-purple-800 min-w-max">{{projectSummary.LastScan | date : "E
-            MMM dd,
-            yyyy. H:mm:ss z"
-            }}
+          <div class="pl-2 text-sm text-purple-800 min-w-max">{{scanSummary.AdditionalInfo.timeStamp}}
           </div>
         </div>
         <button class="focus:outline-none" (click)="runScan()">
@@ -134,7 +141,7 @@
     <div class="flex flex-col px-2 py-1 border border-b-0 bg-purple-50">
       <div (click)="expandReusedSecretsPanel = !expandReusedSecretsPanel"
         class="text-xs font-bold text-gray-500 uppercase cursor-pointer focus:outline-none">
-        Reused Secrets
+        Production Secrets Reused in Non-Production
       </div>
     </div>
     <div *ngIf="expandReusedSecretsPanel" class="px-10 py-6">
@@ -221,7 +228,8 @@
               <span class="pr-2 -ml-3 text-gray-500">Prod</span>
               <input type="checkbox" formControlName="test" title="Test Code" class="w-3 h-3">
               <span class="-ml-3 text-gray-500">Test</span>
-
+              <input type="checkbox" formControlName="unique" title="Unique Secrets Only" class="w-3 h-3">
+              <span class="-ml-3 text-gray-500">Unique</span>
             </div>
           </div>
         </div>
@@ -241,6 +249,10 @@
           truncate(pagedResult.Total / pageSizeValue) + 1 }}</div>
       </div>
     </div>
+
+    <hr class="col-span-2 mb-2">
+
+
     <!-- incident list -->
     <div tabControl (pageEnd)="pageListener($event)" [ngClass]="issueFocussed? 'col-span-1':'col-span-2'"
       class="flex-grow w-full overflow-y-auto shadow-lg max-h-96">
@@ -255,7 +267,6 @@
     <!-- Code Evidence -->
     <div *ngIf="issueFocussed" class="flex flex-col w-full h-auto ml-2 max-h-96">
 
-      <!-- <hr class="my-2"> -->
 
       <div>
         <div class="flex text-xs">
