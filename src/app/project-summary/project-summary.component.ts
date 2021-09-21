@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -15,6 +15,7 @@ import { Subscription } from 'rxjs';
 })
 export class ProjectSummaryComponent implements OnInit, OnDestroy {
 
+  @Output() finishedLoading = new EventEmitter<boolean>();
   @Input() projectSummary: ProjectSummary;
   faCog = faCog;
   faPlayCircle = faPlayCircle;
@@ -56,6 +57,7 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
 
 
   ngOnInit(): void {
+    this.checkMateService.setSpinnerState(false);//stop spinning the wheel in the project list view
     this.updateGraph();
   }
 

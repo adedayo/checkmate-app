@@ -1,4 +1,4 @@
-import { AfterViewChecked, Component, OnInit } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { ProjectSummary } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
@@ -15,16 +15,15 @@ export class ProjectsComponent implements OnInit {
   projNameSearch = '';
   faSearch = faSearch;
   showSpinner = true;
-  constructor(private checkmateService: CheckMateService) { }
-
-
-  ngOnInit(): void {
-    this.showSpinner = true;
+  constructor(private checkmateService: CheckMateService) {
     this.projectSummaries$ = this.checkmateService.getProjectSummaries();
-    this.projectSummaries$.pipe().subscribe(y => {
-      setTimeout(() => this.showSpinner = false, 3000);
-    });
   }
 
 
+  ngOnInit(): void {
+    this.checkmateService.setSpinnerState(true);
+    this.checkmateService.spinnerState.subscribe(spin => {
+      setTimeout(() => this.showSpinner = spin, 0);
+    });
+  }
 }

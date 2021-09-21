@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ElectronIPC } from './electron.service';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import {
   ProjectDescription, ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress,
   ScanResult, ScanStatus, ScanSummary, SecurityDiagnostic, Workspace
@@ -17,6 +17,7 @@ export class CheckMateService {
   apiPort = 17283;
   api = `http://localhost:${this.apiPort}/api`;
 
+  private showSpinner = new BehaviorSubject<boolean>(false);
 
   constructor(private http: HttpClient, private electron: ElectronIPC) {
     this.electron.getAPIConfig().then(port => {
@@ -33,6 +34,17 @@ export class CheckMateService {
   public getVersion(): Observable<string> {
     return this.http.get<string>(`${this.api}/version`);
   }
+
+  get spinnerState(): Observable<boolean> {
+    return this.showSpinner.asObservable();
+  }
+
+
+  public setSpinnerState(v: boolean) {
+    this.showSpinner.next(v);
+  }
+
+
 
   getDefaultPolicy(): Observable<string> {
     return this.http.get<string>(`${this.api}/secrets/defaultpolicy`);

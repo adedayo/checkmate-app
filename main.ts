@@ -34,7 +34,6 @@ console.log('Remote path (exe):', appPath, 'Env: ', process.env.NODE_ENV);
 const apiPort = 17283;
 const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`];
 
-//TODO: Add environment PATH variable to allow the location of asciidoctor-pdf
 const checkMateAPI = spawn(appPath, cmArgs, { stdio: [process.stdin, process.stdout, process.stderr] });
 
 

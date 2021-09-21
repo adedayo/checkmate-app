@@ -31,7 +31,20 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   currentIssue: SecurityDiagnostic;
   currentScanID: string;
   reselect = false;
-  showSpinner = false;
+
+  spinGeneral = false;
+  spinForProject = false;
+  spinForProjectSummary = false;
+  public set showSpinner(v: boolean) {
+    this.spinGeneral = v;
+  }
+
+
+
+  public get showSpinner(): boolean {
+    return this.spinGeneral || this.spinForProject || this.spinForProjectSummary;
+  }
+
 
   expandReusedSecretsPanel = false;
   expandRescanPanel = false;
@@ -218,8 +231,16 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   refreshProject(projectID: string) {
-    this.project$ = this.checkMateService.getProject(projectID).subscribe(proj => this.setProject(proj));
-    this.projectSummary$ = this.checkMateService.getProjectSummary(projectID).subscribe(x => this.setProjectSummary(x));
+    this.spinForProject = true;
+    this.spinForProjectSummary = true;
+    this.project$ = this.checkMateService.getProject(projectID).subscribe(proj => {
+      this.setProject(proj);
+      this.spinForProject = false;
+    });
+    this.projectSummary$ = this.checkMateService.getProjectSummary(projectID).subscribe(x => {
+      this.setProjectSummary(x);
+      this.spinForProjectSummary = false;
+    });
   }
 
   ngOnDestroy(): void {
@@ -443,9 +464,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       err => {
         this.showSpinner = false;
         const message = err.error as string;
+        console.log(message);
+
         if (message.includes('asciidoctor')) {
           this.snackBar.open('Install asciidoctor-pdf to get PDF reports and ensure that it is in your PATH environment variable.' +
-            ' Installation detail may be found at https://github.com/asciidoctor/asciidoctor-pdf/#getting-started', 'close');
+            ' Installation detail may be found at https://github.com/asciidoctor/asciidoctor-pdf/#getting-started' +
+            '\n' + message, 'close');
         }
       }
     );
@@ -547,6 +571,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   runScan() {
     this.scanning = true;
+    this.showSpinner = true;
     const options: ProjectScanOptions = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       ProjectID: this.projectSummary.ID,
@@ -558,7 +583,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
     this.runScan$ = this.checkMateService.runScan(options).subscribe(
       msg => {
-
+        this.showSpinner = false;
         if (this.isScanProgress(msg)) {
           const prog = msg;
           this.currentFile = prog.CurrentFile;

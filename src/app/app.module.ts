@@ -37,11 +37,11 @@ import { ProjectDetailComponent } from './project-detail/project-detail.componen
 import { MatCardModule } from '@angular/material/card';
 import { TabControlModule } from './directives';
 import { IncidentListItemComponent } from './incident-list-item/incident-list-item.component';
-import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ProjectNameFilterPipe } from './pipes/project-filter.pipe';
 import { IssueFilterPipe } from './pipes/issue-filter.pipe';
+import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
 
 
 @NgModule({

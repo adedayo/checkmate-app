@@ -1,7 +1,7 @@
 {
   "name": "checkmate-app",
   "description": "Security static analysis tool. Find secrets in source code and configuration files",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "main.js",
   "license": "BSD-3-Clause",
   "repository": {
@@ -14,8 +14,7 @@
     "ng": "ng",
     "local": "./local-build-package-checkmate.sh && npm run start",
     "start": "npm-run-all -p electron:serve ng:serve",
-    "build_gauge_lib": "ng build ngx-liquid-gauge --configuration production && cd dist/ngx-liquid-gauge && npm link && cd ../.. && npm link ngx-liquid-gauge",
-    "build": "npm run build_gauge_lib && npm run electron:serve-tsc && ng build --base-href ./",
+    "build": "npm run electron:serve-tsc && ng build --base-href ./",
     "build:dev": "npm run build -- -c dev",
     "build:prod": "NODE_ENV=production npm run build -- -c production",
     "ng:serve": "ng serve -c web -o",
@@ -24,7 +23,7 @@
     "electron:serve": "wait-on tcp:4200 && npm run electron:serve-tsc && npx electron . --serve",
     "electron:local": "npm run build:prod && npx electron .",
     "electron:build": "npm run download:checkmate && npm i && npm run build:prod && electron-builder build",
-    "electron:build:dev": "npm run download:checkmate && npm i && npm run build:dev && electron-builder build",
+    "electron:build:dev": "./local-build-package-checkmate.sh && npm i && npm run build:dev && electron-builder build",
     "release": "electron-builder",
     "test": "ng test --watch=false",
     "test:watch": "ng test",
@@ -55,6 +54,7 @@
     "codemirror": "5.61.1",
     "d3": "6.7.0",
     "ngx-electron": "2.2.0",
+    "ngx-liquid-gauge": "^2.0.9",
     "rxjs": "6.6.7",
     "tslib": "2.1.0",
     "zone.js": "0.11.4"
