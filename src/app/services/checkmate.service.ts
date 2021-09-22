@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { ElectronIPC } from './electron.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
-  ProjectDescription, ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress,
-  ScanResult, ScanStatus, ScanSummary, SecurityDiagnostic, Workspace
+  ProjectDescription, ProjectScanOptions, ProjectSummary,
+  ScanStatus, ScanSummary, Workspace
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
@@ -54,6 +54,9 @@ export class CheckMateService {
     return this.http.get<ProjectSummary[]>(`${this.api}/projectsummaries`);
   }
 
+  public downloadProjectScores(): Observable<string> {
+    return this.http.get<string>(`${this.api}/projectsummariesreport`);
+  }
 
   runScan(options: ProjectScanOptions): WebSocketSubject<ScanStatus> {
     const ws = webSocket<ScanStatus>(`ws://localhost:${this.apiPort}/api/secrets/scan`);

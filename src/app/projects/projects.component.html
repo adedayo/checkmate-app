@@ -1,6 +1,6 @@
 <div class="relative flex flex-col h-full overflow-auto">
 
-  <div class="absolute top-1/2 left-1/2" *ngIf="showSpinner">
+  <div class="absolute z-50 top-1/2 left-1/2" *ngIf="showSpinner">
     <mat-spinner></mat-spinner>
   </div>
 
@@ -17,6 +17,13 @@
         </span>
         <input placeholder="Filter Projects ..." [(ngModel)]="projNameSearch"
           class="relative flex-grow pl-8 mt-2 ml-2 text-sm font-light text-gray-600 placeholder-gray-400 bg-white border border-purple-400 rounded outline-none focus:outline-none" />
+        <div class="flex items-center pt-2 pl-4 text-sm cursor-pointer" (click)="downloadProjectsReport()">
+          <div class="inset-x-0 text-gray-500">Download Summary</div>
+
+          <mat-icon class="pt-0.5 text-blue-600">download
+          </mat-icon>
+
+        </div>
       </div>
     </div>
   </div>

@@ -459,6 +459,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       this.showSpinner = false;
       this.ipc.saveScanreport(x).then(val => {
         this.snackBar.open(`Saved report at ${val}`, 'close');
+        setTimeout(() => this.snackBar.dismiss(), 5000);
       });
     },
       err => {

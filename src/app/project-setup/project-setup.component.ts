@@ -33,6 +33,7 @@ export class ProjectSetupComponent implements OnInit {
     private checkMateService: CheckMateService,
     private router: Router) {
     this.isInElectron = electronService.isElectronApp;
+
   }
 
 
@@ -60,6 +61,20 @@ export class ProjectSetupComponent implements OnInit {
           configured: [false],
           policy: [pol],
         }),
+      });
+
+      this.checkMateService.getWorkspaceSummaries().subscribe(w => {
+        if (w.Details) {
+
+          this.existingWorkspaces = [];
+          for (const k of Object.keys(w.Details)) {
+            if (k === '') {
+              this.existingWorkspaces.push('Default');
+            } else {
+              this.existingWorkspaces.push(k);
+            }
+          }
+        }
       });
     });
 
