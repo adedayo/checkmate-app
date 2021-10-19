@@ -34,7 +34,7 @@ export class ProjectsComponent implements OnInit {
   downloadProjectsReport() {
 
     this.showSpinner = true;
-    this.checkmateService.downloadProjectScores().subscribe(x => {
+    this.checkmateService.downloadProjectScores('__cm_all').subscribe(x => {
       this.showSpinner = false;
       this.ipc.saveScanreport(x).then(val => {
         if (val === '') {

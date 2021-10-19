@@ -1,4 +1,9 @@
-export const AppConfig = {
+import { Environment } from './ienvironment';
+
+export const environment: Environment = {
   production: false,
-  environment: 'DEV'
+  apiHost: 'localhost',
+  apiPath: 'api',
+  apiPort: 17283,
+
 };

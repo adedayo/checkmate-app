@@ -1,5 +1,5 @@
 <div class="flex flex-col w-full">
-  <div class="absolute top-1/2 left-1/2" *ngIf="showSpinner">
+  <div class="absolute z-50 top-1/2 left-1/2" *ngIf="showSpinner">
     <mat-spinner></mat-spinner>
   </div>
 
@@ -9,7 +9,7 @@
     <div *ngIf="currentWorkspace" class="flex flex-grow">
 
       <!-- Timeline chart -->
-      <div class="w-full border-r-2 border-purple-200 h-80">
+      <div class="w-full border-r-2 border-purple-200 h-84">
         <div class="flex flex-col">
           <div class="flex items-center justify-between">
             <span class="pl-2 text-xs font-bold text-gray-500 uppercase">Workspace Trends</span>
@@ -37,10 +37,10 @@
       </div>
 
 
-      <div class="w-full h-80">
+      <div class="w-full h-84">
 
         <!-- Scan Summary  Charts-->
-        <div class="w-full h-80">
+        <div class="w-full h-84">
           <div class="flex flex-col">
             <span class="pt-3.5 pl-2 text-xs font-bold text-gray-500 uppercase">Overall Workspace Summary</span>
 
@@ -86,7 +86,14 @@
                   <div class="col-span-4 pl-2 text-blue-600">
                     {{scanSummary.AdditionalInfo.fileCount}}</div>
 
+                  <div class="col-span-8 text-gray-500">Download workspace summary</div>
+                  <div class="col-span-4 pl-2 text-blue-600 cursor-pointer" (click)="downloadProjectsReport()">
+                    <mat-icon class="pt-0.5 text-blue-600">download
+                    </mat-icon>
+                  </div>
+
                 </div>
+
                 <div *ngIf="scanSummary.AdditionalInfo" class="flex justify-around mt-2 text-xs w-max">
                   <div class="text-gray-500">Last Scan</div>
                   <div class="pl-2 text-blue-600">{{scanSummary.AdditionalInfo.timeStamp}}</div>

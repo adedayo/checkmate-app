@@ -8,6 +8,7 @@ import {
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
+import { EnvironmentsService } from './environments.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,15 +20,17 @@ export class CheckMateService {
 
   private showSpinner = new BehaviorSubject<boolean>(false);
 
-  constructor(private http: HttpClient, private electron: ElectronIPC) {
+  constructor(private http: HttpClient, private electron: ElectronIPC, private env: EnvironmentsService) {
+    console.log('Got environment', env.getEnvironment());
+
     this.electron.getAPIConfig().then(port => {
       this.apiPort = port;
-      this.api = `http://localhost:${port}/api`;
+      this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
     }).catch((err) => {
-      const port = 17283;
+      const port = env.getEnvironment().apiPort;
       this.apiPort = port;
       console.log(`error getting API port but attempting default port ${port}`, err);
-      this.api = `http://localhost:${port}/api`;
+      this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
     });
   }
 
@@ -54,8 +57,8 @@ export class CheckMateService {
     return this.http.get<ProjectSummary[]>(`${this.api}/projectsummaries`);
   }
 
-  public downloadProjectScores(): Observable<string> {
-    return this.http.get<string>(`${this.api}/projectsummariesreport`);
+  public downloadProjectScores(workspace: string): Observable<string> {
+    return this.http.get<string>(`${this.api}/projectsummariesreport/${workspace}`);
   }
 
   runScan(options: ProjectScanOptions): WebSocketSubject<ScanStatus> {

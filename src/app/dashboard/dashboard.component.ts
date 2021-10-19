@@ -3,6 +3,8 @@ import { ScanSummary, Workspace, WorkspaceDetail } from '../models/project-scan'
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ElectronIPC } from '../services/electron.service';
 
 
 @Component({
@@ -41,7 +43,7 @@ export class DashboardComponent implements OnInit {
 
   curve: any = curveBumpX;
   graphData = [];
-  timelineView: any[] = [570, 275];
+  timelineView: any[] = [650, 275];
   issueCounts: any[] = this.graph(0, 0, 0, 0, 0);
   view: any[] = [270, 290];
 
@@ -77,7 +79,8 @@ export class DashboardComponent implements OnInit {
     return ws;
   }
 
-  constructor(private chekmate: CheckMateService, private fb: FormBuilder) {
+  constructor(private checkmate: CheckMateService, private ipc: ElectronIPC,
+    private snackBar: MatSnackBar, private fb: FormBuilder) {
 
     this.workspaceForm = this.fb.group({
       wspace: [this.currentWorkspaceName],
@@ -90,7 +93,7 @@ export class DashboardComponent implements OnInit {
     this.wspace$ = this.workspaceForm.get('wspace').valueChanges.subscribe(x => {
       this.workspaceName = x;
     });
-    this.chekmate.getWorkspaceSummaries().subscribe(w => {
+    this.checkmate.getWorkspaceSummaries().subscribe(w => {
       if (w.Details) {
         this.noWorkspace = false;
 
@@ -203,5 +206,24 @@ export class DashboardComponent implements OnInit {
     ];
   }
 
+  downloadProjectsReport() {
+    this.showSpinner = true;
+    this.checkmate.downloadProjectScores(this.currentWorkspaceName).subscribe(x => {
+      this.showSpinner = false;
+      this.ipc.saveScanreport(x).then(val => {
+        if (val === '') {
+          this.snackBar.open(`Cancelled`, 'close');
+        } else {
+          this.snackBar.open(`Saved report at ${val}`, 'close');
+        }
+        setTimeout(() => this.snackBar.dismiss(), 5000);
+      });
+    },
+      err => {
+        this.showSpinner = false;
+        this.snackBar.open('Error generating project summary report ' + err.error, 'close');
+      }
+    );
+  }
 
 }
