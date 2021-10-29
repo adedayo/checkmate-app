@@ -41,3 +41,9 @@ export interface PolicyUpdateResult {
   Status: string;
   NewPolicy: string;
 }
+
+export interface CodeContext {
+  Location: string;
+  ProjectID: string;
+  ScanID: string;
+}

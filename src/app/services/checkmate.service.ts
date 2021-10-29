@@ -7,7 +7,7 @@ import {
   ScanStatus, ScanSummary, Workspace
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
+import { CodeContext, ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
 import { EnvironmentsService } from './environments.service';
 
 @Injectable({
@@ -21,8 +21,6 @@ export class CheckMateService {
   private showSpinner = new BehaviorSubject<boolean>(false);
 
   constructor(private http: HttpClient, private electron: ElectronIPC, private env: EnvironmentsService) {
-    console.log('Got environment', env.getEnvironment());
-
     this.electron.getAPIConfig().then(port => {
       this.apiPort = port;
       this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
@@ -91,6 +89,11 @@ export class CheckMateService {
   fixIssue(fix: ExcludeRequirement): Observable<PolicyUpdateResult> {
     return this.http.post<PolicyUpdateResult>(`${this.api}/project/issues/fix`, fix);
   }
+
+  loadFullCode(context: CodeContext): Observable<string> {
+    return this.http.post<string>(`${this.api}/project/issues/codecontext`, context);
+  }
+
 
   downloadReport(projID: string, scanID: string): Observable<string> {
     return this.http.get<string>(`${this.api}/scanreport/${projID}/${scanID}`);

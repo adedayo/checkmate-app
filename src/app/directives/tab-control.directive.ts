@@ -42,6 +42,10 @@ export class TabControlDirective implements AfterViewChecked {
       if (!!move) {
         move.focus();
       }
+    } else if (event.code === 'KeyC') {
+      this.pageEnd.emit(event.code);
+      const current = this.tabs.find((t) => t === event.target);
+      current.focus();
     }
   }
 

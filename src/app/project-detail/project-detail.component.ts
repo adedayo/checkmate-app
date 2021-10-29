@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ExcludeRequirement, IssueFilter, PagedResult, PaginatedSearch, Project } from '../models/project';
+import { CodeContext, ExcludeRequirement, IssueFilter, PagedResult, PaginatedSearch, Project } from '../models/project';
 import {
   ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress,
   ScanSummary, SecurityDiagnostic, ScanStatus
@@ -65,6 +65,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   };
 
   code = '';
+  firstLineNumber = 1;
   policy = '';
   issueFocussed = false;
   pagingForm: FormGroup;
@@ -402,7 +403,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   focussed(issue: SecurityDiagnostic) {
     if (issue) {
       this.focusIn();
-      this.currentIssue = issue;
+      this.currentIssue = issue
+      this.code = issue.source
+      this.firstLineNumber = issue.range.start.line + 1
     }
   }
 
@@ -423,6 +426,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     } else if (event === 'KeyF') {
       this.selectedFix = this.fixes[4].fix;
       this.fixIssue();
+    } else if (event === 'KeyC') {
+      this.loadFullCode();
+      this.issueFocussed = true;
     } else if (event === 'top') {
       if (this.pagedResult) {
         if (this.pagedResult.Page > 0) {
@@ -487,6 +493,21 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   focusOut() { }
+
+
+  loadFullCode() {
+    if (this.currentIssue) {
+      const context: CodeContext = {
+        Location: this.currentIssue.location,
+        ProjectID: this.project.ID,
+        ScanID: this.currentScanID,
+      };
+      this.checkMateService.loadFullCode(context).subscribe(x => {
+        this.code = x
+        this.firstLineNumber = 1;
+      });
+    }
+  }
 
   fixIssue() {
     if (this.currentIssue) {

@@ -309,7 +309,11 @@
         <span class="pl-2 text-purple-800">{{currentIssue.location}}</span>
       </div>
       <div class="flex items-center justify-between mt-2">
-        <div class="text-xs font-bold text-gray-500">Code Evidence</div>
+        <div class="flex items-center justify-between">
+          <div class="text-xs font-bold text-gray-500">Code Evidence</div>
+          <button mat-button class="text-purple-700 border-purple-700 focus:outline-none" (click)="loadFullCode()">Full
+            Code</button>
+        </div>
         <div class="flex">
           <div class="flex items-center pr-4 space-x-1">
             <div [formGroup]="fixForm" class="flex items-center py-2">
@@ -325,9 +329,9 @@
         </div>
       </div>
       <div class="w-auto mt-2 mb-6">
-        <ngx-codemirror [ngModel]="currentIssue.source" [options]="{
+        <ngx-codemirror [ngModel]="code" [options]="{
         lineNumbers: true,
-        firstLineNumber: currentIssue.range.start.line+1,
+        firstLineNumber: firstLineNumber,
         mode: 'yaml',
         readOnly: true
 
