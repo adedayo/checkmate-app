@@ -141,3 +141,9 @@ interface point {
   line: number;
   character: number;
 }
+
+export interface GitCapabilities {
+  GitServiceEnabled: boolean;
+  GitLabEnabled: boolean;
+  GitHubEnabled: boolean;
+}

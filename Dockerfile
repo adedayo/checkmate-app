@@ -1,4 +1,4 @@
-FROM node:12.18.4-alpine AS builder
+FROM node:14.17.0-alpine AS builder
 LABEL authors="Dr. Adedayo Adetoye"
 WORKDIR /app
 COPY package.json package-lock.json ./

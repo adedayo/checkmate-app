@@ -32,7 +32,8 @@ console.log('Remote path (exe):', appPath, 'Env: ', process.env.NODE_ENV);
 
 
 const apiPort = 17283;
-const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`];
+const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`,
+  `--serve-git-service`];
 
 const checkMateAPI = spawn(appPath, cmArgs, { stdio: [process.stdin, process.stdout, process.stderr] });
 

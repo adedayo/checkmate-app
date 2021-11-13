@@ -18,6 +18,7 @@ import { ElectronIPC } from '../services/electron.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 
+
 @Component({
   selector: 'app-project-detail',
   templateUrl: './project-detail.component.html',
@@ -403,9 +404,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   focussed(issue: SecurityDiagnostic) {
     if (issue) {
       this.focusIn();
-      this.currentIssue = issue
-      this.code = issue.source
-      this.firstLineNumber = issue.range.start.line + 1
+      this.currentIssue = issue;
+      this.code = issue.source;
+      this.firstLineNumber = issue.range.start.line + 1;
     }
   }
 
@@ -503,7 +504,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         ScanID: this.currentScanID,
       };
       this.checkMateService.loadFullCode(context).subscribe(x => {
-        this.code = x
+        this.code = x;
         this.firstLineNumber = 1;
       });
     }

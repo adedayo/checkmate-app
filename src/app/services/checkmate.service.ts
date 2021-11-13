@@ -4,7 +4,7 @@ import { ElectronIPC } from './electron.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import {
   ProjectDescription, ProjectScanOptions, ProjectSummary,
-  ScanStatus, ScanSummary, Workspace
+  ScanStatus, ScanSummary, Workspace, GitCapabilities
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { CodeContext, ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
@@ -20,6 +20,12 @@ export class CheckMateService {
 
   private showSpinner = new BehaviorSubject<boolean>(false);
 
+  private gitCaps = new BehaviorSubject<GitCapabilities>({
+    GitServiceEnabled: false,
+    GitHubEnabled: false,
+    GitLabEnabled: false,
+  });
+
   constructor(private http: HttpClient, private electron: ElectronIPC, private env: EnvironmentsService) {
     this.electron.getAPIConfig().then(port => {
       this.apiPort = port;
@@ -30,11 +36,17 @@ export class CheckMateService {
       console.log(`error getting API port but attempting default port ${port}`, err);
       this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
     });
+    this.http.get<GitCapabilities>(`${this.api}/git/capabilities`).subscribe(cap => this.gitCaps.next(cap))
   }
 
   public getVersion(): Observable<string> {
     return this.http.get<string>(`${this.api}/version`);
   }
+
+  get gitCapabilities(): Observable<GitCapabilities> {
+    return this.gitCaps.asObservable();
+  }
+
 
   get spinnerState(): Observable<boolean> {
     return this.showSpinner.asObservable();

@@ -42,6 +42,9 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ProjectNameFilterPipe } from './pipes/project-filter.pipe';
 import { IssueFilterPipe } from './pipes/issue-filter.pipe';
 import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
+import { DiscoverComponent } from './discover/discover.component';
+import { GithubReposComponent } from './github-repos/github-repos.component';
+import { GitlabReposComponent } from './gitlab-repos/gitlab-repos.component';
 
 
 @NgModule({
@@ -60,7 +63,10 @@ import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
     ProjectDetailComponent,
     IncidentListItemComponent,
     ProjectNameFilterPipe,
-    IssueFilterPipe
+    IssueFilterPipe,
+    DiscoverComponent,
+    GithubReposComponent,
+    GitlabReposComponent,
   ],
   imports: [
     BrowserModule,

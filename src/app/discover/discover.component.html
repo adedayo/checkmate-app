@@ -1,0 +1,29 @@
+<!-- component -->
+<div class="px-2 mx-auto mt-1 rounded">
+  <!-- Tabs -->
+  <ul class="flex items-center w-full pt-2 space-x-2">
+    <li *ngIf="gitHubEnabled" (click)="clickTab('github')" ngClass="{{gitHubClass}}">
+      <div class="space-x-2">
+        <fa-icon class="text-purple-800" title="Scan" size="lg" [icon]="faGithub">
+        </fa-icon> <span>GitHub</span>
+      </div>
+    </li>
+    <li *ngIf="gitLabEnabled" (click)="clickTab('gitlab')" ngClass="{{gitLabClass}}">
+      <div class="space-x-2">
+        <fa-icon class="text-purple-800" title="Scan" size="lg" [icon]="faGitlab">
+        </fa-icon> <span>GitLab</span>
+      </div>
+    </li>
+
+  </ul>
+
+  <!-- Tab Contents -->
+  <div class="py-2">
+    <div ngClass="{{ghContentClass}}">
+      <app-github-repos></app-github-repos>
+    </div>
+    <div ngClass="{{glContentClass}}">
+      <app-gitlab-repos></app-gitlab-repos>
+    </div>
+  </div>
+</div>
