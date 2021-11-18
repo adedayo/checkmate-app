@@ -19,13 +19,17 @@ export class GitlabProjectListitemComponent implements OnInit {
   showChildren = false;
   subList = 3;
   indeterminate = true;
-
+  groupSelected = false;
+  selectedProjects: boolean[] = [];
   form: FormGroup;
 
 
   constructor(private fb: FormBuilder) { }
 
   ngOnInit(): void {
+    for (const i of this.groupedProjects.Projects) {
+      this.selectedProjects.push(false);
+    }
     this.form = this.fb.group({
       group: [false],
       selectedProjects: this.fb.array([]),
@@ -39,6 +43,31 @@ export class GitlabProjectListitemComponent implements OnInit {
 
   isGroup(): boolean {
     return this.groupedProjects.Name !== '';
+  }
+
+  selectProject(index: number) {
+
+    this.selectedProjects[index] = !this.selectedProjects[index];
+    this.updateState();
+  }
+
+  updateState() {
+    let all = true;
+    let some = false;
+    this.selectedProjects.forEach(v => {
+      all &&= v;
+      some ||= v;
+    });
+
+    if (all) {
+      this.indeterminate = false;
+      this.groupSelected = true;
+    } else if (some) {
+      this.indeterminate = true;
+      this.groupSelected = true;
+    } else if (!all && !some) {
+      this.groupSelected = false;
+    }
   }
 
   get normaliseGroupedProjects(): GitLabGroupedProjects {
@@ -55,7 +84,21 @@ export class GitlabProjectListitemComponent implements OnInit {
     }
   }
 
+  selectGroup() {
+    this.groupSelected = !this.groupSelected;
+    if (this.groupSelected) {
+      for (let i = 0; i < this.selectedProjects.length; i++) {
+        this.selectedProjects[i] = true;
 
+      }
+    } else {
+      for (let i = 0; i < this.selectedProjects.length; i++) {
+        this.selectedProjects[i] = false;
+
+      }
+    }
+    this.updateState();
+  }
 
   clickCheckBox(event: MouseEvent) {
 

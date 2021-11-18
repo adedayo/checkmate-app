@@ -194,7 +194,7 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
   }
 
   loadProject() {
-    console.log('called load project');
+    // console.log('called load project');
     this.router.navigate(['project-detail']);
   }
 }

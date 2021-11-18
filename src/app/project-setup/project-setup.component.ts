@@ -156,7 +156,7 @@ export class ProjectSetupComponent implements OnInit {
       ScanPolicy: this.getScanPolicy(),
     };
 
-    console.log(projDesc);
+    // console.log(projDesc);
     this.checkMateService.createProject(projDesc).subscribe(summary => {
       this.router.navigate(['projects']);
     });

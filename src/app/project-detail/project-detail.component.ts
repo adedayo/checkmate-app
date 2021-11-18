@@ -473,7 +473,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       err => {
         this.showSpinner = false;
         const message = err.error as string;
-        console.log(message);
+        // console.log(message);
 
         if (message.includes('asciidoctor')) {
           this.snackBar.open('Install asciidoctor-pdf to get PDF reports and ensure that it is in your PATH environment variable.' +

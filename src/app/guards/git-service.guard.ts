@@ -12,12 +12,12 @@ export class GitServiceGuard implements CanActivate {
 
   constructor(private checkMate: CheckMateService) {
     this.checkMate.gitCapabilities.subscribe(cap => {
-      console.log(cap);
-      this.gitServiceEnabled = cap.GitServiceEnabled
-    })
+      this.gitServiceEnabled = cap.GitServiceEnabled;
+    });
   }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+  canActivate(_route: ActivatedRouteSnapshot, _state: RouterStateSnapshot): boolean |
+    UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
     return this.gitServiceEnabled;
   }
 
