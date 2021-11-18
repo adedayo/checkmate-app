@@ -45,6 +45,9 @@ import { NgxLiquidGaugeModule } from 'ngx-liquid-gauge';
 import { DiscoverComponent } from './discover/discover.component';
 import { GithubReposComponent } from './github-repos/github-repos.component';
 import { GitlabReposComponent } from './gitlab-repos/gitlab-repos.component';
+import { GitlabOrderPipe } from './pipes/gitlab-order.pipe';
+import { GitlabFilterPipe } from './pipes/gitlab-filter.pipe';
+import { GitlabProjectListitemComponent } from './gitlab-project-listitem/gitlab-project-listitem.component';
 
 
 @NgModule({
@@ -67,6 +70,9 @@ import { GitlabReposComponent } from './gitlab-repos/gitlab-repos.component';
     DiscoverComponent,
     GithubReposComponent,
     GitlabReposComponent,
+    GitlabOrderPipe,
+    GitlabFilterPipe,
+    GitlabProjectListitemComponent,
   ],
   imports: [
     BrowserModule,

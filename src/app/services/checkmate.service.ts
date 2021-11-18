@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ElectronIPC } from './electron.service';
@@ -9,6 +10,7 @@ import {
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { CodeContext, ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
 import { EnvironmentsService } from './environments.service';
+import { GitLabProject } from '../models/gitlab-project';
 
 @Injectable({
   providedIn: 'root'
@@ -36,11 +38,15 @@ export class CheckMateService {
       console.log(`error getting API port but attempting default port ${port}`, err);
       this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
     });
-    this.http.get<GitCapabilities>(`${this.api}/git/capabilities`).subscribe(cap => this.gitCaps.next(cap))
+    this.http.get<GitCapabilities>(`${this.api}/git/capabilities`).subscribe(cap => this.gitCaps.next(cap));
   }
 
   public getVersion(): Observable<string> {
     return this.http.get<string>(`${this.api}/version`);
+  }
+
+  public gitLabDiscover(): Observable<GitLabProject[]> {
+    return this.http.get<GitLabProject[]>(`${this.api}/gitlab/discover`);
   }
 
   get gitCapabilities(): Observable<GitCapabilities> {

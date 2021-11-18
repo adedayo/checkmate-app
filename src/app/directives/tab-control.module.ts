@@ -4,10 +4,10 @@ import { CommonModule } from '@angular/common';
 import { TabControlDirective } from './tab-control.directive';
 
 @NgModule({
-   imports: [
-      CommonModule
-   ],
-   declarations: [TabControlDirective],
-   exports: [TabControlDirective]
+  imports: [
+    CommonModule
+  ],
+  declarations: [TabControlDirective],
+  exports: [TabControlDirective]
 })
 export class TabControlModule { }
