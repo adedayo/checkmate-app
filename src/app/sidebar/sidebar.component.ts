@@ -31,7 +31,7 @@ export class SidebarComponent implements OnInit {
 
     this.checkMate.gitCapabilities.subscribe(cap => {
       this.gitServiceEnabled = cap.GitServiceEnabled;
-    })
+    });
   }
 
   toggleSideNav() {

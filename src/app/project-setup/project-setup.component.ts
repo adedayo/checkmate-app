@@ -33,7 +33,6 @@ export class ProjectSetupComponent implements OnInit {
     private checkMateService: CheckMateService,
     private router: Router) {
     this.isInElectron = electronService.isElectronApp;
-
   }
 
 
@@ -146,7 +145,6 @@ export class ProjectSetupComponent implements OnInit {
   }
 
   createProject() {
-
     const projDesc: ProjectDescription = {
       Name: this.projectForm.get('projectName').value as string,
       Workspace: this.newWorkspace ?
@@ -184,8 +182,6 @@ export class ProjectSetupComponent implements OnInit {
       Config: options,
       Policy: this.getExcludePolicy(),
     };
-
-
     return policy;
   }
 

@@ -1,0 +1,58 @@
+<div class="flex flex-col">
+
+  <div class="flex flex-col text-blue-800">
+    <span class="pt-2 text-xs font-bold text-purple-800 bg-purple-50"><span class="pr-2 uppercase">Setup Gitlab
+        Integration</span>
+      <span (click)="showInstruction=!showInstruction" class="cursor-pointer">(click here for information)</span>
+    </span>
+    <div *ngIf="showInstruction" class="flex flex-col p-2 bg-blue-50">
+      <div class="flex items-center space-x-2">
+        <fa-icon class="ml-0.5 text-base font-normal text-center text-blue-400" title="Info" [icon]="faInfo">
+        </fa-icon>
+        <div class="w-full text-sm">
+          This integration requires a personal access token that CheckMate uses to track your GitLab codebase.
+        </div>
+      </div>
+      <div class="flex flex-col pt-2 mx-6 text-sm">
+        <p>
+          The steps reqired to create a Personal Access Token are as follows:
+
+        </p>
+        <ol>
+          <li>1. Go to <span class="font-bold">User Settings</span> on GitLab</li>
+          <li>2. Select <span class="font-bold">Access Tokens</span></li>
+          <li>3. Give a name to your <span class="font-bold">Personal Access Token</span> (e.g. <span
+              class="italic">checkmate</span>)</li>
+          <li>4. Generate a <span class="font-bold">Personal Access Token</span> with <span
+              class="font-bold">read_api</span> scope</li>
+        </ol>
+      </div>
+    </div>
+    <div class="flex items-center w-full">
+      <form [formGroup]="connectForm" class="flex flex-col items-center justify-between w-full p-2 space-x-2 text-sm">
+        <div class="relative flex w-full focus:outline-none">
+
+          <mat-form-field class="w-1/2 text-blue-800 focus:outline-none">
+            <mat-label>GitLab Instance URL</mat-label>
+            <input matInput placeholder="Example: https://gitlab.mydomain.com" formControlName="instanceName" required>
+          </mat-form-field>
+        </div>
+        <div class="flex items-center w-full">
+          <mat-form-field class="w-1/2 text-blue-800 focus:outline-none">
+            <mat-label>Personal Access Token (with read_api scope)</mat-label>
+            <input matInput placeholder="Example: HmQHapi68EUbA_yeAbBa" formControlName="accessToken" required>
+          </mat-form-field>
+
+          <div class="pl-10"><button mat-button (click)="createIntegration()"
+              class="w-full py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">Monitor
+              GitLab Instance</button>
+          </div>
+
+        </div>
+      </form>
+
+
+    </div>
+
+  </div>
+</div>

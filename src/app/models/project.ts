@@ -47,3 +47,8 @@ export interface CodeContext {
   ProjectID: string;
   ScanID: string;
 }
+
+export interface ProjectSubForm {
+  GroupID: string;
+  Projects: string[];
+}

@@ -48,6 +48,8 @@ import { GitlabReposComponent } from './gitlab-repos/gitlab-repos.component';
 import { GitlabOrderPipe } from './pipes/gitlab-order.pipe';
 import { GitlabFilterPipe } from './pipes/gitlab-filter.pipe';
 import { GitlabProjectListitemComponent } from './gitlab-project-listitem/gitlab-project-listitem.component';
+import { GitlabSettingsComponent } from './gitlab-settings/gitlab-settings.component';
+import { GithubSettingsComponent } from './github-settings/github-settings.component';
 
 
 @NgModule({
@@ -73,6 +75,8 @@ import { GitlabProjectListitemComponent } from './gitlab-project-listitem/gitlab
     GitlabOrderPipe,
     GitlabFilterPipe,
     GitlabProjectListitemComponent,
+    GitlabSettingsComponent,
+    GithubSettingsComponent,
   ],
   imports: [
     BrowserModule,

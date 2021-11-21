@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
-import { combineLatest } from 'rxjs';
 import { GitLabGroupedProjects } from '../models/gitlab-project';
+import { ProjectFormsService } from '../services/project-forms.service';
 
 @Component({
   selector: 'app-gitlab-project-listitem',
@@ -14,24 +14,22 @@ export class GitlabProjectListitemComponent implements OnInit {
 
 
   @Input() groupedProjects: GitLabGroupedProjects;
-
-  isList = true;
+  @Input() fb: FormBuilder;
   showChildren = false;
-  subList = 3;
   indeterminate = true;
   groupSelected = false;
   selectedProjects: boolean[] = [];
   form: FormGroup;
 
 
-  constructor(private fb: FormBuilder) { }
+  constructor(private formService: ProjectFormsService) { }
 
   ngOnInit(): void {
     for (const i of this.groupedProjects.Projects) {
       this.selectedProjects.push(false);
     }
     this.form = this.fb.group({
-      group: [false],
+      group: [this.normaliseGroupedProjects.ID],
       selectedProjects: this.fb.array([]),
     }
     );
@@ -46,7 +44,6 @@ export class GitlabProjectListitemComponent implements OnInit {
   }
 
   selectProject(index: number) {
-
     this.selectedProjects[index] = !this.selectedProjects[index];
     this.updateState();
   }
@@ -68,10 +65,22 @@ export class GitlabProjectListitemComponent implements OnInit {
     } else if (!all && !some) {
       this.groupSelected = false;
     }
+
+    const outProj: string[] = [];
+    for (let i = 0; i < this.selectedProjects.length; i++) {
+      if (this.selectedProjects[i]) {
+        const proj = this.groupedProjects.Projects[i];
+        outProj.push(proj.HttpUrlToRepo);
+      }
+    }
+
+    this.formService.updateProjectForm({
+      GroupID: this.normaliseGroupedProjects.ID,
+      Projects: outProj,
+    });
   }
 
   get normaliseGroupedProjects(): GitLabGroupedProjects {
-
     if (this.isGroup()) {
       return this.groupedProjects;
     } else {
@@ -89,27 +98,13 @@ export class GitlabProjectListitemComponent implements OnInit {
     if (this.groupSelected) {
       for (let i = 0; i < this.selectedProjects.length; i++) {
         this.selectedProjects[i] = true;
-
       }
     } else {
       for (let i = 0; i < this.selectedProjects.length; i++) {
         this.selectedProjects[i] = false;
-
       }
     }
     this.updateState();
   }
 
-  clickCheckBox(event: MouseEvent) {
-
-    this.showChildren = !this.showChildren;
-    // console.log(event);
-    // const cbox = event.target as HTMLInputElement;
-    // cbox.checked = true;
-    // cbox.indeterminate = true;
-    // console.log(cbox);
-
-
-
-  }
 }

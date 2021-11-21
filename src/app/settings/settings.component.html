@@ -1,1 +1,52 @@
-<p>Welcome to settings</p>
+<div class="flex h-full">
+  <div class="z-0 flex h-full min-h-full space-y-6 text-gray-600 bg-gray-200 w-44">
+
+    <nav class="flex flex-col w-full text-lg">
+      <div class="flex-grow">
+        <a routerLinkActive="active-list-item" routerLink="." title="Posture"
+          class="flex my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white focus:text-white transition duration-200">
+          <mat-icon class="items-start self-center icon">link</mat-icon>
+          <div class="pl-2">Integrations</div>
+        </a>
+
+        <!-- <a routerLinkActive="active-list-item" routerLink="." title="Posture"
+          class="flex my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white focus:text-white transition duration-200">
+          <mat-icon class="items-start self-center icon">link</mat-icon>
+          <div class="pl-2">Connect</div>
+        </a> -->
+
+      </div>
+    </nav>
+  </div>
+
+  <!-- Settings Body -->
+  <div class="flex flex-col w-full">
+    <div class="px-2 mt-1 rounded">
+      <!-- Tabs -->
+      <ul class="flex items-center w-full pt-2 space-x-4">
+        <li (click)="clickTab('github')" ngClass="{{gitHubClass}}">
+          <div class="space-x-2">
+            <fa-icon class="text-purple-800" title="Scan" size="lg" [icon]="faGithub">
+            </fa-icon> <span>GitHub</span>
+          </div>
+        </li>
+        <li (click)="clickTab('gitlab')" ngClass="{{gitLabClass}}">
+          <div class="space-x-2">
+            <fa-icon class="text-purple-800" title="Scan" size="lg" [icon]="faGitlab">
+            </fa-icon> <span>GitLab</span>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Tab Contents -->
+      <div class="pt-2">
+        <div ngClass="{{ghContentClass}}">
+          <app-github-settings></app-github-settings>
+        </div>
+        <div ngClass="{{glContentClass}}">
+          <app-gitlab-settings></app-gitlab-settings>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

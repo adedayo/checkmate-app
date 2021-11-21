@@ -84,6 +84,7 @@ export interface SecretLocation {
 export interface Repository {
   Location: string;
   LocationType: string;
+  GitServiceID?: string;
 }
 
 export interface ProjectScanOptions {
