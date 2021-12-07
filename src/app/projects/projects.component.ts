@@ -20,15 +20,18 @@ export class ProjectsComponent implements OnInit {
 
   constructor(private checkmateService: CheckMateService, private ipc: ElectronIPC,
     private snackBar: MatSnackBar) {
-    this.checkmateService.setSpinnerState(true);
-    this.projectSummaries$ = this.checkmateService.getProjectSummaries();
+
   }
 
 
   ngOnInit(): void {
+    this.checkmateService.setSpinnerState(true);
+
     this.checkmateService.spinnerState.subscribe(spin => {
       setTimeout(() => this.showSpinner = spin, 0);
     });
+    this.projectSummaries$ = this.checkmateService.getProjectSummaries();
+    this.projectSummaries$.subscribe(x => this.checkmateService.setSpinnerState(false));
   }
 
   downloadProjectsReport() {

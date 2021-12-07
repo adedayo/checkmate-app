@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface GitLabProject {
+  InstanceID: string; //Gitlab instance ID
   Name: string;
   ID: string;
   NameWithNamespace: string;
@@ -75,4 +76,21 @@ export interface GitLabGroupedProjects {
   ID: string;
   Name: string;
   Projects: GitLabProject[];
+}
+
+
+export interface GitLabProjectSearchResult {
+  InstanceID: string;
+  Projects: GitLabProject[];
+  EndCursor: string;
+  HasNextPage: boolean;
+  RemainingProjectsCount: number;
+}
+
+
+export interface GitLabPagedSearch {
+  ServiceID: string;
+  PageSize: number;
+  First: number;
+  NextCursor: string;
 }

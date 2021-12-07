@@ -50,5 +50,10 @@ export interface CodeContext {
 
 export interface ProjectSubForm {
   GroupID: string;
-  Projects: string[];
+  Projects: FormProject[];
+}
+
+export interface FormProject {
+  Location: string;
+  ServiceID: string;
 }

@@ -1,5 +1,5 @@
 <!-- component -->
-<div class="px-2 mx-auto mt-1 rounded">
+<div *ngIf="gitServiceEnabled; else noGitServiceConfigured" class="px-2 mx-auto mt-1 rounded">
   <!-- Tabs -->
   <ul class="flex items-center w-full pt-2 space-x-2">
     <li *ngIf="gitHubEnabled" (click)="clickTab('github')" ngClass="{{gitHubClass}}">
@@ -27,3 +27,9 @@
     </div>
   </div>
 </div>
+
+<ng-template #noGitServiceConfigured>
+  <div class="text-red-600">
+    No Git service integration is yet to be configured. Go to Settings->Integrations to set the integrations up.
+  </div>
+</ng-template>

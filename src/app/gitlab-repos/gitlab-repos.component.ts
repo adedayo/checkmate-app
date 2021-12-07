@@ -3,7 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import { GitLabProject } from '../models/gitlab-project';
+import { GitService } from '../models/git';
+import { GitLabPagedSearch, GitLabProject, GitLabProjectSearchResult } from '../models/gitlab-project';
 import { ProjectSubForm } from '../models/project';
 import { ProjectDescription, Repository, ScanPolicy, SecretSearchOptions } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
@@ -20,8 +21,49 @@ export class GitlabReposComponent implements OnInit {
   projectSearch = '';
   existingWorkspaces: string[] = ['Default'];
   projectForm: FormGroup;
+  serviceForm: FormGroup;
   showSpinner = false;
-  gitlabProjects: GitLabProject[];
+  currentInstance = '';
+  instanceName = '';
+  selectedService: GitService;
+  gitLabServices: GitService[] = [];
+  nextCursors: Map<string, string> = new Map();//pagination per gitlab instance
+  // gitlabProjects: Map<string, GitLabProjectSearchResult> = new Map();
+  instance$: any;
+
+  get gitlabProjects(): Map<string, GitLabProjectSearchResult> {
+    return this.checkMateService.gitLabProjects;
+  }
+
+  get projects(): GitLabProject[] {
+    const projs = this.gitlabProjects.get(this.currentInstance);
+    return projs ? projs.Projects : [];
+  }
+
+  get remainingProjCount(): number {
+    if (this.hasMoreData(this.currentInstance)) {
+
+      const projs = this.gitlabProjects.get(this.currentInstance);
+      return projs ? projs.RemainingProjectsCount : 0;
+    }
+    return 0;
+  }
+
+  get currentInstanceName() {
+    return this.getInstanceName(this.currentInstance);
+  }
+
+  set currentInstanceName(name: string) {
+    this.instanceName = name;
+  }
+
+  get nextCursor(): string {
+    return this.nextCursors.get(this.currentInstance) || '';
+  }
+
+
+
+
   selectedProjects: Map<string, ProjectSubForm>;
 
   constructor(private fb: FormBuilder,
@@ -33,6 +75,9 @@ export class GitlabReposComponent implements OnInit {
   ngOnInit(): void {
 
     this.showSpinner = true;
+    this.serviceForm = this.fb.group({
+      selectedService: [''],
+    });
 
     this.formService.projectsDetailState.subscribe(proj => {
       this.selectedProjects = proj;
@@ -89,12 +134,119 @@ export class GitlabReposComponent implements OnInit {
       // }),
     });
 
-    this.checkMateService.gitLabDiscover().subscribe(data => {
-      this.gitlabProjects = data;
-      this.showSpinner = false;
-    }
+    this.instance$ = this.serviceForm.get('selectedService').valueChanges.subscribe(name => {
+      if (this.currentInstanceName === name) {
+        return;
+      }
+      const sid = this.gitLabServices.find(y => y.Name === name);
+      if (sid) {
+        this.currentInstance = sid.ID;
+        if (!this.gitlabProjects.has(this.currentInstance)) {
+          this.getMoreProjects();
+        }
+      }
+
+    });
+
+    this.checkMateService.getGitLabIntegrations().subscribe(
+      x => {
+        this.gitLabServices = x;
+        if (x.length > 0) {
+          this.currentInstance = x[0].ID;
+          this.currentInstanceName = x[0].Name;
+          this.serviceForm.patchValue({ selectedService: this.currentInstanceName });
+
+
+          if (!this.gitlabProjects.has(this.currentInstance)) {
+            this.getMoreProjects();
+            // const page: GitLabPagedSearch = {
+            //   ServiceID: this.currentInstance,
+            //   NextCursor: '',
+            //   First: 7,
+            //   PageSize: 100
+            // };
+
+            // this.checkMateService.gitLabDiscover(page).subscribe(data => {
+
+            //   if (this.gitlabProjects.has(data.InstanceID)) {
+            //     this.gitlabProjects.set(data.InstanceID, this.getSearchResult(data));
+            //   } else {
+            //     this.gitlabProjects.set(data.InstanceID, data);
+            //   }
+            //   this.showSpinner = false;
+            //   this.setNextCursor(data.InstanceID, data.EndCursor);
+            // });
+          } else {
+            this.showSpinner = false;
+          }
+
+        }
+      }
     );
+
   }
+
+  getSearchResult(data: GitLabProjectSearchResult): GitLabProjectSearchResult {
+    const projs = this.gitlabProjects.get(data.InstanceID);
+    projs.Projects.push(...data.Projects);
+    projs.EndCursor = data.EndCursor;
+    projs.HasNextPage = data.HasNextPage;
+    projs.InstanceID = data.InstanceID;
+    projs.RemainingProjectsCount = data.RemainingProjectsCount;
+    return projs;
+  }
+
+  showGetMoreButton(): boolean {
+    return this.hasMoreData(this.currentInstance);
+  }
+
+  hasMoreData(serviceID: string): boolean {
+    const s = this.gitlabProjects.get(serviceID);
+    if (s === undefined) {
+      return false;
+    }
+    return s.HasNextPage;
+  }
+
+  getMoreProjects() {
+
+    const nextC = this.nextCursors.get(this.currentInstance) || '';
+
+    if (nextC === '' || this.hasMoreData(this.currentInstance)) {
+      const page: GitLabPagedSearch = {
+        ServiceID: this.currentInstance,
+        NextCursor: nextC,
+        First: 7,
+        PageSize: 100
+      };
+      this.showSpinner = true;
+      this.checkMateService.gitLabDiscover(page).subscribe(data => {
+
+        if (this.gitlabProjects.has(data.InstanceID)) {
+          this.gitlabProjects.set(data.InstanceID, this.getSearchResult(data));
+        } else {
+          this.gitlabProjects.set(data.InstanceID, data);
+        }
+        this.showSpinner = false;
+        this.setNextCursor(data.InstanceID, data.EndCursor);
+      });
+
+
+    }
+  }
+
+  getInstanceName(id: string): string {
+    const y = this.gitLabServices.find(x => x.ID === id);
+    if (y) {
+      return y.Name;
+    }
+    return '';
+  }
+
+  setNextCursor(instance: string, cursor: string) {
+    this.nextCursors.set(instance, cursor);
+  }
+
 
   get scanOptions(): FormGroup {
     return this.projectForm.controls.scanOptions as FormGroup;
@@ -127,10 +279,9 @@ export class GitlabReposComponent implements OnInit {
       ScanPolicy: this.getScanPolicy(),
     };
 
-    console.log(projDesc);
-    // this.checkMateService.createProject(projDesc).subscribe(summary => {
-    //   this.router.navigate(['project-detail', summary.ID]);
-    // });
+    this.checkMateService.createProject(projDesc).subscribe(summary => {
+      this.router.navigate(['project-detail', summary.ID]);
+    });
   }
 
   getRepos(): Repository[] {
@@ -139,8 +290,8 @@ export class GitlabReposComponent implements OnInit {
       proj.Projects.forEach(p => {
         repos.push({
           LocationType: 'git',
-          Location: p,
-          GitServiceID: '',
+          Location: p.Location,
+          GitServiceID: p.ServiceID,
         });
       });
     });

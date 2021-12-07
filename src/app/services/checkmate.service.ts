@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ElectronIPC } from './electron.service';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import {
   ProjectDescription, ProjectScanOptions, ProjectSummary,
   ScanStatus, ScanSummary, Workspace, GitCapabilities
@@ -10,7 +11,8 @@ import {
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { CodeContext, ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
 import { EnvironmentsService } from './environments.service';
-import { GitLabProject } from '../models/gitlab-project';
+import { GitLabPagedSearch, GitLabProjectSearchResult } from '../models/gitlab-project';
+import { GitService } from '../models/git';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +29,9 @@ export class CheckMateService {
     GitHubEnabled: false,
     GitLabEnabled: false,
   });
+
+
+  private gitlabProjects$: Map<string, GitLabProjectSearchResult> = new Map();
 
   constructor(private http: HttpClient, private electron: ElectronIPC, private env: EnvironmentsService) {
     this.electron.getAPIConfig().then(port => {
@@ -45,8 +50,31 @@ export class CheckMateService {
     return this.http.get<string>(`${this.api}/version`);
   }
 
-  public gitLabDiscover(): Observable<GitLabProject[]> {
-    return this.http.get<GitLabProject[]>(`${this.api}/gitlab/discover`);
+  public createGitLabIntegration(integration: GitService): Observable<GitService[]> {
+    return this.http.post<GitService[]>(`${this.api}/gitlab/integrate`, integration);
+  }
+
+  public deleteGitLabIntegration(id: string): Observable<GitService[]> {
+    return this.http.post<GitService[]>(`${this.api}/gitlab/deleteintegration`, { ID: id });
+  }
+
+  public getGitLabIntegrations(): Observable<GitService[]> {
+    return this.http.get<GitService[]>(`${this.api}/gitlab/integrations`);
+  }
+
+  public gitLabDiscover(page: GitLabPagedSearch): Observable<GitLabProjectSearchResult> {
+    return this.http.post<GitLabProjectSearchResult>(`${this.api}/gitlab/discover`, page).pipe(
+      map(y => {
+        if (y.Projects) {
+          y.Projects.forEach(z => z.InstanceID = y.InstanceID);
+        }
+        return y;
+      }),
+    );
+  }
+
+  get gitLabProjects(): Map<string, GitLabProjectSearchResult> {
+    return this.gitlabProjects$;
   }
 
   get gitCapabilities(): Observable<GitCapabilities> {

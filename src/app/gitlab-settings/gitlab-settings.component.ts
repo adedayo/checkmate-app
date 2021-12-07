@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { faInfo, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import { GitService } from '../models/git';
+import { CheckMateService } from '../services/checkmate.service';
 
 @Component({
   selector: 'app-gitlab-settings',
@@ -10,19 +13,40 @@ import { faInfo, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 export class GitlabSettingsComponent implements OnInit {
 
   showInstruction = false;
-  faInfo = faInfoCircle;
+  faTrash = faTrashAlt;
   connectForm: FormGroup;
-  constructor(private fb: FormBuilder) { }
+  gitLabConnections: GitService[];
+  constructor(private fb: FormBuilder, private checkmateService: CheckMateService) { }
 
   ngOnInit(): void {
     this.connectForm = this.fb.group({
-      instanceName: ['', Validators.required],
+      instanceURL: ['', Validators.required],
       accessToken: ['', Validators.required],
+      apiKeyName: ['', Validators.required],
+    });
+    this.checkmateService.getGitLabIntegrations().subscribe(data => this.gitLabConnections = data);
+  }
+
+  createIntegration() {
+    const endpoint = this.connectForm.get('instanceURL').value as string;
+    const apiKey = this.connectForm.get('accessToken').value as string;
+    const apiKeyName = this.connectForm.get('apiKeyName').value as string;
+
+    const integration: GitService = {
+      API_Key: apiKey,
+      InstanceURL: endpoint,
+      Name: apiKeyName,
+    };
+
+    this.checkmateService.createGitLabIntegration(integration).subscribe(data => {
+      this.gitLabConnections = data;
     });
 
   }
 
-  createIntegration() {
-
+  deleteBinding(id: string) {
+    this.checkmateService.deleteGitLabIntegration(id).subscribe(data => {
+      this.gitLabConnections = data;
+    });
   }
 }

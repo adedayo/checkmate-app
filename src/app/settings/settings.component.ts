@@ -21,8 +21,9 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
 
-    this.clickTab('gitlab');
     this.clickTab('github');
+    this.clickTab('gitlab');
+
 
   }
 

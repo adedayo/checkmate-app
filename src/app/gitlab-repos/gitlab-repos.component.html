@@ -12,7 +12,7 @@
   <!-- Scan project setup -->
 
   <div class="flex flex-col text-blue-800">
-    <span class="pt-2 text-xs font-bold text-purple-800 bg-purple-50"><span class="pr-2 uppercase">Quick Scan
+    <span class="p-2 text-xs font-bold text-purple-800 bg-purple-50"><span class="pr-2 uppercase">Quick Scan
         Setup</span>
       <span>(select desired groups and projects below to create a scan project)</span>
     </span>
@@ -61,30 +61,53 @@
   <hr class="my-2">
 
   <!-- search GitLab groups and projects -->
-  <div class="flex items-center">
-    <div class="text-sm font-bold text-purple-800 uppercase">GitLab Repositories</div>
-    <div class="relative flex flex-wrap items-stretch mb-2 focus:outline-none">
-      <span
-        class="absolute items-center justify-center w-8 h-full py-1 pl-2 text-base font-normal leading-snug text-center text-gray-400 rounded">
-        <fa-icon
-          class="absolute z-10 items-center justify-center h-full py-1 -ml-1 text-base font-normal leading-snug text-center text-gray-400 rounded "
-          title="Search" size="sm" [icon]="faSearch">
-        </fa-icon>
-      </span>
-      <input placeholder="Search projects and groups ..." [(ngModel)]="projectSearch"
-        class="relative pl-8 mt-2 ml-2 text-sm text-gray-600 placeholder-gray-400 bg-white border border-purple-400 rounded outline-none w-96 focus:outline-none" />
+  <div class="flex items-center justify-between p-2 bg-purple-50">
+    <div class="flex items-center">
+      <div class="text-sm font-bold text-purple-800 uppercase">GitLab Repositories</div>
+      <div class="relative flex flex-wrap items-stretch mb-2 focus:outline-none">
+        <span
+          class="absolute items-center justify-center w-8 h-full py-1.5 pl-2 text-base font-normal leading-snug text-center text-gray-400 rounded">
+          <fa-icon
+            class="absolute z-10 items-center justify-center h-full py-1.5 -ml-1 text-base font-normal leading-snug text-center text-gray-400 rounded "
+            title="Search" size="sm" [icon]="faSearch">
+          </fa-icon>
+        </span>
+        <input placeholder="Search projects and groups ..." [(ngModel)]="projectSearch"
+          class="relative h-8 pl-8 mt-2 ml-2 text-sm text-gray-600 placeholder-gray-400 bg-white border border-purple-400 rounded outline-none w-96 focus:outline-none" />
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <div class="text-sm font-bold text-purple-800 uppercase">GitLab Instance</div>
+      <form [formGroup]="serviceForm" class="text-blue-800">
+        <select formControlName="selectedService" [(ngModel)]="selectedService"
+          class="h-8 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+          <option *ngFor="let gs of gitLabServices" [ngValue]="gs.Name">{{gs.Name}}</option>
+        </select>
+      </form>
     </div>
   </div>
 
   <!-- GitLab projects/groups list -->
 
-  <div class="p-2 overflow-y-auto border-2 border-purple-200 rounded max-h-96" *ngIf="gitlabProjects">
+  <div class="flex flex-col p-2 mt-2 overflow-y-auto border-2 border-purple-200 rounded max-h-96"
+    *ngIf="gitlabProjects">
 
-    <div *ngFor="let projG of gitlabProjects | gitlabSorter | gitlabFilter:projectSearch">
+    <div *ngFor="let projG of projects | gitlabSorter | gitlabFilter:projectSearch">
 
       <app-gitlab-project-listitem [groupedProjects]=projG [fb]=fb> </app-gitlab-project-listitem>
     </div>
 
+
   </div>
 
+  <div class="flex items-center justify-between mt-2 mr-2">
+    <span class="pl-2 text-xs italic text-gray-600"> {{projects.length}} Project(s) retrieved, {{remainingProjCount}}
+      remaining.
+    </span>
+    <div *ngIf="showGetMoreButton()">
+      <button mat-button (click)="getMoreProjects()"
+        class="w-full py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-red-200 rounded-md hover:bg-red-300">Get
+        More Projects</button>
+    </div>
+  </div>
 </div>

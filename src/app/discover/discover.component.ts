@@ -14,6 +14,7 @@ export class DiscoverComponent implements OnInit {
   faGitlab = faGitlab;
   gitLabEnabled = false;
   gitHubEnabled = false;
+  gitServiceEnabled = false;
   gitLabClass = 'cursor-default';
   gitHubClass = 'cursor-default';
   ghContentClass = 'hidden';
@@ -25,11 +26,13 @@ export class DiscoverComponent implements OnInit {
       if (cap.GitLabEnabled) {
         this.gitLabClass = 'cursor-pointer';
         this.gitLabEnabled = true;
+        this.gitServiceEnabled = true;
         this.clickTab('gitlab');
       }
       if (cap.GitHubEnabled) {
         this.gitHubClass = 'cursor-pointer';
         this.gitHubEnabled = true;
+        this.gitServiceEnabled = true;
         this.clickTab('github');
       }
     });

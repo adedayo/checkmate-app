@@ -2,6 +2,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import { GitLabGroupedProjects } from '../models/gitlab-project';
+import { FormProject } from '../models/project';
 import { ProjectFormsService } from '../services/project-forms.service';
 
 @Component({
@@ -66,11 +67,14 @@ export class GitlabProjectListitemComponent implements OnInit {
       this.groupSelected = false;
     }
 
-    const outProj: string[] = [];
+    const outProj: FormProject[] = [];
     for (let i = 0; i < this.selectedProjects.length; i++) {
       if (this.selectedProjects[i]) {
         const proj = this.groupedProjects.Projects[i];
-        outProj.push(proj.HttpUrlToRepo);
+        outProj.push({
+          Location: proj.HttpUrlToRepo,
+          ServiceID: proj.InstanceID
+        });
       }
     }
 
