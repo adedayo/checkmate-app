@@ -23,4 +23,8 @@ export class ProjectFormsService {
     });
     this.projectsDetail.next(map);
   }
+
+  public clearProjectForm() {
+    this.projectsDetail.next(new Map());
+  }
 }

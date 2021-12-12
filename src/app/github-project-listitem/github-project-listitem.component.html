@@ -1,0 +1,60 @@
+<div>
+
+  <div class="w-full p-4 mt-2 bg-white rounded shadow" id="dropdown">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <svg *ngIf="isGroup()" (click)="showChildren=!showChildren" width="12" height="12" viewBox="0 0 12 12"
+          fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path *ngIf="!showChildren" d="M4.5 3L7.5 6L4.5 9" stroke="#4B5563" stroke-width="1.25" stroke-linecap="round"
+            stroke-linejoin="round" />
+          <path *ngIf="showChildren" d="M3 4.5L6 7.5L9 4.5" stroke="#4B5563" stroke-width="1.25" stroke-linecap="round"
+            stroke-linejoin="round" />
+        </svg>
+
+        <div class="flex items-center pl-4">
+          <div
+            class="relative flex items-center justify-center flex-shrink-0 w-3 h-3 bg-gray-100 border border-gray-200 rounded-sm dark:bg-gray-800 dark:border-gray-700">
+            <input (click)="selectGroup()" type="checkbox"
+              class="absolute w-full h-full opacity-0 cursor-pointer checkbox" />
+            <div *ngIf="groupSelected" class="text-white bg-purple-700 rounded-sm check-icon">
+              <svg class="icon icon-tabler icon-tabler-check" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" />
+                <path *ngIf="!indeterminate" d="M5 12l5 5l10 -10" />
+                <path *ngIf="indeterminate" d="M6 12H18" />
+              </svg>
+            </div>
+          </div>
+          <p class="ml-2 text-sm leading-normal text-purple-900">{{project.Name}}</p>
+
+        </div>
+      </div>
+      <p class="w-8 text-xs leading-3 text-right text-purple-700">Status</p>
+    </div>
+    <div *ngIf="isGroup() && showChildren" class="pt-0 pl-8">
+      <div *ngFor="let proj of groupedProjects.Projects ; index as i" class="flex items-center justify-between">
+        <div class="flex items-center pl-4">
+          <div
+            class="relative flex items-center justify-center flex-shrink-0 w-3 h-3 bg-gray-100 border border-gray-200 rounded-sm dark:bg-gray-800 dark:border-gray-700">
+            <input (click)="selectProject(i)" type="checkbox"
+              class="absolute w-full h-full opacity-0 cursor-pointer checkbox" />
+            <div *ngIf="selectedProjects[i]" class="text-white bg-purple-700 rounded-sm check-icon">
+              <svg class="icon icon-tabler icon-tabler-check" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" />
+                <path d="M5 12l5 5l10 -10" />
+              </svg>
+            </div>
+          </div>
+          <p class="ml-2 text-sm leading-normal text-purple-800">{{proj.Name}}</p>
+
+        </div>
+        <p class="w-8 text-xs leading-3 text-right text-purple-700">Status</p>
+      </div>
+
+    </div>
+
+  </div>
+</div>

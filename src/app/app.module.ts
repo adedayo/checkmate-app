@@ -50,6 +50,8 @@ import { GitlabFilterPipe } from './pipes/gitlab-filter.pipe';
 import { GitlabProjectListitemComponent } from './gitlab-project-listitem/gitlab-project-listitem.component';
 import { GitlabSettingsComponent } from './gitlab-settings/gitlab-settings.component';
 import { GithubSettingsComponent } from './github-settings/github-settings.component';
+import { GithubFilterPipe } from './pipes/github-filter.pipe';
+import { GithubProjectListitemComponent } from './github-project-listitem/github-project-listitem.component';
 
 
 @NgModule({
@@ -77,6 +79,8 @@ import { GithubSettingsComponent } from './github-settings/github-settings.compo
     GitlabProjectListitemComponent,
     GitlabSettingsComponent,
     GithubSettingsComponent,
+    GithubFilterPipe,
+    GithubProjectListitemComponent,
   ],
   imports: [
     BrowserModule,

@@ -1,1 +1,112 @@
-<p class="text-sm text-red-600">Coming soon ...</p>
+<div class="flex flex-col">
+
+  <div class="flex flex-col text-blue-800">
+    <span class="pt-2 text-xs font-bold text-purple-800 bg-purple-50"><span class="pr-2 uppercase">Setup GitHub
+        Integration</span>
+      <span (click)="showInstruction=!showInstruction" class="cursor-pointer">(click here for information)</span>
+    </span>
+    <div *ngIf="showInstruction" class="flex flex-col p-2 bg-blue-50">
+      <div class="flex items-center space-x-2">
+        <fa-icon class="ml-0.5 text-base font-normal text-center text-blue-400" title="Info" [icon]="faInfo">
+        </fa-icon>
+        <div class="w-full text-sm">
+          This integration requires a personal access token that CheckMate uses to track your GitHub codebase.
+        </div>
+      </div>
+      <div class="flex flex-col pt-2 mx-6 text-sm">
+        <p>
+          The steps reqired to create a GitHub Personal Access Token are as follows:
+
+        </p>
+        <ol>
+          <li>1. Go to <span class="font-bold">Settings</span> on GitHub</li>
+          <li>2. Select <span class="font-bold">Developer settings</span></li>
+          <li>3. Select <span class="font-bold">Personal access tokens</span></li>
+          <li>4. Click <span class="font-bold">Generate new token</span> (this may require re-authentication)</li>
+          <li>5. Add a note or give a name to your <span class="font-bold">Personal Access Token</span> (e.g. <span
+              class="italic">checkmate</span>)</li>
+          <li>6. Set an <span class="font-bold">Expiration</span> date</li>
+          <li>7. Generate a <span class="font-bold">Personal Access Token</span> with <span
+              class="font-bold">repo</span> scope</li>
+        </ol>
+      </div>
+    </div>
+    <div class="flex items-center w-full">
+      <form [formGroup]="connectForm" class="flex flex-col items-center justify-between w-full p-2 space-x-2 text-sm">
+        <div class="relative flex w-full focus:outline-none">
+
+          <mat-form-field class="w-1/2 text-blue-800 focus:outline-none">
+            <mat-label>Personal Access Token (with "<span class="font-bold">repo</span>" scope)</mat-label>
+            <input matInput placeholder="Example: ghp_N2JwxEWnSaiB8BNaUlcSG9CVwRqXO24SeESt"
+              formControlName="accessToken" required>
+          </mat-form-field>
+
+
+          <mat-form-field class="w-1/2 pl-10 text-blue-800 focus:outline-none">
+            <mat-label>API key name</mat-label>
+            <input matInput placeholder="Example: checkmate" formControlName="apiKeyName" required>
+          </mat-form-field>
+        </div>
+        <div class="flex items-center justify-between w-full">
+
+
+          <mat-form-field class="w-1/2 text-blue-800 focus:outline-none">
+            <mat-label>GitHub Account Name</mat-label>
+            <input matInput placeholder="Example: my_user (select account type: User or Organization)"
+              formControlName="accountName" required>
+          </mat-form-field>
+
+
+
+
+          <div class="flex justify-between w-1/2 pl-10">
+            <div class="flex items-center space-x-2">
+              <span class="text-indigo-700">Account Type</span>
+              <select formControlName="accountType"
+                class="h-8 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+                <option *ngFor="let acct of accountTypes" [ngValue]="acct">{{acct}}</option>
+              </select>
+            </div>
+            <button [disabled]="!connectForm.valid" mat-button (click)="createIntegration()"
+              class="py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">Monitor
+              GitHub Account</button>
+          </div>
+
+        </div>
+      </form>
+
+
+    </div>
+
+  </div>
+
+  <hr class="my-2">
+
+  <div class="flex flex-col w-full">
+    <span class="pt-2 text-xs font-bold text-purple-800 bg-purple-50"><span class="pr-2 uppercase">Existing GitHub
+        Integrations</span>
+    </span>
+
+    <div class="p-2 overflow-y-auto border-2 border-purple-200 rounded max-h-96">
+      <div class="grid grid-cols-12 mt-4 mb-2 text-xs font-semibold text-gray-600 uppercase">
+        <div class="col-span-4">Access Token Name</div>
+        <div class="col-span-4">Account Name</div>
+        <div class="col-span-4">Account Type</div>
+      </div>
+      <div *ngFor="let git of gitHubConnections" class="flex flex-col">
+        <hr class="my-2">
+        <div class="grid grid-cols-12 space-x-1 text-sm text-blue-700 hover:bg-blue-100">
+          <span class="col-span-4">{{git.Name}}</span>
+          <span class="col-span-4">{{git.AccountName}}</span>
+          <span class="col-span-3">{{git.AccountType}}</span>
+          <div class="col-span-1">
+            <div (click)="deleteBinding(git.ID)" class="cursor-pointer">
+              <fa-icon class="ml-0.5 text-base font-normal text-center text-blue-400" title="Delete" [icon]="faTrash">
+              </fa-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

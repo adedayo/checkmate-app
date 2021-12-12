@@ -13,6 +13,7 @@ import { CodeContext, ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUp
 import { EnvironmentsService } from './environments.service';
 import { GitLabPagedSearch, GitLabProjectSearchResult } from '../models/gitlab-project';
 import { GitService } from '../models/git';
+import { GitHubPagedSearch, GitHubProjectSearchResult } from '../models/github-project';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +33,8 @@ export class CheckMateService {
 
 
   private gitlabProjects$: Map<string, GitLabProjectSearchResult> = new Map();
+  private githubProjects$: Map<string, GitHubProjectSearchResult> = new Map();
+
 
   constructor(private http: HttpClient, private electron: ElectronIPC, private env: EnvironmentsService) {
     this.electron.getAPIConfig().then(port => {
@@ -50,6 +53,25 @@ export class CheckMateService {
     return this.http.get<string>(`${this.api}/version`);
   }
 
+
+
+  public createGitHubIntegration(integration: GitService): Observable<GitService[]> {
+    return this.http.post<GitService[]>(`${this.api}/github/integrate`, integration);
+  }
+
+  public deleteGitHubIntegration(id: string): Observable<GitService[]> {
+    return this.http.post<GitService[]>(`${this.api}/github/deleteintegration`, { ID: id });
+  }
+
+  public getGitHubIntegrations(): Observable<GitService[]> {
+    return this.http.get<GitService[]>(`${this.api}/github/integrations`);
+  }
+
+  get gitHubProjects(): Map<string, GitHubProjectSearchResult> {
+    return this.githubProjects$;
+  }
+
+
   public createGitLabIntegration(integration: GitService): Observable<GitService[]> {
     return this.http.post<GitService[]>(`${this.api}/gitlab/integrate`, integration);
   }
@@ -62,6 +84,18 @@ export class CheckMateService {
     return this.http.get<GitService[]>(`${this.api}/gitlab/integrations`);
   }
 
+
+  public gitHubDiscover(page: GitHubPagedSearch): Observable<GitHubProjectSearchResult> {
+    return this.http.post<GitHubProjectSearchResult>(`${this.api}/github/discover`, page).pipe(
+      map(y => {
+        if (y.Projects) {
+          y.Projects.forEach(z => z.InstanceID = y.InstanceID);
+        }
+        return y;
+      }),
+    );
+  }
+
   public gitLabDiscover(page: GitLabPagedSearch): Observable<GitLabProjectSearchResult> {
     return this.http.post<GitLabProjectSearchResult>(`${this.api}/gitlab/discover`, page).pipe(
       map(y => {
@@ -72,6 +106,8 @@ export class CheckMateService {
       }),
     );
   }
+
+
 
   get gitLabProjects(): Map<string, GitLabProjectSearchResult> {
     return this.gitlabProjects$;

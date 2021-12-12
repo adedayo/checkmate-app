@@ -28,7 +28,6 @@ export class GitlabReposComponent implements OnInit {
   selectedService: GitService;
   gitLabServices: GitService[] = [];
   nextCursors: Map<string, string> = new Map();//pagination per gitlab instance
-  // gitlabProjects: Map<string, GitLabProjectSearchResult> = new Map();
   instance$: any;
 
   get gitlabProjects(): Map<string, GitLabProjectSearchResult> {
@@ -159,23 +158,6 @@ export class GitlabReposComponent implements OnInit {
 
           if (!this.gitlabProjects.has(this.currentInstance)) {
             this.getMoreProjects();
-            // const page: GitLabPagedSearch = {
-            //   ServiceID: this.currentInstance,
-            //   NextCursor: '',
-            //   First: 7,
-            //   PageSize: 100
-            // };
-
-            // this.checkMateService.gitLabDiscover(page).subscribe(data => {
-
-            //   if (this.gitlabProjects.has(data.InstanceID)) {
-            //     this.gitlabProjects.set(data.InstanceID, this.getSearchResult(data));
-            //   } else {
-            //     this.gitlabProjects.set(data.InstanceID, data);
-            //   }
-            //   this.showSpinner = false;
-            //   this.setNextCursor(data.InstanceID, data.EndCursor);
-            // });
           } else {
             this.showSpinner = false;
           }
@@ -278,6 +260,8 @@ export class GitlabReposComponent implements OnInit {
       Repositories: this.getRepos(),
       ScanPolicy: this.getScanPolicy(),
     };
+
+    this.formService.clearProjectForm();
 
     this.checkMateService.createProject(projDesc).subscribe(summary => {
       this.router.navigate(['project-detail', summary.ID]);
