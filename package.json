@@ -1,7 +1,7 @@
 {
   "name": "checkmate-app",
   "description": "Security static analysis tool. Find secrets in source code and configuration files",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "main": "main.js",
   "license": "BSD-3-Clause",
   "repository": {
@@ -72,6 +72,7 @@
     "@angular/cli": "^13.0.3",
     "@angular/compiler": "13.0.2",
     "@angular/compiler-cli": "13.0.2",
+    "node-forge": ">=1.0.0",
     "@types/codemirror": "5.60.0",
     "@types/d3": "6.7.0",
     "@types/d3-shape": "2.1.0",
