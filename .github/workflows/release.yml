@@ -24,5 +24,6 @@ jobs:
         run: |
           chmod +x download-checkmate.sh
           npm run electron:build
+          npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
