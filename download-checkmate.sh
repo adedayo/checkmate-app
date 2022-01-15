@@ -24,15 +24,16 @@ artefacts=$(curl -s https://api.github.com/repos/adedayo/checkmate/releases/late
 for x in $artefacts; do
   if [[ "$x" == *x86_64* ]]; then
     echo "$x"
-    
+
     IFS='/'
     read -a xs <<<"$x"
     gzFile="${xs[${#xs[@]}-1]}"
 
     if [ ! -f "${downloadDir}/${gzFile}" ]; then
-     os=$(uname)
-     echo "${os}" 
-     if [[ "$x" == *"$os"* ]]; then #only download for current OS
+     os=$(uname | tr '[:upper:]' '[:lower:]')
+     echo "${os}"
+     xx=$(echo "$x" | tr '[:upper:]' '[:lower:]')
+     if [[ "$xx" == *"$os"* ]]; then #only download for current OS
         pushd "${downloadDir}"
         curl -O -L "$x"
         tar xvfz "${gzFile}"
@@ -49,8 +50,8 @@ for x in $artefacts; do
         fi
       fi
     fi
-    
+
     IFS=' '
-   fi 
+   fi
 done
 # fi
