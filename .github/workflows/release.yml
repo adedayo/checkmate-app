@@ -25,4 +25,4 @@ jobs:
           chmod +x download-checkmate.sh
           npm run electron:build
         env:
-          GH_TOKEN: ${{ secrets.github_token }}
+          GITHUB_TOKEN: ${{ secrets.github_token }}
