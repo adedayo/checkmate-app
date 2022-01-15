@@ -184,6 +184,20 @@
         "filter": [
           "**/*"
         ]
+      },
+      {
+        "from": "checkmate-binary/linux/checkmate",
+        "to": "checkmate",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "checkmate-binary/windows/checkmate.exe",
+        "to": "checkmate.exe",
+        "filter": [
+          "**/*"
+        ]
       }
     ]
   },

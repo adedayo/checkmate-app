@@ -37,6 +37,7 @@ for x in $artefacts; do
         pushd "${downloadDir}"
         curl -O -L "$x"
         tar xvfz "${gzFile}"
+        ls -alsh
         popd
 
         if [[ "$x" == *Darwin* ]]; then
