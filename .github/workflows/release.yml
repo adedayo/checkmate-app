@@ -27,3 +27,21 @@ jobs:
           npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+      - name: install dependencies
+        run: npm install
+      - name: build
+        run: |
+          chmod +x download-checkmate.sh
+          npm run electron:build
+          npm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}

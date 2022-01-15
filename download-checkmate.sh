@@ -24,28 +24,33 @@ artefacts=$(curl -s https://api.github.com/repos/adedayo/checkmate/releases/late
 for x in $artefacts; do
   if [[ "$x" == *x86_64* ]]; then
     echo "$x"
-
+    
     IFS='/'
     read -a xs <<<"$x"
     gzFile="${xs[${#xs[@]}-1]}"
 
     if [ ! -f "${downloadDir}/${gzFile}" ]; then
-      pushd "${downloadDir}"
-      curl -O -L "$x"
-      tar xvfz "${gzFile}"
-      popd
+     os=$(uname)
+     echo "${os}" 
+     if [[ "$x" == *"$os"* ]]; then #only download for current OS
+        pushd "${downloadDir}"
+        curl -O -L "$x"
+        tar xvfz "${gzFile}"
+        popd
 
-      if [[ "$x" == *Darwin* ]]; then
-        mv "${downloadDir}/checkmate" "${binaryDir}/darwin/"
-      fi
-      if [[ "$x" == *linux* ]]; then
-        mv "${downloadDir}/checkmate" "${binaryDir}/linux/"
-      fi
-      if [[ "$x" == *windows* ]]; then
-        mv "${downloadDir}/checkmate.exe" "${binaryDir}/windows/"
+        if [[ "$x" == *Darwin* ]]; then
+          mv "${downloadDir}/checkmate" "${binaryDir}/darwin/"
+        fi
+        if [[ "$x" == *linux* ]]; then
+          mv "${downloadDir}/checkmate" "${binaryDir}/linux/"
+        fi
+        if [[ "$x" == *windows* ]]; then
+          mv "${downloadDir}/checkmate.exe" "${binaryDir}/windows/"
+        fi
       fi
     fi
+    
     IFS=' '
-  fi
+   fi 
 done
 # fi
