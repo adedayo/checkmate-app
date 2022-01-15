@@ -20,7 +20,7 @@
     "build:prod": "NODE_ENV=production npm run build -- -c production",
     "build:web:prod": "NODE_ENV=production npm run build:web -- -c production",
     "ng:serve": "ng serve -c web -o",
-    "download:checkmate": "./download-checkmate.sh",
+    "download:checkmate": "sh ./download-checkmate.sh",
     "electron:serve-tsc": "tsc -p tsconfig.serve.json",
     "electron:serve": "wait-on tcp:4200 && npm run electron:serve-tsc && npx electron . --serve",
     "electron:local": "npm run build:prod && npx electron .",
