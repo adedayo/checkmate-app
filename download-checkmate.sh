@@ -1,4 +1,3 @@
-#!/bin/bash
 
 # Download latest checkmate binaries. Requires curl and jq to be available
 
