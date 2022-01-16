@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # Download latest checkmate binaries. Requires curl and jq to be available
 
@@ -36,7 +37,7 @@ for x in $artefacts; do
         pushd "${downloadDir}"
         curl -O -L "$x"
         tar xvfz "${gzFile}"
-        ls -alsh
+        ls
         popd
 
         if [[ "$x" == *Darwin* ]]; then
