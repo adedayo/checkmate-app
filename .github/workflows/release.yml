@@ -53,13 +53,14 @@ jobs:
         with:
           node-version: 14.x
           cache: 'npm'
+      - uses: crazy-max/ghaction-chocolatey@v1
+        with:
+          args: install jq
       - name: install dependencies
         run: npm install
       - name: build
         run: |
-          chmod +x download-checkmate.sh
           npm run electron:build:windows
         shell: bash
         env:
-
           GITHUB_TOKEN: ${{ secrets.github_token }}
