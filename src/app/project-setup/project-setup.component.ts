@@ -155,8 +155,9 @@ export class ProjectSetupComponent implements OnInit {
     };
 
     // console.log(projDesc);
+
     this.checkMateService.createProject(projDesc).subscribe(summary => {
-      this.router.navigate(['projects']);
+      this.router.navigate(['project-detail', summary.ID]);
     });
   }
 

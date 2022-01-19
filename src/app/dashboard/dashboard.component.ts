@@ -71,7 +71,7 @@ export class DashboardComponent implements OnInit {
     if (!this.workspaces) {
       return null;
     }
-    let name = '';
+    let name = 'Default';
     if (this.currentWorkspaceName !== 'Default') {
       name = this.currentWorkspaceName;
     }
@@ -100,7 +100,7 @@ export class DashboardComponent implements OnInit {
         this.workspaces = w;
         this.workspaceNames = [];
         for (const k of Object.keys(w.Details)) {
-          if (k === '') {
+          if (k === '' || k === 'Default') {
             this.workspaceNames.push('Default');
           } else {
             this.workspaceNames.push(k);
