@@ -165,9 +165,11 @@ export class ProjectSetupComponent implements OnInit {
   getRepos(): Repository[] {
     const repos: Repository[] = [];
     this.repositories.controls.forEach(control => {
+      const t = control.get('type').value as string;
       const repo: Repository = {
         Location: control.get('coordinate').value as string,
-        LocationType: control.get('type').value as string,
+        LocationType: t,
+        Monitor: t === 'git',
       };
       repos.push(repo);
     });

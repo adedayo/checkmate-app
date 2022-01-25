@@ -73,7 +73,8 @@ export class GithubProjectListitemComponent implements OnInit {
         const proj = this.groupedProjects.Projects[i];
         outProj.push({
           Location: proj.Url,
-          ServiceID: proj.InstanceID
+          ServiceID: proj.InstanceID,
+          Monitor: true,//TODO
         });
       }
     }

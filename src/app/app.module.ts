@@ -52,6 +52,8 @@ import { GitlabSettingsComponent } from './gitlab-settings/gitlab-settings.compo
 import { GithubSettingsComponent } from './github-settings/github-settings.component';
 import { GithubFilterPipe } from './pipes/github-filter.pipe';
 import { GithubProjectListitemComponent } from './github-project-listitem/github-project-listitem.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ProjectEditComponent } from './project-edit/project-edit.component';
 
 
 @NgModule({
@@ -81,6 +83,7 @@ import { GithubProjectListitemComponent } from './github-project-listitem/github
     GithubSettingsComponent,
     GithubFilterPipe,
     GithubProjectListitemComponent,
+    ProjectEditComponent,
   ],
   imports: [
     BrowserModule,
@@ -110,7 +113,8 @@ import { GithubProjectListitemComponent } from './github-project-listitem/github
     TabControlModule,
     NgxLiquidGaugeModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatTooltipModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

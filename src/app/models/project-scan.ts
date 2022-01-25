@@ -85,6 +85,7 @@ export interface Repository {
   Location: string;
   LocationType: string;
   GitServiceID?: string;
+  Monitor: boolean;
 }
 
 export interface ProjectScanOptions {

@@ -270,6 +270,7 @@ export class GithubReposComponent implements OnInit {
           LocationType: 'git',
           Location: p.Location,
           GitServiceID: p.ServiceID,
+          Monitor: p.Monitor,
         });
       });
     });

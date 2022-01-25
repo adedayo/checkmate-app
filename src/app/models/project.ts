@@ -56,4 +56,5 @@ export interface ProjectSubForm {
 export interface FormProject {
   Location: string;
   ServiceID: string;
+  Monitor: boolean;
 }

@@ -2,7 +2,8 @@
   <div class="flex justify-between px-2 text-lg text-center bg-purple-800">
     <a [routerLink]="['/project-detail', projectSummary.ID]"
       class="py-4 text-base text-purple-50 min-w-max">{{projectSummary.Name}}</a>
-    <fa-icon class="self-center text-purple-50" size="lg" [icon]="faCog"></fa-icon>
+    <fa-icon class="self-center cursor-pointer text-purple-50" (click)="editProject()" [icon]="faSettings"
+      matTooltip="Configure Project"></fa-icon>
   </div>
   <!-- Grade  -->
   <div *ngIf='projectSummary.LastScore' class="flex pl-2 bg-purple-50">
@@ -13,7 +14,7 @@
     <span class="w-full"></span>
   </div>
   <!-- Chart -->
-  <div class="flex items-center w-full bg-gray-200">
+  <div class="flex items-center w-full bg-white">
     <ngx-charts-line-chart class="w-full py-2 pl-2" [scheme]="colorScheme" [legend]="legend"
       [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxis]="xAxis" [yAxis]="yAxis"
       [xAxisLabel]="xAxisLabel" [yAxisLabel]="yAxisLabel" [timeline]="timeline" [autoScale]="autoScale"
@@ -25,16 +26,20 @@
     <div class="h-full">
       <div class="text-sm font-medium text-purple-800 truncate">Code Repositories</div>
       <div *ngIf="projectSummary.Repositories">
-        <div *ngFor="let repo of projectSummary.Repositories"
-          class="grid grid-cols-12 px-2 mt-1 text-xs font-semibold ">
-          <span class="text-gray-700 uppercase ">{{displayType(repo.LocationType)}}</span>
-          <div class="col-span-11 text-purple-900">{{repo.Location}}</div>
+        <div *ngFor="let repo of projectSummary.Repositories" class="grid grid-cols-12 px-2 mt-1 text-xs font-semibold">
+          <span class="col-span-1 text-gray-700 uppercase">{{displayType(repo.LocationType)}}</span>
+          <div class="col-span-10 text-xs font-light text-purple-900">{{repo.Location}}</div>
+          <div *ngIf="repo.Monitor" class="col-span-1"
+            matTooltip="This repository is continuously monitored by {{appName}}">
+            <fa-icon class="text-purple-800" size="lg" [icon]="faShield">
+            </fa-icon>
+          </div>
         </div>
       </div>
     </div>
   </div>
   <!-- Issues Badges -->
-  <div class="flex justify-between px-2 py-2">
+  <div class="flex justify-between px-2 py-2 cursor-pointer" (click)="loadProject()">
 
     <div class="">
       <span class="inline-block px-2 text-xs font-semibold tracking-wide text-gray-100 uppercase bg-purple-600">

@@ -31,7 +31,9 @@ export class ProjectsComponent implements OnInit {
       setTimeout(() => this.showSpinner = spin, 0);
     });
     this.projectSummaries$ = this.checkmateService.getProjectSummaries();
-    this.projectSummaries$.subscribe(x => this.checkmateService.setSpinnerState(false));
+    this.projectSummaries$.subscribe(x => {
+      this.checkmateService.setSpinnerState(false);
+    });
   }
 
   downloadProjectsReport() {

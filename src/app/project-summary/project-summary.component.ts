@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { faCog, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faPlayCircle, faShieldAlt, faSlidersH, faWrench } from '@fortawesome/free-solid-svg-icons';
 import {
   ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress,
   SecurityDiagnostic, ScanStatus
@@ -17,8 +17,10 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
 
   @Output() finishedLoading = new EventEmitter<boolean>();
   @Input() projectSummary: ProjectSummary;
-  faCog = faCog;
+  faSettings = faSlidersH;
   faPlayCircle = faPlayCircle;
+  faShield = faShieldAlt;
+  appName = 'CheckMate';
   currentFile = '';
   progress = 0;
   criticalCount = 0;
@@ -47,7 +49,7 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
 
   curve: any = curveBumpX;
   colorScheme = {
-    domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
+    domain: ['#33bbff', '#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
   };
 
   runScan$: Subscription;
@@ -194,7 +196,10 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
   }
 
   loadProject() {
-    // console.log('called load project');
-    this.router.navigate(['project-detail']);
+    this.router.navigate(['project-detail', this.projectSummary.ID]);
+  }
+
+  editProject() {
+    this.router.navigate(['project-edit', this.projectSummary.ID]);
   }
 }

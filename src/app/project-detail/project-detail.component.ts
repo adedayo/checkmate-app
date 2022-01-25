@@ -48,7 +48,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
 
   expandReusedSecretsPanel = false;
-  expandRescanPanel = false;
+  expandRescanPanel = true;
   faCog = faCog;
   faFileDownload = faFileDownload;
   faSave = faSave;

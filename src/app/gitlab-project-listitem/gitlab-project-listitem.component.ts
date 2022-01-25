@@ -20,6 +20,7 @@ export class GitlabProjectListitemComponent implements OnInit {
   indeterminate = true;
   groupSelected = false;
   selectedProjects: boolean[] = [];
+  monitoredProjects: boolean[] = [];
   form: FormGroup;
 
 
@@ -28,10 +29,12 @@ export class GitlabProjectListitemComponent implements OnInit {
   ngOnInit(): void {
     for (const i of this.groupedProjects.Projects) {
       this.selectedProjects.push(false);
+      this.monitoredProjects.push(false);
     }
     this.form = this.fb.group({
       group: [this.normaliseGroupedProjects.ID],
       selectedProjects: this.fb.array([]),
+      monitoredProjects: this.fb.array([]),
     }
     );
   }
@@ -46,6 +49,7 @@ export class GitlabProjectListitemComponent implements OnInit {
 
   selectProject(index: number) {
     this.selectedProjects[index] = !this.selectedProjects[index];
+    this.monitoredProjects[index] = this.selectedProjects[index];
     this.updateState();
   }
 
@@ -73,7 +77,8 @@ export class GitlabProjectListitemComponent implements OnInit {
         const proj = this.groupedProjects.Projects[i];
         outProj.push({
           Location: proj.HttpUrlToRepo,
-          ServiceID: proj.InstanceID
+          ServiceID: proj.InstanceID,
+          Monitor: this.monitoredProjects[i],
         });
       }
     }
@@ -102,10 +107,12 @@ export class GitlabProjectListitemComponent implements OnInit {
     if (this.groupSelected) {
       for (let i = 0; i < this.selectedProjects.length; i++) {
         this.selectedProjects[i] = true;
+        this.monitoredProjects[i] = true;
       }
     } else {
       for (let i = 0; i < this.selectedProjects.length; i++) {
         this.selectedProjects[i] = false;
+        this.monitoredProjects[i] = false;
       }
     }
     this.updateState();

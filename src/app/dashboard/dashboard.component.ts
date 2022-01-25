@@ -108,6 +108,8 @@ export class DashboardComponent implements OnInit {
         }
         if (this.workspaceNames.length > 0) {
           this.workspaceName = this.workspaceNames[0];
+        } else {
+          this.noWorkspace = true;
         }
       } else {
         this.noWorkspace = true;

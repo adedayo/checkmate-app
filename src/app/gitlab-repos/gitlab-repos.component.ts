@@ -36,7 +36,7 @@ export class GitlabReposComponent implements OnInit {
 
   get projects(): GitLabProject[] {
     const projs = this.gitlabProjects.get(this.currentInstance);
-    return projs ? projs.Projects : [];
+    return projs && projs.Projects ? projs.Projects : [];
   }
 
   get remainingProjCount(): number {
@@ -276,6 +276,7 @@ export class GitlabReposComponent implements OnInit {
           LocationType: 'git',
           Location: p.Location,
           GitServiceID: p.ServiceID,
+          Monitor: p.Monitor,
         });
       });
     });
