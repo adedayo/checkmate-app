@@ -4,6 +4,7 @@ import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '
 import { Router } from '@angular/router';
 import { ElectronService } from 'ngx-electron';
 import { ProjectDescription, Repository, ScanPolicy, SecretSearchOptions } from '../models/project-scan';
+import { RepoType } from '../models/project';
 import { CheckMateService } from '../services/checkmate.service';
 import { ElectronIPC } from '../services/electron.service';
 
@@ -207,10 +208,3 @@ export class ProjectSetupComponent implements OnInit {
   }
 
 }
-
-
-interface RepoType {
-  type: string;
-  value: string;
-}
-

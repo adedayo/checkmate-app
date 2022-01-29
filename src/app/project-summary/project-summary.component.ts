@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { faCog, faPlayCircle, faShieldAlt, faSlidersH, faWrench } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faEdit, faPlayCircle, faShieldAlt, faSlidersH, faWrench } from '@fortawesome/free-solid-svg-icons';
 import {
   ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress,
   SecurityDiagnostic, ScanStatus
@@ -17,7 +17,7 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
 
   @Output() finishedLoading = new EventEmitter<boolean>();
   @Input() projectSummary: ProjectSummary;
-  faSettings = faSlidersH;
+  faSettings = faEdit;
   faPlayCircle = faPlayCircle;
   faShield = faShieldAlt;
   appName = 'CheckMate';

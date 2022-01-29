@@ -99,20 +99,21 @@ export class GitlabReposComponent implements OnInit {
           policy: [pol],
         }),
       });
+    });
 
-      this.checkMateService.getWorkspaceSummaries().subscribe(w => {
-        if (w.Details) {
+    this.checkMateService.getWorkspaceSummaries().subscribe(w => {
+      if (w.Details) {
 
-          this.existingWorkspaces = [];
-          for (const k of Object.keys(w.Details)) {
-            if (k === '') {
-              this.existingWorkspaces.push('Default');
-            } else {
-              this.existingWorkspaces.push(k);
-            }
+        this.existingWorkspaces = [];
+        for (const k of Object.keys(w.Details)) {
+          if (k === '') {
+            this.existingWorkspaces.push('Default');
+          } else {
+            this.existingWorkspaces.push(k);
           }
         }
-      });
+        this.existingWorkspaces = this.existingWorkspaces.filter(this.uniqueFilter);
+      }
     });
 
     this.projectForm = this.fb.group({
@@ -180,6 +181,10 @@ export class GitlabReposComponent implements OnInit {
 
   showGetMoreButton(): boolean {
     return this.hasMoreData(this.currentInstance);
+  }
+
+  uniqueFilter(value: string, index: number, self: string[]): boolean {
+    return self.indexOf(value) === index;
   }
 
   hasMoreData(serviceID: string): boolean {

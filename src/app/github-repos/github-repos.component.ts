@@ -111,6 +111,7 @@ export class GithubReposComponent implements OnInit {
               this.existingWorkspaces.push(k);
             }
           }
+          this.existingWorkspaces = this.existingWorkspaces.filter(this.uniqueFilter);
         }
       });
     });
@@ -162,6 +163,10 @@ export class GithubReposComponent implements OnInit {
       }
     );
 
+  }
+
+  uniqueFilter(value: string, index: number, self: string[]): boolean {
+    return self.indexOf(value) === index;
   }
 
   getSearchResult(data: GitHubProjectSearchResult): GitHubProjectSearchResult {

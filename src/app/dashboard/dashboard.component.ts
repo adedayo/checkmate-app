@@ -106,6 +106,7 @@ export class DashboardComponent implements OnInit {
             this.workspaceNames.push(k);
           }
         }
+        this.workspaceNames = this.workspaceNames.filter(this.uniqueFilter);
         if (this.workspaceNames.length > 0) {
           this.workspaceName = this.workspaceNames[0];
         } else {
@@ -118,6 +119,10 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+
+  uniqueFilter(value: string, index: number, self: string[]): boolean {
+    return self.indexOf(value) === index;
+  }
 
   trimDecimal(x: number): number {
     return Math.floor(x);

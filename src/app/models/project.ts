@@ -58,3 +58,10 @@ export interface FormProject {
   ServiceID: string;
   Monitor: boolean;
 }
+
+
+export interface RepoType {
+  type: string;
+  value: string;
+}
+
