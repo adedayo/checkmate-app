@@ -52,6 +52,8 @@ for x in $artefacts; do
       fi
     fi
 
+    ls -alshR "${binaryDir}"
+
     IFS=' '
    fi
 done
