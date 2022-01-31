@@ -30,9 +30,7 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
   spinForProject: boolean;
   spinForProjectSummary: boolean;
   project: Project;
-  projectSummary: ProjectSummary;
   project$: Subscription;
-  projectSummary$: Subscription;
   projectForm: FormGroup;
   isInElectron: boolean;
 
@@ -76,7 +74,7 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
           projectName: [this.project.Name, Validators.required],
           workspace: [this.project.Workspace],
           newWorkspaceValue: [''],
-          newRepoType: ['git'],
+          // newRepoType: ['git'],
           newRepository: this.fb.group({
             location: [''],
             locationType: ['git'],
@@ -93,6 +91,8 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
           }),
           scanPolicy: this.fb.group({
             configured: [false],
+            id: [this.project.ScanPolicy.ID],
+            x: [this.project.ScanPolicy.Policy],
             policy: [this.project.ScanPolicy.PolicyString],
           }),
         });
@@ -120,6 +120,9 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
 
   }
 
+  getPolicyConfigured(): boolean {
+    return this.projectForm.get('scanPolicy.configured').value as boolean;
+  }
 
   getNewRepoRequiresAuth(): boolean {
     return this.newRepository.get('requiresAuth').value as boolean;
@@ -162,10 +165,6 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
       this.setProject(proj);
       this.spinForProject = false;
     });
-    this.projectSummary$ = this.checkMateService.getProjectSummary(projectID).subscribe(x => {
-      this.setProjectSummary(x);
-      this.spinForProjectSummary = false;
-    });
   }
 
   get repositories(): FormArray {
@@ -182,11 +181,6 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
     }
     this.project = proj;
   }
-
-  setProjectSummary(x: ProjectSummary) {
-    this.projectSummary = x;
-  }
-
 
   clearNewRepo() {
     this.showNewRepo = false;
@@ -215,18 +209,25 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
   }
 
   updateProject() {
-
     const newWs = this.projectForm.get('newWorkspaceValue').value as string;
     const ws = newWs === '' ? this.projectForm.get('workspace').value as string : newWs;
     const projDesc: ProjectDescription = {
       Name: this.projectForm.get('projectName').value as string,
       Workspace: ws,
       Repositories: this.extractRepos(),
+      ScanPolicy: {
+        ID: this.project.ScanPolicy.ID,
+        PolicyString: this.projectForm.get('scanPolicy.policy').value as string,
+        // Policy: this.project.ScanPolicy.Policy,
+        Config: this.project.ScanPolicy.Config,
+      },
     };
 
     // console.log(projDesc);
 
-    //TODO: update project
+    this.checkMateService.updateProject(this.project.ID, projDesc).subscribe(x => {
+      this.router.navigate(['project-detail', x.ID]);
+    });
 
   }
 
@@ -267,9 +268,7 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
     if (this.project$) {
       this.project$.unsubscribe();
     }
-    if (this.projectSummary$) {
-      this.projectSummary$.unsubscribe();
-    }
+
   }
 
 }

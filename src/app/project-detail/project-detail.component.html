@@ -121,7 +121,7 @@
       </div>
       <!-- Scan -->
       <div class="flex justify-between px-2 py-4 bg-purple-100">
-        <div *ngIf='scanSummary.AdditionalInfo' class="flex w-full">
+        <div *ngIf='scanSummary && scanSummary.AdditionalInfo' class="flex w-full">
           <div class="text-sm font-bold text-purple-900 min-w-max">Last Scan:</div>
           <div class="pl-2 text-sm text-purple-800 min-w-max">{{scanSummary.AdditionalInfo.timeStamp}}
           </div>

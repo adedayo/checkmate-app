@@ -1,157 +1,172 @@
-<div class="relative flex flex-col flex-grow m-8 bg-white border-2 rounded-lg shadow ">
+<div class="container fixed flex flex-col m-8 bg-white border-purple-100 rounded-lg shadow border-1 top-8 bottom-4">
+
   <div class="flex justify-between px-2 text-lg text-center bg-purple-800 rounded-t-lg">
-    <a *ngIf="projectSummary" [routerLink]="['/project-detail', projectSummary.ID]"
+    <a *ngIf="project" [routerLink]="['/project-detail', project.ID]"
       class="py-4 text-base text-purple-50 min-w-max">Edit
-      Project: {{projectSummary.Name}}</a>
-    <fa-icon class="self-center cursor-pointer text-purple-50" [icon]="faEdit" matTooltip="Edit Project"></fa-icon>
+      Project: {{project.Name}}</a>
   </div>
 
-  <form *ngIf="projectForm" [formGroup]="projectForm"
-    class="grid items-baseline grid-cols-12 m-2 space-x-2 space-y-4 text-sm text-blue-700">
-    <!-- Name -->
-    <div class="col-span-1 font-semibold text-right">Project Name</div>
-    <div class="col-span-11">
-      <input *ngIf="projectSummary"
-        class="w-11/12 text-sm border-purple-500 rounded border-1 focus:border-purple-500 focus:ring-2 focus:ring-purple-500"
-        type="text" formControlName="projectName" [value]="projectSummary.Name" placeholder="{{projectSummary.Name}}">
-
-
-    </div>
-
-    <!-- Workspace -->
-
-    <div class="col-span-1 font-semibold text-right">Workspace</div>
-    <div class="flex items-center col-span-4 space-x-1">
-      <select aria-readonly="true" formControlName="workspace"
-        class="w-1/2 h-8 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
-        <option *ngFor="let ws of existingWorkspaces" [ngValue]="ws">{{ws}}</option>
-      </select>
-    </div>
-
-    <mat-form-field class="col-span-5 text-blue-800 focus:outline-none">
-      <mat-label>Add to New Workspace</mat-label>
-      <input matInput placeholder="Ex. Backend Services" formControlName="newWorkspaceValue">
-    </mat-form-field>
-
-
-    <div class="col-span-2"></div>
-
-    <!-- Repositories -->
-    <div class="flex flex-col col-span-1 font-semibold text-right">
-      <div>Repositories</div>
-      <div class="self-center mt-4">
-        <!-- <fa-icon class="w-1/12 text-lg text-purple-800" matTooltip="Add repository to project" [icon]="faAdd"></fa-icon> -->
-        <button (click)="showNewRepo=true" class="focus:outline-none" mat-mini-fab aria-label="Add code repository"
-          matTooltip="Add repository to project">
-          <mat-icon class="text-blue-800 focus:outline-none">add</mat-icon>
-        </button>
+  <div class="h-full p-2 overflow-y-scroll">
+    <form *ngIf="projectForm" [formGroup]="projectForm"
+      class="grid items-baseline w-full grid-cols-12 p-3 space-x-2 space-y-4 text-sm text-blue-700">
+      <!-- Name -->
+      <div class="col-span-1 font-semibold text-right">Project Name</div>
+      <div class="col-span-11">
+        <input *ngIf="project"
+          class="w-11/12 text-sm border-purple-500 rounded border-1 focus:border-purple-500 focus:ring-2 focus:ring-purple-500"
+          type="text" formControlName="projectName" [value]="project.Name" placeholder="{{project.Name}}">
       </div>
-    </div>
-    <div class="flex flex-col col-span-11">
-      <div class="flex items-center justify-start mb-1 space-x-4">
-        <div class="w-11/12 pl-3 pr-3 border-b-2">Location</div>
-        <div class="border-b-2">Monitor</div>
+
+      <!-- Workspace -->
+
+      <div class="col-span-1 font-semibold text-right">Workspace</div>
+      <div class="flex items-center col-span-4 space-x-1">
+        <select aria-readonly="true" formControlName="workspace"
+          class="w-1/2 h-8 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+          <option *ngFor="let ws of existingWorkspaces" [ngValue]="ws">{{ws}}</option>
+        </select>
       </div>
-      <ng-container formArrayName="repositories">
-        <div *ngFor="let repo of repositories.controls; let i = index">
-          <div [formGroup]="repo" class="flex items-center justify-start my-0.5 space-x-4">
-            <input
-              class="w-10/12 text-sm border-purple-500 rounded border-1 focus:border-purple-500 focus:ring-2 focus:ring-purple-500"
-              type="text" formControlName="location">
 
-            <fa-icon class="w-1/12 text-lg text-purple-800 cursor-pointer" (click)="deleteRepo(i)"
-              matTooltip="Remove repository from project" title="Save" [icon]="faDelete"></fa-icon>
+      <mat-form-field class="col-span-5 text-blue-800 focus:outline-none">
+        <mat-label>Add to New Workspace</mat-label>
+        <input matInput placeholder="Ex. Backend Services" formControlName="newWorkspaceValue">
+      </mat-form-field>
 
-            <input type="checkbox" formControlName="monitor"
-              matTooltip="Let {{appName}} monitor repository continuously"
-              class="text-purple-500 border-purple-500 rounded focus:ring-0">
-          </div>
+
+      <div class="col-span-2"></div>
+
+      <!-- Repositories -->
+      <div class="flex flex-col col-span-1 font-semibold text-right">
+        <div>Repositories</div>
+        <div class="self-center mt-4">
+          <!-- <fa-icon class="w-1/12 text-lg text-purple-800" matTooltip="Add repository to project" [icon]="faAdd"></fa-icon> -->
+          <button (click)="showNewRepo=true" class="focus:outline-none" mat-mini-fab aria-label="Add code repository"
+            matTooltip="Add repository to project">
+            <mat-icon class="text-blue-800 focus:outline-none">add</mat-icon>
+          </button>
         </div>
-      </ng-container>
-      <!-- New repository -->
-      <div *ngIf="showNewRepo && projectForm" [formGroup]="newRepository"
-        class="flex flex-col mt-2 text-xs border-2 rounded">
+      </div>
+      <div class="flex flex-col flex-grow w-full col-span-11">
+        <div class="flex items-center justify-start mb-1 space-x-4">
+          <div class="w-11/12 pl-3 pr-3 border-b-2">Location</div>
+          <div class="border-b-2">Monitor</div>
+        </div>
+        <ng-container formArrayName="repositories">
+          <div *ngFor="let repo of repositories.controls; let i = index">
+            <div [formGroup]="repo" class="flex items-center justify-start my-0.5 space-x-4">
+              <input
+                class="w-10/12 text-sm border-purple-500 rounded border-1 focus:border-purple-500 focus:ring-2 focus:ring-purple-500"
+                type="text" formControlName="location">
 
-        <div class="p-2 text-sm bg-purple-100">Add New Repository</div>
-        <div class="grid items-center grid-cols-12 p-2">
-          <select formControlName="locationType"
-            class="h-8 col-span-2 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
-            <option *ngFor="let repoType of repoTypes" [ngValue]="repoType.value">{{repoType.type}}</option>
-          </select>
+              <fa-icon class="w-1/12 text-lg text-purple-800 cursor-pointer" (click)="deleteRepo(i)"
+                matTooltip="Remove repository from project" title="Save" [icon]="faDelete"></fa-icon>
 
-          <div *ngIf="getNewRepoType() === 'git'" class="col-span-10">
-            <div class="flex items-center">
-              <mat-form-field class="w-3/4 focus:outline-none">
-                <mat-label>Git repository</mat-label>
-                <input matInput placeholder="git@repository-url.git" formControlName="location" required>
-              </mat-form-field>
-              <div class="ml-4">Monitor</div>
               <input type="checkbox" formControlName="monitor"
-                matTooltip="Let {{appName}} monitor this repository continuously"
-                class="ml-3 text-purple-500 border-purple-500 rounded focus:ring-0">
-
+                matTooltip="Let {{appName}} monitor repository continuously"
+                class="text-purple-500 border-purple-500 rounded focus:ring-0">
             </div>
           </div>
-          <div *ngIf="getNewRepoType() === 'filesystem'" class="col-span-10">
-            <div *ngIf="isInElectron;else not_electron">
-              <mat-form-field class="w-3/4 focus:outline-none">
-                <mat-label>Full Filesystem Path</mat-label>
-                <input matInput placeholder="/path/to/codebase" (click)="getCodePath()" formControlName="location"
-                  required>
-              </mat-form-field>
-            </div>
-            <ng-template #not_electron>
-              <mat-form-field class="w-full focus:outline-none">
-                <mat-label>Full Filesystem Path</mat-label>
-                <input matInput placeholder="/path/to/codebase" formControlName="location" required>
-              </mat-form-field>
-            </ng-template>
-          </div>
+        </ng-container>
+        <!-- New repository -->
+        <div *ngIf="showNewRepo" [formGroup]="newRepository" class="flex flex-col w-full mt-2 text-xs border-2 rounded">
 
-          <div *ngIf="getNewRepoType() === 'git'" class="grid items-center grid-cols-12 col-span-full">
-            <div class="col-span-2 p-2 text-right"
-              matTooltip="Indicates whether the Git repository requires authentication, and pick from a pre-configured API key">
-              Requires Authentication</div>
-
-            <input type="checkbox" formControlName="requiresAuth"
-              matTooltip="Indicates whether the Git repository requires authentication, and pick from a pre-configured API key"
-              class="col-span-2 text-purple-500 border-purple-500 rounded focus:ring-0">
-
-            <div *ngIf="getNewRepoRequiresAuth()" class="col-span-2 p-2 text-right">API Key</div>
-            <select [required]="getNewRepoRequiresAuth()" *ngIf="getNewRepoRequiresAuth()"
-              formControlName="authProvider"
+          <div class="p-2 text-sm bg-purple-100">Add New Repository</div>
+          <div class="grid items-center w-full grid-cols-12 p-2">
+            <select formControlName="locationType"
               class="h-8 col-span-2 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
-              <option *ngFor="let id of apiKeyIDs" [ngValue]="id.gitServiceID">{{id.apiKeyName}}</option>
+              <option *ngFor="let repoType of repoTypes" [ngValue]="repoType.value">{{repoType.type}}</option>
             </select>
+
+            <div *ngIf="getNewRepoType() === 'git'" class="col-span-10">
+              <div class="flex items-center">
+                <mat-form-field class="w-3/4 focus:outline-none">
+                  <mat-label>Git repository</mat-label>
+                  <input matInput placeholder="git@repository-url.git" formControlName="location" required>
+                </mat-form-field>
+                <div class="ml-4">Monitor</div>
+                <input type="checkbox" formControlName="monitor"
+                  matTooltip="Let {{appName}} monitor this repository continuously"
+                  class="ml-3 text-purple-500 border-purple-500 rounded focus:ring-0">
+
+              </div>
+            </div>
+            <div *ngIf="getNewRepoType() === 'filesystem'" class="col-span-10">
+              <div *ngIf="isInElectron;else not_electron">
+                <mat-form-field class="w-3/4 focus:outline-none">
+                  <mat-label>Full Filesystem Path</mat-label>
+                  <input matInput placeholder="/path/to/codebase" (click)="getCodePath()" formControlName="location"
+                    required>
+                </mat-form-field>
+              </div>
+              <ng-template #not_electron>
+                <mat-form-field class="w-full focus:outline-none">
+                  <mat-label>Full Filesystem Path</mat-label>
+                  <input matInput placeholder="/path/to/codebase" formControlName="location" required>
+                </mat-form-field>
+              </ng-template>
+            </div>
+
+            <div *ngIf="getNewRepoType() === 'git'" class="grid items-center grid-cols-12 col-span-full">
+              <div class="col-span-2 p-2 text-right"
+                matTooltip="Indicates whether the Git repository requires authentication, and pick from a pre-configured API key">
+                Requires Authentication</div>
+
+              <input type="checkbox" formControlName="requiresAuth"
+                matTooltip="Indicates whether the Git repository requires authentication, and pick from a pre-configured API key"
+                class="col-span-2 text-purple-500 border-purple-500 rounded focus:ring-0">
+
+              <div *ngIf="getNewRepoRequiresAuth()" class="col-span-2 p-2 text-right">API Key</div>
+              <select [required]="getNewRepoRequiresAuth()" *ngIf="getNewRepoRequiresAuth()"
+                formControlName="authProvider"
+                class="h-8 col-span-2 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+                <option *ngFor="let id of apiKeyIDs" [ngValue]="id.gitServiceID">{{id.apiKeyName}}</option>
+              </select>
+            </div>
+            <div class="col-span-10"></div>
+            <div>
+              <button (click)="clearNewRepo()"
+                class="w-20 p-1 text-xs text-blue-800 border-2 border-red-200 rounded hover:bg-red-200">
+                <span class="text-sm font-medium">Cancel</span>
+              </button>
+            </div>
+            <div>
+              <button (click)="addNewRepo()"
+                class="w-20 p-1 text-xs text-blue-800 border-2 border-green-200 rounded hover:bg-green-200">
+                <span class="text-sm font-medium">Save</span>
+              </button>
+            </div>
           </div>
-          <div class="col-span-10"></div>
-          <div>
-            <button (click)="clearNewRepo()"
-              class="w-20 p-1 text-xs text-blue-800 border-2 border-red-200 rounded hover:bg-red-200">
-              <span class="text-sm font-medium">Cancel</span>
-            </button>
-          </div>
-          <div>
-            <button (click)="addNewRepo()"
-              class="w-20 p-1 text-xs text-blue-800 border-2 border-green-200 rounded hover:bg-green-200">
-              <span class="text-sm font-medium">Save</span>
-            </button>
-          </div>
+
+
         </div>
-
-
       </div>
-    </div>
-  </form>
+
+      <!-- Policy -->
+      <div class="col-span-1 font-semibold text-right">Edit Policy</div>
+      <div formGroupName="scanPolicy" class="flex flex-col w-full col-span-11 p-2 border-2 border-purple-200 rounded">
+        <div class="flex items-center space-x-2">
+          <div class="text-sm">Edit Advanced Exclusion Policy</div>
+          <input type="checkbox" formControlName="configured" matTooltip="Edit scan allowlist policies"
+            class="text-purple-500 border-purple-500 rounded focus:ring-0">
+        </div>
+        <div *ngIf="getPolicyConfigured() && project.ScanPolicy && project.ScanPolicy.Policy" class="w-full mt-2 mb-6">
+          <ngx-codemirror formControlName="policy" [options]="{
+      lineNumbers: true,
+      theme: 'material',
+      mode: 'yaml'
+    }"></ngx-codemirror>
+        </div>
+      </div>
+    </form>
+  </div>
+
 
   <!-- Submit -->
-  <div class="grid grid-cols-12 p-4">
-    <div class="col-span-11"> </div>
+  <div class="grid grid-cols-12 p-2 bottom-2 bg-purple-50">
+    <div class="col-span-11 bg-purple-50"> </div>
     <button mat-button (click)="updateProject()" class="text-xs text-blue-800 bg-yellow-300 hover:bg-red-400">
       <fa-icon class="text-lg text-blue-800" title="Save" [icon]="faSave">
       </fa-icon> <span class="ml-2 text-sm font-medium">Save</span>
     </button>
   </div>
-
-
 </div>
