@@ -122,7 +122,6 @@
     "directories": {
       "output": "release/"
     },
-    
     "files": [
       "**/*",
       "!**/dist/builder-debug.yml",
