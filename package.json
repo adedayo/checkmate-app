@@ -122,6 +122,7 @@
     "directories": {
       "output": "release/"
     },
+    
     "files": [
       "**/*",
       "!**/dist/builder-debug.yml",
@@ -161,15 +162,35 @@
       ],
       "publish": [
         "github"
+      ],
+      "extraResources": [
+        {
+          "from": "checkmate-binary/windows/checkmate.exe",
+          "to": "checkmate.exe",
+          "filter": [
+            "**/*"
+          ]
+        }
       ]
     },
     "mac": {
       "icon": "build/icons/CheckMateLogo.icns",
+      "category": "Utilities",
+      "identity": null,
       "target": [
         "dmg"
       ],
       "publish": [
         "github"
+      ],
+      "extraResources": [
+        {
+          "from": "checkmate-binary/darwin/checkmate",
+          "to": "checkmate",
+          "filter": [
+            "**/*"
+          ]
+        }
       ]
     },
     "linux": {
@@ -179,31 +200,17 @@
       ],
       "publish": [
         "github"
+      ],
+      "extraResources": [
+        {
+          "from": "checkmate-binary/linux/checkmate",
+          "to": "checkmate",
+          "filter": [
+            "**/*"
+          ]
+        }
       ]
-    },
-    "extraResources": [
-      {
-        "from": "checkmate-binary/darwin/checkmate",
-        "to": "checkmate",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "checkmate-binary/linux/checkmate",
-        "to": "checkmate",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "checkmate-binary/windows/checkmate.exe",
-        "to": "checkmate.exe",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ]
+    }
   },
   "bugs": {
     "url": "https://github.com/adedayo/checkmate-app/issues"
