@@ -4,7 +4,7 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { faEdit, faSave, faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import { ElectronService } from 'ngx-electron';
+import { NgxIsElectronService } from 'ngx-is-electron';
 // import { faSave } from '@fortawesome/free-solid-svg-icons';
 import { Subscription } from 'rxjs';
 import { Project, RepoType } from '../models/project';
@@ -44,7 +44,7 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
 
   constructor(private fb: FormBuilder, private router: Router,
     private ipc: ElectronIPC,
-    private checkMateService: CheckMateService, private electronService: ElectronService) {
+    private checkMateService: CheckMateService, private electronService: NgxIsElectronService) {
     this.isInElectron = this.electronService.isElectronApp;
   }
 

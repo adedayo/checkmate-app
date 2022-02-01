@@ -13,9 +13,9 @@ import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
 import { Subscription } from 'rxjs';
 import { faCog, faPlayCircle, faSave, faFileDownload, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { ElectronService } from 'ngx-electron';
 import { ElectronIPC } from '../services/electron.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { NgxIsElectronService } from 'ngx-is-electron';
 
 
 
@@ -140,7 +140,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   constructor(private fb: FormBuilder, private router: Router,
     private checkMateService: CheckMateService,
-    electronService: ElectronService, private ipc: ElectronIPC,
+    electronService: NgxIsElectronService, private ipc: ElectronIPC,
     private snackBar: MatSnackBar) {
 
     this.isInElectron = electronService.isElectronApp;

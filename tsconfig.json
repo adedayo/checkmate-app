@@ -12,7 +12,12 @@
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "paths": {},
+    "paths": {
+      "ngx-is-electron": [
+        "dist/ngx-is-electron/ngx-is-electron",
+        "dist/ngx-is-electron"
+      ]
+    },
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "es2015",

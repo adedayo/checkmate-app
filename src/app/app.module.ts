@@ -14,7 +14,6 @@ import { ToggleSidebarComponent } from './toggle-sidebar/toggle-sidebar.componen
 import { HeaderComponent } from './header/header.component';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
-import { NgxElectronModule } from 'ngx-electron';
 import { ProjectsComponent } from './projects/projects.component';
 import { SettingsComponent } from './settings/settings.component';
 import { FooterComponent } from './footer/footer.component';
@@ -54,6 +53,7 @@ import { GithubFilterPipe } from './pipes/github-filter.pipe';
 import { GithubProjectListitemComponent } from './github-project-listitem/github-project-listitem.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProjectEditComponent } from './project-edit/project-edit.component';
+import { NgxIsElectronModule } from 'projects/ngx-is-electron/src/public-api';
 
 
 @NgModule({
@@ -95,7 +95,6 @@ import { ProjectEditComponent } from './project-edit/project-edit.component';
     MatSidenavModule,
     MatListModule,
     MatDividerModule,
-    NgxElectronModule,
     MatGridListModule,
     HttpClientModule,
     FontAwesomeModule,
@@ -115,6 +114,7 @@ import { ProjectEditComponent } from './project-edit/project-edit.component';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
+    NgxIsElectronModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

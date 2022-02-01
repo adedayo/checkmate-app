@@ -2,7 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ElectronService } from 'ngx-electron';
+import { NgxIsElectronService } from 'ngx-is-electron';
 import { ProjectDescription, Repository, ScanPolicy, SecretSearchOptions } from '../models/project-scan';
 import { RepoType } from '../models/project';
 import { CheckMateService } from '../services/checkmate.service';
@@ -29,7 +29,7 @@ export class ProjectSetupComponent implements OnInit {
   existingWorkspaces: string[] = ['Default'];
 
   constructor(private fb: FormBuilder,
-    electronService: ElectronService,
+    electronService: NgxIsElectronService,
     private ipc: ElectronIPC,
     private checkMateService: CheckMateService,
     private router: Router) {

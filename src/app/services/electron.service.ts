@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ElectronService } from 'ngx-electron';
+import { NgxIsElectronService } from 'ngx-is-electron';
 
 
 @Injectable({
@@ -7,7 +7,7 @@ import { ElectronService } from 'ngx-electron';
 })
 export class ElectronIPC {
 
-  constructor(private electronService: ElectronService) {
+  constructor(private electronService: NgxIsElectronService) {
 
   }
 
