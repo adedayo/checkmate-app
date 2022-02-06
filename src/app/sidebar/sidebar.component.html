@@ -3,7 +3,7 @@
 
 
   <nav class="relative flex flex-col w-full text-lg">
-    <div class="flex-grow">
+    <div class="grow">
       <a routerLinkActive="active-list-item" routerLink="dashboard" title="Posture"
         class="flex mb-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
         <mat-icon class="items-start self-center icon" [@iconAnimation]="sidebarState">privacy_tip</mat-icon>
@@ -20,10 +20,11 @@
         <div class="pl-4" [@labelAnimation]="sidebarState">Projects</div>
       </a>
     </div>
-    <div class="flex-grow mb-4 fixed bottom-0">
+    <div class="grow mb-4 fixed bottom-0">
       <a routerLinkActive="active-list-item" routerLink="settings" title="Settings"
         class="flex my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
-        <mat-icon class="items-start self-center icon justify-between" [@iconAnimation]="sidebarState">settings</mat-icon>
+        <mat-icon class="items-start self-center icon justify-between" [@iconAnimation]="sidebarState">settings
+        </mat-icon>
         <div class="pl-4 mr-16 w-full" [@labelAnimation]="sidebarState">Settings</div>
       </a>
     </div>

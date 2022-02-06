@@ -255,7 +255,7 @@
 
     <!-- incident list -->
     <div tabControl (pageEnd)="pageListener($event)" [ngClass]="issueFocussed? 'col-span-1':'col-span-2'"
-      class="flex-grow w-full overflow-y-auto shadow-lg max-h-96">
+      class="grow w-full overflow-y-auto shadow-lg max-h-96">
       <div (focusout)="focusOut()" class="grid grid-cols-1"
         *ngFor="let issue of pagedResult.Diagnostics | issueFilter:issueSearch; let i=index">
         <app-incident-list-item tabindex="{{i}}" [issue]="issue" (focus)="focussed(issue)"
