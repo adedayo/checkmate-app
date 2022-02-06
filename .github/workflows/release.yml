@@ -10,44 +10,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  # build-macos:
-  #   runs-on: macos-latest
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v2
-  #       with:
-  #         node-version: 14.x
-  #         cache: 'npm'
-  #     - name: install dependencies
-  #       run: npm install
-  #     - name: build
-  #       run: |
-  #         chmod +x download-checkmate.sh
-  #         ./download-checkmate.sh
-  #         npm run electron:build
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.github_token }}
-  # build-linux:
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v2
-  #       with:
-  #         node-version: 14.x
-  #         cache: 'npm'
-  #     - name: install dependencies
-  #       run: npm install
-  #     - name: build
-  #       run: |
-  #         chmod +x download-checkmate.sh
-  #         ./download-checkmate.sh
-  #         npm run electron:build
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.github_token }}
-  build-windows:
-    runs-on: windows-latest
+  build-macos:
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v2
@@ -55,12 +19,48 @@ jobs:
         with:
           node-version: 14.x
           cache: 'npm'
-      - name: download checkmate
-        run: .\download-checkmate.ps1
       - name: install dependencies
         run: npm install
       - name: build
         run: |
-          npm run electron:build:windows
+          chmod +x download-checkmate.sh
+          ./download-checkmate.sh
+          npm run electron:build
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 14.x
+          cache: 'npm'
+      - name: install dependencies
+        run: npm install
+      - name: build
+        run: |
+          chmod +x download-checkmate.sh
+          ./download-checkmate.sh
+          npm run electron:build
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+  # build-windows:
+  #   runs-on: windows-latest
+
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: 14.x
+  #         cache: 'npm'
+  #     - name: download checkmate
+  #       run: .\download-checkmate.ps1
+  #     - name: install dependencies
+  #       run: npm install
+  #     - name: build
+  #       run: |
+  #         npm run electron:build:windows
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.github_token }}
