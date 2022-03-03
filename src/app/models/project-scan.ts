@@ -15,7 +15,7 @@ export interface ProjectSummary {
 }
 
 export type ScanStatus = ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd |
-  ProjectScanOptions | Project | ScanSummary;
+  ProjectScanOptions | Project | ScanSummary | MonitorOptions;
 export interface ProjectDescription {
   Name: string;
   Workspace: string;
@@ -34,7 +34,8 @@ export interface ScanPolicy {
 export interface ScanResult {
   Grade: string;
   Metric: number;
-  SubMetrics?: Map<string, number>;
+  // SubMetrics?: Map<string, number>;
+  SubMetrics?: { [key: string]: number };
 }
 
 export interface Workspace {
@@ -94,6 +95,9 @@ export interface ProjectScanOptions {
   SecretSearchOptions?: SecretSearchOptions;
 }
 
+export interface MonitorOptions {
+  ProjectIDs: string[];
+}
 export interface SecretSearchOptions {
   ShowSource?: boolean;
   ConfidentialFilesOnly?: boolean;

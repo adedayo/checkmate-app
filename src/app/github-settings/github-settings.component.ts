@@ -48,7 +48,6 @@ export class GithubSettingsComponent implements OnInit {
       AccountType: accountType,
     };
 
-    console.log(integration);
 
 
     this.checkmateService.createGitHubIntegration(integration).subscribe(data => {

@@ -28,7 +28,7 @@ let appPath = path.join(path.dirname(app.getAppPath()), cmExec);
 if (serve) {
   appPath = path.join(path.dirname(app.getAppPath()), 'checkmate-app', 'checkmate-binary', os, cmExec);
 }
-console.log('Remote path (exe):', appPath, 'Env: ', process.env.NODE_ENV);
+// console.log('Remote path (exe):', appPath, 'Env: ', process.env.NODE_ENV);
 
 
 const apiPort = 17283;

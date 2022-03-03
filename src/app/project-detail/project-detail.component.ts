@@ -16,6 +16,7 @@ import { faCog, faPlayCircle, faSave, faFileDownload, faSearch } from '@fortawes
 import { ElectronIPC } from '../services/electron.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgxIsElectronService } from 'ngx-is-electron';
+import { WebSocketSubject } from 'rxjs/webSocket';
 
 
 
@@ -36,6 +37,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   spinGeneral = false;
   spinForProject = false;
   spinForProjectSummary = false;
+  sockets: WebSocketSubject<ScanStatus>[] = [];
   public set showSpinner(v: boolean) {
     this.spinGeneral = v;
   }
@@ -176,6 +178,35 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       const subPaths = path.split('/');
       const projectID = subPaths[subPaths.length - 1];
       this.refreshProject(projectID);
+
+      const socket = this.checkMateService.monitorProjectScan({ ProjectIDs: [projectID] });
+      this.sockets.push(socket);
+      socket.subscribe(msg => {
+        this.showSpinner = false;
+        if (this.isScanProgress(msg)) {
+          const prog = msg;
+          this.currentFile = prog.CurrentFile;
+          if (prog.Total > 0) {
+            this.progress = (100 * prog.Position) / prog.Total;
+          }
+          if (msg.Position === msg.Total) {
+            this.currentFile = '';
+            this.scanning = false;
+            this.progress = 0;
+            this.refreshProject(this.project.ID);
+          }
+        }
+      },
+        err => {
+
+          if ((err as CloseEvent).type !== undefined) {
+            if ((err as CloseEvent).type === 'close') {
+              return;
+            }
+          }
+          console.error('Error:', err);
+        },
+        () => { });
     }
 
     this.size$ = this.pagingForm.get('size').valueChanges.subscribe(x => {
@@ -246,6 +277,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.sockets.forEach(socket => {
+      socket.complete();
+    });
     if (this.project$) {
       this.project$.unsubscribe();
     }
@@ -606,31 +640,33 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     }
 
     this.runScan$ = this.checkMateService.runScan(options).subscribe(
-      msg => {
-        this.showSpinner = false;
-        if (this.isScanProgress(msg)) {
-          const prog = msg;
-          this.currentFile = prog.CurrentFile;
-          if (prog.Total > 0) {
-            this.progress = (100 * prog.Position) / prog.Total;
-          }
-        } else if (this.isScanEnd(msg)) {
-          this.currentFile = '';
-          this.scanning = false;
-          this.progress = 0;
-          this.refreshProject(this.project.ID);
-        }
-      },
-      err => {
+      // msg => {
+      //   this.showSpinner = false;
+      //   if (this.isScanProgress(msg)) {
+      //     const prog = msg;
+      //     this.currentFile = prog.CurrentFile;
+      //     if (prog.Total > 0) {
+      //       this.progress = (100 * prog.Position) / prog.Total;
+      //     }
+      //     if (msg.Position === msg.Total) {
+      //       this.currentFile = '';
+      //       this.scanning = false;
+      //       this.progress = 0;
+      //       this.refreshProject(this.project.ID);
+      //     }
+      //   }
+      // },
+      // err => {
 
-        if ((err as CloseEvent).type !== undefined) {
-          if ((err as CloseEvent).type === 'close') {
-            return;
-          }
-        }
-        console.error('Error:', err);
-      },
-      () => { });
+      //   if ((err as CloseEvent).type !== undefined) {
+      //     if ((err as CloseEvent).type === 'close') {
+      //       return;
+      //     }
+      //   }
+      //   console.error('Error:', err);
+      // },
+      // () => { }
+    );
 
 
   }

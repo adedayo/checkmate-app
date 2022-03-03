@@ -5,5 +5,5 @@ export const environment: Environment = {
   apiHost: 'checkmate-api',
   apiPath: 'api',
   apiPort: 17283,
-
+  wsProtocol: 'ws',
 };

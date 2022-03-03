@@ -6,7 +6,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
   ProjectDescription, ProjectScanOptions, ProjectSummary,
-  ScanStatus, ScanSummary, Workspace, GitCapabilities
+  ScanStatus, ScanSummary, Workspace, GitCapabilities, MonitorOptions
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { CodeContext, ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
@@ -21,7 +21,8 @@ import { GitHubPagedSearch, GitHubProjectSearchResult } from '../models/github-p
 export class CheckMateService {
 
   apiPort = 17283;
-  api = `http://localhost:${this.apiPort}/api`;
+  api = `http://localhost:${this.apiPort}/api`;//default, values set from environment service
+  wsAPI = `ws://localhost:${this.apiPort}/api`;//default, values set from environment service
 
   private showSpinner = new BehaviorSubject<boolean>(false);
 
@@ -40,11 +41,13 @@ export class CheckMateService {
     this.electron.getAPIConfig().then(port => {
       this.apiPort = port;
       this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
+      this.wsAPI = `${env.getEnvironment().wsProtocol}://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
     }).catch((err) => {
       const port = env.getEnvironment().apiPort;
       this.apiPort = port;
       console.log(`error getting API port but attempting default port ${port}`, err);
       this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
+      this.wsAPI = `${env.getEnvironment().wsProtocol}://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
     });
     this.http.get<GitCapabilities>(`${this.api}/git/capabilities`).subscribe(cap => this.gitCaps.next(cap));
   }
@@ -142,10 +145,22 @@ export class CheckMateService {
   }
 
   runScan(options: ProjectScanOptions): WebSocketSubject<ScanStatus> {
-    const ws = webSocket<ScanStatus>(`ws://localhost:${this.apiPort}/api/secrets/scan`);
+    const ws = webSocket<ScanStatus>(`${this.wsAPI}/secrets/scan`);
     ws.next(options);
     return ws;
   }
+
+  monitorProjectScan(options: MonitorOptions): WebSocketSubject<ScanStatus> {
+    const ws = webSocket<ScanStatus>(`${this.wsAPI}/monitor/projectscan`);
+    ws.next(options);
+    return ws;
+  }
+
+  // monitorWorkspaceScan(options: MonitorOptions): WebSocketSubject<ScanStatus> {
+  //   const ws = webSocket<ScanStatus>(`${this.wsAPI}/monitor/workspacescan`);
+  //   ws.next(options);
+  //   return ws;
+  // }
 
   getProjectSummary(projID: string): Observable<ProjectSummary> {
     return this.http.get<ProjectSummary>(`${this.api}/projectsummary/${projID}`);

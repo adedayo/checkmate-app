@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { faCog, faEdit, faPlayCircle, faShieldAlt, faSlidersH, faWrench } from '@fortawesome/free-solid-svg-icons';
@@ -8,6 +9,7 @@ import {
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
 import { Subscription } from 'rxjs';
+import { WebSocketSubject } from 'rxjs/webSocket';
 @Component({
   selector: 'app-project-summary',
   templateUrl: './project-summary.component.html',
@@ -30,6 +32,7 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
   infoCount = 0;
 
   scanning = false;
+  sockets: WebSocketSubject<ScanStatus>[] = [];
 
   graphData = [];
   // view: any[] = [350, 120];
@@ -61,9 +64,39 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.checkMateService.setSpinnerState(false);//stop spinning the wheel in the project list view
     this.updateGraph();
+
+    const socket = this.checkMateService.monitorProjectScan({ ProjectIDs: [this.projectSummary.ID] });
+    this.sockets.push(socket);
+    socket.subscribe(msg => {
+      if (this.isScanProgress(msg)) {
+        const prog = msg;
+        this.currentFile = prog.CurrentFile;
+        if (prog.Total > 0) {
+          this.progress = (100 * prog.Position) / prog.Total;
+        }
+        if (msg.Position === msg.Total) {
+          this.currentFile = '';
+          this.scanning = false;
+          this.progress = 0;
+        }
+      }
+    },
+      err => {
+
+        if ((err as CloseEvent).type !== undefined) {
+          if ((err as CloseEvent).type === 'close') {
+            return;
+          }
+        }
+        console.error('Error:', err);
+      },
+      () => { });
   }
 
   ngOnDestroy(): void {
+    this.sockets.forEach(socket => {
+      socket.complete();
+    });
     if (this.runScan$) {
       this.runScan$.unsubscribe();
     }
@@ -89,55 +122,55 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
     }
 
     this.runScan$ = this.checkMateService.runScan(options).subscribe(
-      msg => {
+      // msg => {
 
-        if (this.isScanProgress(msg)) {
-          // console.log('Got progress: ', JSON.stringify(msg));
-          const prog = msg as ScanProgress;
-          this.currentFile = prog.CurrentFile;
-          if (prog.Total > 0) {
-            this.progress = (100 * prog.Position) / prog.Total;
-          }
-        } else if (this.isScanEnd(msg)) {
-          // console.log('Ending scan');
-          this.currentFile = '';
-          this.scanning = false;
-          this.checkMateService.getProjectSummary(this.projectSummary.ID).subscribe(summary => {
-            this.projectSummary = summary;
-            this.updateGraph();
-          });
-        }
-        else if (this.isDiagnostic(msg)) {
-          const diag = msg as SecurityDiagnostic;
-          switch (diag.justification.headline.confidence.toLowerCase()) {
-            case 'high':
-              this.highCount += 1;
-              break;
-            case 'medium':
-              this.mediumCount += 1;
-              break;
-            case 'low':
-              this.lowCount += 1;
-              break;
-            case 'informational':
-              this.infoCount += 1;
-              break;
-            default:
-              break;
-          }
-        }
-      },
-      err => {
-        if ((err as CloseEvent).type !== undefined) {
-          if ((err as CloseEvent).type === 'close') {
-            return;
-          }
-        }
-        console.error('Error:', err);
-      },
-      () => {
-        // console.log('Socket closed');
-      }
+      //   if (this.isScanProgress(msg)) {
+      //     // console.log('Got progress: ', JSON.stringify(msg));
+      //     const prog = msg as ScanProgress;
+      //     this.currentFile = prog.CurrentFile;
+      //     if (prog.Total > 0) {
+      //       this.progress = (100 * prog.Position) / prog.Total;
+      //     }
+      //   } else if (this.isScanEnd(msg)) {
+      //     // console.log('Ending scan');
+      //     this.currentFile = '';
+      //     this.scanning = false;
+      //     this.checkMateService.getProjectSummary(this.projectSummary.ID).subscribe(summary => {
+      //       this.projectSummary = summary;
+      //       this.updateGraph();
+      //     });
+      //   }
+      //   else if (this.isDiagnostic(msg)) {
+      //     const diag = msg as SecurityDiagnostic;
+      //     switch (diag.justification.headline.confidence.toLowerCase()) {
+      //       case 'high':
+      //         this.highCount += 1;
+      //         break;
+      //       case 'medium':
+      //         this.mediumCount += 1;
+      //         break;
+      //       case 'low':
+      //         this.lowCount += 1;
+      //         break;
+      //       case 'informational':
+      //         this.infoCount += 1;
+      //         break;
+      //       default:
+      //         break;
+      //     }
+      //   }
+      // },
+      // err => {
+      //   if ((err as CloseEvent).type !== undefined) {
+      //     if ((err as CloseEvent).type === 'close') {
+      //       return;
+      //     }
+      //   }
+      //   console.error('Error:', err);
+      // },
+      // () => {
+      //   // console.log('Socket closed');
+      // }
     );
   }
 
@@ -175,11 +208,11 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
     }
   }
 
-  isScanProgress(msg: ScanStatus): boolean {
+  isScanProgress(msg: ScanStatus): msg is ScanProgress {
     return (msg as ScanProgress).Position !== undefined;
   }
 
-  isScanEnd(msg: ScanStatus): boolean {
+  isScanEnd(msg: ScanStatus): msg is ScanEnd {
     return (msg as ScanEnd).Message !== undefined;
   }
 

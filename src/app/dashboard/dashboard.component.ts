@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-import { ScanSummary, Workspace, WorkspaceDetail } from '../models/project-scan';
+/* eslint-disable @typescript-eslint/naming-convention */
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ScanProgress, ScanStatus, ScanSummary, Workspace, WorkspaceDetail } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ElectronIPC } from '../services/electron.service';
+import { WebSocketSubject } from 'rxjs/webSocket';
 
 
 @Component({
@@ -12,7 +14,7 @@ import { ElectronIPC } from '../services/electron.service';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   criticalCount: number;
   highCount: number;
   mediumCount: number;
@@ -24,8 +26,11 @@ export class DashboardComponent implements OnInit {
 
   workspaceForm: FormGroup;
   wspace$: any;
+  scanInProgress: boolean;
+
   public set workspaceName(name: string) {
     this.currentWorkspaceName = name;
+    this.scanInProgress = false;
     if (this.workspaceForm.get('wspace').value as string !== name) {
       this.workspaceForm.patchValue({ wspace: name });
     }
@@ -40,6 +45,8 @@ export class DashboardComponent implements OnInit {
   workspaces: Workspace;
   scanSummary: ScanSummary;
   workspaceNames: string[] = [];
+  sockets: WebSocketSubject<ScanStatus>[] = [];
+  projectIDs = new Map<string, string[]>();//map from workspace -> project IDs
 
   curve: any = curveBumpX;
   graphData = [];
@@ -67,6 +74,7 @@ export class DashboardComponent implements OnInit {
   colorScheme = {
     domain: ['purple', 'red', 'gold', 'blue', 'green']
   };
+
   public get currentWorkspace(): WorkspaceDetail | null {
     if (!this.workspaces) {
       return null;
@@ -87,6 +95,11 @@ export class DashboardComponent implements OnInit {
     });
 
   }
+  ngOnDestroy(): void {
+    this.sockets.forEach(socket => {
+      socket.complete();
+    });
+  }
 
   ngOnInit(): void {
     this.showSpinner = true;
@@ -98,6 +111,7 @@ export class DashboardComponent implements OnInit {
         this.noWorkspace = false;
 
         this.workspaces = w;
+
         this.workspaceNames = [];
         for (const k of Object.keys(w.Details)) {
           if (k === '' || k === 'Default') {
@@ -109,6 +123,29 @@ export class DashboardComponent implements OnInit {
         this.workspaceNames = this.workspaceNames.filter(this.uniqueFilter);
         if (this.workspaceNames.length > 0) {
           this.workspaceName = this.workspaceNames[0];
+          this.workspaceNames.forEach(ws => {
+            const projectIDs: string[] = [];
+            this.workspaces.Details[ws].ProjectSummaries.forEach(ps => {
+              projectIDs.push(ps.ID);
+            });
+            this.projectIDs.set(ws, projectIDs);
+            const socket = this.checkmate.monitorProjectScan({ ProjectIDs: projectIDs });
+            this.sockets.push(socket);
+            socket.subscribe(x => {
+              if (this.isScanProgress(x) && x.Position !== x.Total) {
+                if (this.projectIDs.get(this.currentWorkspaceName).includes(x.ProjectID)) {
+                  this.scanInProgress = true;
+                } else {
+                  this.scanInProgress = false;
+                }
+              } else {
+                this.scanInProgress = false;
+              }
+            }, _ => {
+              //silence close error
+
+            });
+          });
         } else {
           this.noWorkspace = true;
         }
@@ -231,6 +268,10 @@ export class DashboardComponent implements OnInit {
         this.snackBar.open('Error generating project summary report ' + err.error, 'close');
       }
     );
+  }
+
+  isScanProgress(msg: ScanStatus): msg is ScanProgress {
+    return (msg as ScanProgress).Position !== undefined;
   }
 
 }

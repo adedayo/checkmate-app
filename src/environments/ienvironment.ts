@@ -3,4 +3,5 @@ export interface Environment {
   apiPath: string;
   apiPort: number;
   apiHost: string;
+  wsProtocol: string; //whether to use ws vs wss
 }
