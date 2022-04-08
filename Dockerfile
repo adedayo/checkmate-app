@@ -5,6 +5,7 @@ COPY package.json package-lock.json ./
 RUN npm --version
 RUN npm install --silent
 COPY . .
+RUN npm run build:lib
 RUN npm run ng build -- --configuration docker
 
 FROM nginx:alpine
