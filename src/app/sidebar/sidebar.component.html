@@ -2,27 +2,27 @@
   class="z-0 flex w-64 h-full px-2 space-y-6 text-purple-100 bg-purple-800">
 
 
-  <nav class="relative flex flex-col w-full text-lg">
+  <nav class="relative flex flex-col w-full text-sm">
     <div class="grow">
       <a routerLinkActive="active-list-item" routerLink="dashboard" title="Posture"
-        class="flex mb-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        class="flex mb-2 py-2.5 px-2 items-center focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
         <mat-icon class="items-start self-center icon" [@iconAnimation]="sidebarState">privacy_tip</mat-icon>
         <div class="pl-4" [@labelAnimation]="sidebarState">Posture</div>
       </a>
       <a *ngIf="gitServiceEnabled" routerLinkActive="active-list-item" routerLink="discover" title="Discover"
-        class="flex my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        class="flex my-2 py-2.5 px-2 items-center focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
         <mat-icon class="items-start self-center icon" [@iconAnimation]="sidebarState">policy</mat-icon>
         <div class="pl-4" [@labelAnimation]="sidebarState">Discover</div>
       </a>
       <a routerLinkActive="active-list-item" routerLink="projects" title="Projects"
-        class="flex my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        class="flex my-2 py-2.5 px-2 items-center focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
         <mat-icon class="items-start self-center icon" [@iconAnimation]="sidebarState">source</mat-icon>
         <div class="pl-4" [@labelAnimation]="sidebarState">Projects</div>
       </a>
     </div>
     <div class="grow mb-4 fixed bottom-0">
       <a routerLinkActive="active-list-item" routerLink="settings" title="Settings"
-        class="flex my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
+        class="flex my-2 py-2.5 px-2 items-center focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white rounded transition duration-200">
         <mat-icon class="items-start self-center icon justify-between" [@iconAnimation]="sidebarState">settings
         </mat-icon>
         <div class="pl-4 mr-16 w-full" [@labelAnimation]="sidebarState">Settings</div>

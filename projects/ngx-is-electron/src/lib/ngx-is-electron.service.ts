@@ -7,7 +7,7 @@ declare let window: any;
   providedIn: 'root'
 })
 export class NgxIsElectronService {
-  private _electron;
+  private _electron: any;
 
   private get electron() {
     if (!this._electron) {

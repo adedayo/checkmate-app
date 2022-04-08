@@ -156,11 +156,7 @@ export class CheckMateService {
     return ws;
   }
 
-  // monitorWorkspaceScan(options: MonitorOptions): WebSocketSubject<ScanStatus> {
-  //   const ws = webSocket<ScanStatus>(`${this.wsAPI}/monitor/workspacescan`);
-  //   ws.next(options);
-  //   return ws;
-  // }
+
 
   getProjectSummary(projID: string): Observable<ProjectSummary> {
     return this.http.get<ProjectSummary>(`${this.api}/projectsummary/${projID}`);

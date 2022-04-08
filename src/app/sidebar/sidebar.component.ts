@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SidebarService } from 'src/app/services/sidebar.service';
 import { sidebarAnimation, iconAnimation, labelAnimation } from 'src/app/animations';
-import { ThrowStmt } from '@angular/compiler';
 import { CheckMateService } from '../services/checkmate.service';
 
 @Component({
