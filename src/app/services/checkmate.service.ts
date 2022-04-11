@@ -40,14 +40,14 @@ export class CheckMateService {
   constructor(private http: HttpClient, private electron: ElectronIPC, private env: EnvironmentsService) {
     this.electron.getAPIConfig().then(port => {
       this.apiPort = port;
-      this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
-      this.wsAPI = `${env.getEnvironment().wsProtocol}://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
+      this.api = `http://${this.env.getEnvironment().apiHost}:${port}/${this.env.getEnvironment().apiPath}`;
+      this.wsAPI = `${this.env.getEnvironment().wsProtocol}://${this.env.getEnvironment().apiHost}:${port}/${this.env.getEnvironment().apiPath}`;
     }).catch((err) => {
-      const port = env.getEnvironment().apiPort;
+      const port = this.env.getEnvironment().apiPort;
       this.apiPort = port;
       console.log(`error getting API port but attempting default port ${port}`, err);
-      this.api = `http://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
-      this.wsAPI = `${env.getEnvironment().wsProtocol}://${env.getEnvironment().apiHost}:${port}/${env.getEnvironment().apiPath}`;
+      this.api = `http://${this.env.getEnvironment().apiHost}:${port}/${this.env.getEnvironment().apiPath}`;
+      this.wsAPI = `${this.env.getEnvironment().wsProtocol}://${this.env.getEnvironment().apiHost}:${port}/${this.env.getEnvironment().apiPath}`;
     });
     this.http.get<GitCapabilities>(`${this.api}/git/capabilities`).subscribe(cap => this.gitCaps.next(cap));
   }
