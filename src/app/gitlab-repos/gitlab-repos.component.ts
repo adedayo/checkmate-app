@@ -87,9 +87,9 @@ export class GitlabReposComponent implements OnInit, OnDestroy {
       selectedService: [''],
     });
 
-    this.subscriptions.add(this.formService.projectsDetailState.subscribe(proj => {
+    this.subscriptions = this.formService.projectsDetailState.subscribe(proj => {
       this.selectedProjects = proj;
-    }));
+    });
 
     this.subscriptions.add(this.checkMateService.getDefaultPolicy().subscribe(pol => {
       this.projectForm = this.fb.group({

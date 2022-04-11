@@ -36,7 +36,7 @@ export class GithubSettingsComponent implements OnInit, OnDestroy {
       apiKeyName: ['', Validators.required],
     });
 
-    this.subscriptions.add(this.checkmateService.getGitHubIntegrations().subscribe(data => this.gitHubConnections = data));
+    this.subscriptions = this.checkmateService.getGitHubIntegrations().subscribe(data => this.gitHubConnections = data);
   }
 
 

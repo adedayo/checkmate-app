@@ -28,7 +28,7 @@ export class ProjectSetupComponent implements OnInit, OnDestroy {
   selectedType = 'git';
 
   existingWorkspaces: string[] = ['Default'];
-  subscriptions: Subscription;
+  subscriptions: Subscription = new Subscription();
 
   constructor(private fb: FormBuilder,
     electronService: NgxIsElectronService,
@@ -70,7 +70,7 @@ export class ProjectSetupComponent implements OnInit, OnDestroy {
         }),
       });
 
-      this.subscriptions.add(this.checkMateService.getWorkspaceSummaries().subscribe(w => {
+      this.subscriptions = this.checkMateService.getWorkspaceSummaries().subscribe(w => {
         if (w.Details) {
 
           this.existingWorkspaces = [];
@@ -82,7 +82,7 @@ export class ProjectSetupComponent implements OnInit, OnDestroy {
             }
           }
         }
-      }));
+      });
     }));
 
     this.projectForm = this.fb.group({

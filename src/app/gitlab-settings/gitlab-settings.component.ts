@@ -33,7 +33,7 @@ export class GitlabSettingsComponent implements OnInit, OnDestroy {
       accessToken: ['', Validators.required],
       apiKeyName: ['', Validators.required],
     });
-    this.subscriptions.add(this.checkmateService.getGitLabIntegrations().subscribe(data => this.gitLabConnections = data));
+    this.subscriptions = this.checkmateService.getGitLabIntegrations().subscribe(data => this.gitLabConnections = data);
   }
 
   createIntegration() {
