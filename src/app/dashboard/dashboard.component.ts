@@ -7,6 +7,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ElectronIPC } from '../services/electron.service';
 import { WebSocketSubject } from 'rxjs/webSocket';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -25,7 +26,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   noWorkspace = false;
 
   workspaceForm: FormGroup;
-  wspace$: any;
+  subscriptions: Subscription;
   scanInProgress: boolean;
 
   public set workspaceName(name: string) {
@@ -95,65 +96,74 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
 
   }
+
   ngOnDestroy(): void {
     this.sockets.forEach(socket => {
       socket.complete();
     });
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
+    }
   }
 
   ngOnInit(): void {
     this.showSpinner = true;
-    this.wspace$ = this.workspaceForm.get('wspace').valueChanges.subscribe(x => {
+    this.subscriptions = this.workspaceForm.get('wspace').valueChanges.subscribe(x => {
       this.workspaceName = x;
     });
-    this.checkmate.getWorkspaceSummaries().subscribe(w => {
-      if (w.Details) {
-        this.noWorkspace = false;
+    this.subscriptions.add(this.checkmate.getWorkspaceSummaries().subscribe({
+      next: w => {
+        if (w.Details) {
+          this.noWorkspace = false;
 
-        this.workspaces = w;
+          this.workspaces = w;
 
-        this.workspaceNames = [];
-        for (const k of Object.keys(w.Details)) {
-          if (k === '' || k === 'Default') {
-            this.workspaceNames.push('Default');
-          } else {
-            this.workspaceNames.push(k);
+          this.workspaceNames = [];
+          for (const k of Object.keys(w.Details)) {
+            if (k === '' || k === 'Default') {
+              this.workspaceNames.push('Default');
+            } else {
+              this.workspaceNames.push(k);
+            }
           }
-        }
-        this.workspaceNames = this.workspaceNames.filter(this.uniqueFilter);
-        if (this.workspaceNames.length > 0) {
-          this.workspaceName = this.workspaceNames[0];
-          this.workspaceNames.forEach(ws => {
-            const projectIDs: string[] = [];
-            this.workspaces.Details[ws].ProjectSummaries.forEach(ps => {
-              projectIDs.push(ps.ID);
-            });
-            this.projectIDs.set(ws, projectIDs);
-            const socket = this.checkmate.monitorProjectScan({ ProjectIDs: projectIDs });
-            this.sockets.push(socket);
-            socket.subscribe(x => {
-              if (this.isScanProgress(x) && x.Position !== x.Total) {
-                if (this.projectIDs.get(this.currentWorkspaceName).includes(x.ProjectID)) {
-                  this.scanInProgress = true;
+          this.workspaceNames = this.workspaceNames.filter(this.uniqueFilter);
+          if (this.workspaceNames.length > 0) {
+            this.workspaceName = this.workspaceNames[0];
+            this.workspaceNames.forEach(ws => {
+              const projectIDs: string[] = [];
+              this.workspaces.Details[ws].ProjectSummaries.forEach(ps => {
+                projectIDs.push(ps.ID);
+              });
+              this.projectIDs.set(ws, projectIDs);
+              const socket = this.checkmate.monitorProjectScan({ ProjectIDs: projectIDs });
+              this.sockets.push(socket);
+              this.subscriptions.add(socket.subscribe(x => {
+                if (this.isScanProgress(x) && x.Position !== x.Total) {
+                  if (this.projectIDs.get(this.currentWorkspaceName).includes(x.ProjectID)) {
+                    this.scanInProgress = true;
+                  } else {
+                    this.scanInProgress = false;
+                  }
                 } else {
                   this.scanInProgress = false;
                 }
-              } else {
-                this.scanInProgress = false;
-              }
-            }, _ => {
-              //silence close error
+              }, _ => {
+                //silence close error
 
+              }));
             });
-          });
+          } else {
+            this.noWorkspace = true;
+          }
         } else {
           this.noWorkspace = true;
         }
-      } else {
-        this.noWorkspace = true;
+        this.showSpinner = false;
+      },
+      error: _err => {
+        this.showSpinner = false;
       }
-      this.showSpinner = false;
-    });
+    }));
   }
 
 

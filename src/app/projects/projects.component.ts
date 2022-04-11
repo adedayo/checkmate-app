@@ -1,4 +1,4 @@
-import { AfterViewChecked, AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewChecked, AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { ProjectSummary } from '../models/project-scan';
 import { CheckMateService } from '../services/checkmate.service';
@@ -11,29 +11,41 @@ import { ElectronIPC } from '../services/electron.service';
   templateUrl: './projects.component.html',
   styleUrls: ['./projects.component.scss']
 })
-export class ProjectsComponent implements OnInit {
+export class ProjectsComponent implements OnInit, OnDestroy {
 
   projectSummaries$: Observable<ProjectSummary[]>;
   projNameSearch = '';
   faSearch = faSearch;
   showSpinner = true;
+  subscriptions: Subscription;
 
   constructor(private checkmateService: CheckMateService, private ipc: ElectronIPC,
     private snackBar: MatSnackBar) {
 
   }
 
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe()
+    }
+  }
+
 
   ngOnInit(): void {
     this.checkmateService.setSpinnerState(true);
 
-    this.checkmateService.spinnerState.subscribe(spin => {
+    this.subscriptions = this.checkmateService.spinnerState.subscribe(spin => {
       setTimeout(() => this.showSpinner = spin, 0);
     });
     this.projectSummaries$ = this.checkmateService.getProjectSummaries();
-    this.projectSummaries$.subscribe(x => {
-      this.checkmateService.setSpinnerState(false);
-    });
+    this.subscriptions.add(this.projectSummaries$.subscribe({
+      next: _x => {
+        this.checkmateService.setSpinnerState(false);
+      },
+      error: _err => {
+        this.checkmateService.setSpinnerState(false);
+      }
+    }));
   }
 
   downloadProjectsReport() {

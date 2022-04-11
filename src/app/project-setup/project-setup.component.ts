@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgxIsElectronService } from 'ngx-is-electron';
@@ -7,6 +7,7 @@ import { ProjectDescription, Repository, ScanPolicy, SecretSearchOptions } from 
 import { RepoType } from '../models/project';
 import { CheckMateService } from '../services/checkmate.service';
 import { ElectronIPC } from '../services/electron.service';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -14,7 +15,7 @@ import { ElectronIPC } from '../services/electron.service';
   templateUrl: './project-setup.component.html',
   styleUrls: ['./project-setup.component.scss']
 })
-export class ProjectSetupComponent implements OnInit {
+export class ProjectSetupComponent implements OnInit, OnDestroy {
 
 
   projectForm: FormGroup;
@@ -27,6 +28,7 @@ export class ProjectSetupComponent implements OnInit {
   selectedType = 'git';
 
   existingWorkspaces: string[] = ['Default'];
+  subscriptions: Subscription;
 
   constructor(private fb: FormBuilder,
     electronService: NgxIsElectronService,
@@ -41,10 +43,15 @@ export class ProjectSetupComponent implements OnInit {
     return this.projectForm.get('newWorkspace').value as boolean;
   }
 
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
+    }
+  }
 
   ngOnInit(): void {
 
-    this.checkMateService.getDefaultPolicy().subscribe(pol => {
+    this.subscriptions.add(this.checkMateService.getDefaultPolicy().subscribe(pol => {
       this.projectForm = this.fb.group({
         projectName: ['', Validators.required],
         workspace: ['Default'],
@@ -63,7 +70,7 @@ export class ProjectSetupComponent implements OnInit {
         }),
       });
 
-      this.checkMateService.getWorkspaceSummaries().subscribe(w => {
+      this.subscriptions.add(this.checkMateService.getWorkspaceSummaries().subscribe(w => {
         if (w.Details) {
 
           this.existingWorkspaces = [];
@@ -75,8 +82,8 @@ export class ProjectSetupComponent implements OnInit {
             }
           }
         }
-      });
-    });
+      }));
+    }));
 
     this.projectForm = this.fb.group({
       projectName: ['', Validators.required],
@@ -157,9 +164,9 @@ export class ProjectSetupComponent implements OnInit {
 
     // console.log(projDesc);
 
-    this.checkMateService.createProject(projDesc).subscribe(summary => {
+    this.subscriptions.add(this.checkMateService.createProject(projDesc).subscribe(summary => {
       this.router.navigate(['project-detail', summary.ID]);
-    });
+    }));
   }
 
 

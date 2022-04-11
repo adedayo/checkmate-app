@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import { Subscription } from 'rxjs';
 import { GitService } from '../models/git';
 import { CheckMateService } from '../services/checkmate.service';
 
@@ -10,7 +11,7 @@ import { CheckMateService } from '../services/checkmate.service';
   templateUrl: './github-settings.component.html',
   styleUrls: ['./github-settings.component.scss']
 })
-export class GithubSettingsComponent implements OnInit {
+export class GithubSettingsComponent implements OnInit, OnDestroy {
 
   faTrash = faTrashAlt;
 
@@ -18,8 +19,14 @@ export class GithubSettingsComponent implements OnInit {
   connectForm: FormGroup;
   gitHubConnections: GitService[];
   accountTypes = ['User', 'Organization'];
+  subscriptions: Subscription;
 
   constructor(private fb: FormBuilder, private checkmateService: CheckMateService) { }
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
+    }
+  }
 
   ngOnInit(): void {
     this.connectForm = this.fb.group({
@@ -29,7 +36,7 @@ export class GithubSettingsComponent implements OnInit {
       apiKeyName: ['', Validators.required],
     });
 
-    this.checkmateService.getGitHubIntegrations().subscribe(data => this.gitHubConnections = data);
+    this.subscriptions.add(this.checkmateService.getGitHubIntegrations().subscribe(data => this.gitHubConnections = data));
   }
 
 
@@ -48,17 +55,15 @@ export class GithubSettingsComponent implements OnInit {
       AccountType: accountType,
     };
 
-
-
-    this.checkmateService.createGitHubIntegration(integration).subscribe(data => {
+    this.subscriptions.add(this.checkmateService.createGitHubIntegration(integration).subscribe(data => {
       this.gitHubConnections = data;
-    });
+    }));
 
   }
 
   deleteBinding(id: string) {
-    this.checkmateService.deleteGitHubIntegration(id).subscribe(data => {
+    this.subscriptions.add(this.checkmateService.deleteGitHubIntegration(id).subscribe(data => {
       this.gitHubConnections = data;
-    });
+    }));
   }
 }

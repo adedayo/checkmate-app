@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { Subscription } from 'rxjs';
 import { GitService } from '../models/git';
 import { GitHubProjectSearchResult, GitHubProject, GitHubPagedSearch } from '../models/github-project';
 import { ProjectSubForm } from '../models/project';
@@ -15,7 +16,7 @@ import { ProjectFormsService } from '../services/project-forms.service';
   templateUrl: './github-repos.component.html',
   styleUrls: ['./github-repos.component.scss']
 })
-export class GithubReposComponent implements OnInit {
+export class GithubReposComponent implements OnInit, OnDestroy {
 
   faSearch = faSearch;
   projectSearch = '';
@@ -29,6 +30,7 @@ export class GithubReposComponent implements OnInit {
   gitHubServices: GitService[] = [];
   nextCursors: Map<string, string> = new Map();//pagination per gitHub instance
   instance$: any;
+  subscriptions: Subscription;
 
   get gitHubProjects(): Map<string, GitHubProjectSearchResult> {
     return this.checkMateService.gitHubProjects;
@@ -71,6 +73,13 @@ export class GithubReposComponent implements OnInit {
     private router: Router
   ) { }
 
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
+    }
+  }
+
   ngOnInit(): void {
 
     this.showSpinner = true;
@@ -78,11 +87,11 @@ export class GithubReposComponent implements OnInit {
       selectedService: [''],
     });
 
-    this.formService.projectsDetailState.subscribe(proj => {
+    this.subscriptions.add(this.formService.projectsDetailState.subscribe(proj => {
       this.selectedProjects = proj;
-    });
+    }));
 
-    this.checkMateService.getDefaultPolicy().subscribe(pol => {
+    this.subscriptions.add(this.checkMateService.getDefaultPolicy().subscribe(pol => {
       this.projectForm = this.fb.group({
         projectName: ['', Validators.required],
         workspace: ['Default'],
@@ -100,7 +109,7 @@ export class GithubReposComponent implements OnInit {
         }),
       });
 
-      this.checkMateService.getWorkspaceSummaries().subscribe(w => {
+      this.subscriptions.add(this.checkMateService.getWorkspaceSummaries().subscribe(w => {
         if (w.Details) {
 
           this.existingWorkspaces = [];
@@ -113,8 +122,8 @@ export class GithubReposComponent implements OnInit {
           }
           this.existingWorkspaces = this.existingWorkspaces.filter(this.uniqueFilter);
         }
-      });
-    });
+      }));
+    }));
 
     this.projectForm = this.fb.group({
       projectName: ['', Validators.required],
@@ -143,8 +152,9 @@ export class GithubReposComponent implements OnInit {
       }
 
     });
+    this.subscriptions.add(this.instance$)
 
-    this.checkMateService.getGitHubIntegrations().subscribe(
+    this.subscriptions.add(this.checkMateService.getGitHubIntegrations().subscribe(
       x => {
         this.gitHubServices = x;
         if (x.length > 0) {
@@ -161,7 +171,7 @@ export class GithubReposComponent implements OnInit {
 
         }
       }
-    );
+    ));
 
   }
 

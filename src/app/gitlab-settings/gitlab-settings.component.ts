@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import { Subscription } from 'rxjs';
 import { GitService } from '../models/git';
 import { CheckMateService } from '../services/checkmate.service';
 
@@ -10,13 +11,21 @@ import { CheckMateService } from '../services/checkmate.service';
   templateUrl: './gitlab-settings.component.html',
   styleUrls: ['./gitlab-settings.component.scss']
 })
-export class GitlabSettingsComponent implements OnInit {
+export class GitlabSettingsComponent implements OnInit, OnDestroy {
 
   showInstruction = false;
   faTrash = faTrashAlt;
   connectForm: FormGroup;
   gitLabConnections: GitService[];
+  subscriptions: Subscription;
   constructor(private fb: FormBuilder, private checkmateService: CheckMateService) { }
+
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
+    }
+  }
 
   ngOnInit(): void {
     this.connectForm = this.fb.group({
@@ -24,7 +33,7 @@ export class GitlabSettingsComponent implements OnInit {
       accessToken: ['', Validators.required],
       apiKeyName: ['', Validators.required],
     });
-    this.checkmateService.getGitLabIntegrations().subscribe(data => this.gitLabConnections = data);
+    this.subscriptions.add(this.checkmateService.getGitLabIntegrations().subscribe(data => this.gitLabConnections = data));
   }
 
   createIntegration() {
@@ -38,15 +47,15 @@ export class GitlabSettingsComponent implements OnInit {
       Name: apiKeyName,
     };
 
-    this.checkmateService.createGitLabIntegration(integration).subscribe(data => {
+    this.subscriptions.add(this.checkmateService.createGitLabIntegration(integration).subscribe(data => {
       this.gitLabConnections = data;
-    });
+    }));
 
   }
 
   deleteBinding(id: string) {
-    this.checkmateService.deleteGitLabIntegration(id).subscribe(data => {
+    this.subscriptions.add(this.checkmateService.deleteGitLabIntegration(id).subscribe(data => {
       this.gitLabConnections = data;
-    });
+    }));
   }
 }

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { SidebarService } from 'src/app/services/sidebar.service';
 import { sidebarAnimation, iconAnimation, labelAnimation } from 'src/app/animations';
 import { CheckMateService } from '../services/checkmate.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,24 +14,32 @@ import { CheckMateService } from '../services/checkmate.service';
     labelAnimation(),
   ]
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnInit, OnDestroy {
   sidebarState: string;
   gitServiceEnabled = false;
+  subscriptions: Subscription;
 
   constructor(
     private sidebarService: SidebarService,
     private checkMate: CheckMateService
   ) { }
 
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
+    }
+  }
+
   ngOnInit() {
-    this.sidebarService.sidebarStateObservable$.
+    this.subscriptions = this.sidebarService.sidebarStateObservable$.
       subscribe((newState: string) => {
         this.sidebarState = newState;
       });
 
-    this.checkMate.gitCapabilities.subscribe(cap => {
+    this.subscriptions.add(this.checkMate.gitCapabilities.subscribe(cap => {
       this.gitServiceEnabled = cap.GitServiceEnabled;
-    });
+    }));
   }
 
   toggleSideNav() {

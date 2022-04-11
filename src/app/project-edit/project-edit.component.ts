@@ -41,12 +41,15 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
   selectedType = 'git';
   apiKeyIDs: keyID[] = [];
   initialNewRepoValues: any;
+  subscriptions: Subscription;
 
   constructor(private fb: FormBuilder, private router: Router,
     private ipc: ElectronIPC,
     private checkMateService: CheckMateService, private electronService: NgxIsElectronService) {
     this.isInElectron = this.electronService.isElectronApp;
   }
+
+
 
   ngOnInit(): void {
     const path = this.router.url;
@@ -56,7 +59,7 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
       const projectID = subPaths[subPaths.length - 1];
       this.refreshProject(projectID);
 
-      this.checkMateService.getWorkspaceSummaries().subscribe(w => {
+      this.subscriptions.add(this.checkMateService.getWorkspaceSummaries().subscribe(w => {
         if (w.Details) {
 
           this.existingWorkspaces = [];
@@ -97,23 +100,23 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
           }),
         });
         this.initialNewRepoValues = this.projectForm.get('newRepository').value;
-      });
+      }));
 
 
-      this.checkMateService.getGitHubIntegrations().subscribe(x => {
+      this.subscriptions.add(this.checkMateService.getGitHubIntegrations().subscribe(x => {
 
         this.apiKeyIDs.push(...x.map(y => ({
           apiKeyName: y.Name,
           gitServiceID: y.ID
         })));
 
-        this.checkMateService.getGitLabIntegrations().subscribe(z => {
+        this.subscriptions.add(this.checkMateService.getGitLabIntegrations().subscribe(z => {
           this.apiKeyIDs.push(...z.map(y => ({
             apiKeyName: y.Name,
             gitServiceID: y.ID
           })));
-        });
-      });
+        }));
+      }));
 
 
     }
@@ -161,10 +164,10 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
   refreshProject(projectID: string) {
     this.spinForProject = true;
     this.spinForProjectSummary = true;
-    this.project$ = this.checkMateService.getProject(projectID).subscribe(proj => {
+    this.subscriptions.add(this.checkMateService.getProject(projectID).subscribe(proj => {
       this.setProject(proj);
       this.spinForProject = false;
-    });
+    }));
   }
 
   get repositories(): FormArray {
@@ -225,9 +228,9 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
 
     // console.log(projDesc);
 
-    this.checkMateService.updateProject(this.project.ID, projDesc).subscribe(x => {
+    this.subscriptions.add(this.checkMateService.updateProject(this.project.ID, projDesc).subscribe(x => {
       this.router.navigate(['project-detail', x.ID]);
-    });
+    }));
 
   }
 
@@ -265,12 +268,10 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.project$) {
-      this.project$.unsubscribe();
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
     }
-
   }
-
 }
 
 

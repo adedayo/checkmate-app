@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { Subscription } from 'rxjs';
 import { GitService } from '../models/git';
 import { GitLabPagedSearch, GitLabProject, GitLabProjectSearchResult } from '../models/gitlab-project';
 import { ProjectSubForm } from '../models/project';
@@ -15,7 +16,7 @@ import { ProjectFormsService } from '../services/project-forms.service';
   templateUrl: './gitlab-repos.component.html',
   styleUrls: ['./gitlab-repos.component.scss']
 })
-export class GitlabReposComponent implements OnInit {
+export class GitlabReposComponent implements OnInit, OnDestroy {
 
   faSearch = faSearch;
   projectSearch = '';
@@ -29,6 +30,7 @@ export class GitlabReposComponent implements OnInit {
   gitLabServices: GitService[] = [];
   nextCursors: Map<string, string> = new Map();//pagination per gitlab instance
   instance$: any;
+  subscriptions: Subscription;
 
   get gitlabProjects(): Map<string, GitLabProjectSearchResult> {
     return this.checkMateService.gitLabProjects;
@@ -71,6 +73,13 @@ export class GitlabReposComponent implements OnInit {
     private router: Router
   ) { }
 
+
+  ngOnDestroy(): void {
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
+    }
+  }
+
   ngOnInit(): void {
 
     this.showSpinner = true;
@@ -78,11 +87,11 @@ export class GitlabReposComponent implements OnInit {
       selectedService: [''],
     });
 
-    this.formService.projectsDetailState.subscribe(proj => {
+    this.subscriptions.add(this.formService.projectsDetailState.subscribe(proj => {
       this.selectedProjects = proj;
-    });
+    }));
 
-    this.checkMateService.getDefaultPolicy().subscribe(pol => {
+    this.subscriptions.add(this.checkMateService.getDefaultPolicy().subscribe(pol => {
       this.projectForm = this.fb.group({
         projectName: ['', Validators.required],
         workspace: ['Default'],
@@ -99,9 +108,9 @@ export class GitlabReposComponent implements OnInit {
           policy: [pol],
         }),
       });
-    });
+    }));
 
-    this.checkMateService.getWorkspaceSummaries().subscribe(w => {
+    this.subscriptions.add(this.checkMateService.getWorkspaceSummaries().subscribe(w => {
       if (w.Details) {
 
         this.existingWorkspaces = [];
@@ -114,7 +123,7 @@ export class GitlabReposComponent implements OnInit {
         }
         this.existingWorkspaces = this.existingWorkspaces.filter(this.uniqueFilter);
       }
-    });
+    }));
 
     this.projectForm = this.fb.group({
       projectName: ['', Validators.required],
@@ -148,7 +157,9 @@ export class GitlabReposComponent implements OnInit {
 
     });
 
-    this.checkMateService.getGitLabIntegrations().subscribe(
+    this.subscriptions.add(this.instance$)
+
+    this.subscriptions.add(this.checkMateService.getGitLabIntegrations().subscribe(
       x => {
         this.gitLabServices = x;
         if (x.length > 0) {
@@ -165,7 +176,7 @@ export class GitlabReposComponent implements OnInit {
 
         }
       }
-    );
+    ));
 
   }
 

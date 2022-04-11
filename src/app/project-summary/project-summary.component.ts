@@ -56,6 +56,7 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
   };
 
   runScan$: Subscription;
+  subscriptions: Subscription;
 
 
   constructor(private checkMateService: CheckMateService, private router: Router) { }
@@ -67,7 +68,7 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
 
     const socket = this.checkMateService.monitorProjectScan({ ProjectIDs: [this.projectSummary.ID] });
     this.sockets.push(socket);
-    socket.subscribe(msg => {
+    this.subscriptions = socket.subscribe(msg => {
       if (this.isScanProgress(msg)) {
         const prog = msg;
         this.currentFile = prog.CurrentFile;
@@ -99,6 +100,9 @@ export class ProjectSummaryComponent implements OnInit, OnDestroy {
     });
     if (this.runScan$) {
       this.runScan$.unsubscribe();
+    }
+    if (this.subscriptions) {
+      this.subscriptions.unsubscribe();
     }
   }
 
