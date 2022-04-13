@@ -14,6 +14,7 @@ import { EnvironmentsService } from './environments.service';
 import { GitLabPagedSearch, GitLabProjectSearchResult } from '../models/gitlab-project';
 import { GitService } from '../models/git';
 import { GitHubPagedSearch, GitHubProjectSearchResult } from '../models/github-project';
+import { NgxIsElectronService } from 'ngx-is-electron';
 
 @Injectable({
   providedIn: 'root'
@@ -37,26 +38,26 @@ export class CheckMateService {
   private githubProjects$: Map<string, GitHubProjectSearchResult> = new Map();
 
 
-  constructor(private http: HttpClient, private electron: ElectronIPC, private env: EnvironmentsService) {
-    this.electron.getAPIConfig().then(port => {
-      this.apiPort = port;
-      this.api = `http://${this.env.getEnvironment().apiHost}:${port}/${this.env.getEnvironment().apiPath}`;
-      this.wsAPI = `${this.env.getEnvironment().wsProtocol}://${this.env.getEnvironment().apiHost}:${port}/${this.env.getEnvironment().apiPath}`;
-    }).catch((err) => {
-      const port = this.env.getEnvironment().apiPort;
-      this.apiPort = port;
-      console.log(`error getting API port but attempting default port ${port}`, err);
-      this.api = `http://${this.env.getEnvironment().apiHost}:${port}/${this.env.getEnvironment().apiPath}`;
-      this.wsAPI = `${this.env.getEnvironment().wsProtocol}://${this.env.getEnvironment().apiHost}:${port}/${this.env.getEnvironment().apiPath}`;
-    });
+  constructor(private http: HttpClient, electronService: NgxIsElectronService,
+    private electron: ElectronIPC, private env: EnvironmentsService) {
+    if (electronService.isElectronApp) {
+      this.electron.getAPIConfig().then(port => {
+        this.apiPort = port;
+      }).catch((err) => {
+        const port = this.env.getEnvironment().apiPort;
+        this.apiPort = port;
+        console.log(`error getting API port but attempting default port ${port}`, err);
+      });
+    }
+    this.api = `http://${this.env.getEnvironment().apiHost}:${this.apiPort}/${this.env.getEnvironment().apiPath}`;
+    this.wsAPI =
+      `${this.env.getEnvironment().wsProtocol}://${this.env.getEnvironment().apiHost}:${this.apiPort}/${this.env.getEnvironment().apiPath}`;
     this.http.get<GitCapabilities>(`${this.api}/git/capabilities`).subscribe(cap => this.gitCaps.next(cap));
   }
 
   public getVersion(): Observable<string> {
     return this.http.get<string>(`${this.api}/version`);
   }
-
-
 
   public createGitHubIntegration(integration: GitService): Observable<GitService[]> {
     return this.http.post<GitService[]>(`${this.api}/github/integrate`, integration);
