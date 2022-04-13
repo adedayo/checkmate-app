@@ -1,0 +1,16 @@
+server {
+  listen ${NGINX_PORT};
+  server_name ${NGINX_HOST};
+  root /usr/share/nginx/html/;
+  index index.html;
+
+  location / {
+  try_files $uri$args $uri$args/ /index.html;
+  }
+
+#  Path for SSL config/key/certificate
+#  ssl_certificate /etc/ssl/certs/nginx/example1.crt;
+#  ssl_certificate_key /etc/ssl/certs/nginx/example1.key;
+#  include /etc/nginx/includes/ssl.conf;
+
+}
