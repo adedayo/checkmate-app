@@ -8,6 +8,6 @@ COPY . .
 RUN npm run build:lib
 RUN npm run ng build -- --configuration docker
 
-FROM nginx:alpine
+FROM nginx:1.21.6-alpine
 COPY --from=builder /app/dist/checkmate-app /usr/share/nginx/html/
 EXPOSE 80
