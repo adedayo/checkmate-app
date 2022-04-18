@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -54,7 +54,8 @@ import { GithubProjectListitemComponent } from './github-project-listitem/github
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ProjectEditComponent } from './project-edit/project-edit.component';
 import { NgxIsElectronModule } from 'projects/ngx-is-electron/src/public-api';
-
+import { EnvironmentsService } from './services/environments.service';
+import { Initialiser } from './initialiseApp';
 
 @NgModule({
   declarations: [
@@ -116,7 +117,12 @@ import { NgxIsElectronModule } from 'projects/ngx-is-electron/src/public-api';
     MatTooltipModule,
     NgxIsElectronModule,
   ],
-  providers: [],
+  providers: [EnvironmentsService, {
+    provide: APP_INITIALIZER,
+    useFactory: Initialiser.initialiseApp,
+    deps: [EnvironmentsService],
+    multi: true,
+  }],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

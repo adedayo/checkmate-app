@@ -1,3 +1,5 @@
+ARG CHECKMATE_APP_CONFIG_FILE="checkmate_app_config.json"
+
 FROM node:14.17.0-alpine AS builder
 LABEL authors="Dr. Adedayo Adetoye"
 WORKDIR /app
