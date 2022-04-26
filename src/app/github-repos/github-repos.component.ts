@@ -152,7 +152,7 @@ export class GithubReposComponent implements OnInit, OnDestroy {
       }
 
     });
-    this.subscriptions.add(this.instance$)
+    this.subscriptions.add(this.instance$);
 
     this.subscriptions.add(this.checkMateService.getGitHubIntegrations().subscribe(
       x => {

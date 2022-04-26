@@ -157,7 +157,7 @@ export class GitlabReposComponent implements OnInit, OnDestroy {
 
     });
 
-    this.subscriptions.add(this.instance$)
+    this.subscriptions.add(this.instance$);
 
     this.subscriptions.add(this.checkMateService.getGitLabIntegrations().subscribe(
       x => {
