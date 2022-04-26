@@ -164,9 +164,9 @@ export class ProjectSetupComponent implements OnInit, OnDestroy {
 
     // console.log(projDesc);
 
-    this.subscriptions.add(this.checkMateService.createProject(projDesc).subscribe(summary => {
+    this.checkMateService.createProject(projDesc).subscribe(summary => {
       this.router.navigate(['project-detail', summary.ID]);
-    }));
+    });
   }
 
 

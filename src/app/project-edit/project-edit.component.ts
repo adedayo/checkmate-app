@@ -53,13 +53,14 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const path = this.router.url;
+    this.subscriptions = new Subscription();
     if (path) {
       //get project ID from the route
       const subPaths = path.split('/');
       const projectID = subPaths[subPaths.length - 1];
       this.refreshProject(projectID);
 
-      this.subscriptions = this.checkMateService.getWorkspaceSummaries().subscribe(w => {
+      this.subscriptions.add(this.checkMateService.getWorkspaceSummaries().subscribe(w => {
         if (w.Details) {
 
           this.existingWorkspaces = [];
@@ -100,7 +101,7 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
           }),
         });
         this.initialNewRepoValues = this.projectForm.get('newRepository').value;
-      });
+      }));
 
 
       this.subscriptions.add(this.checkMateService.getGitHubIntegrations().subscribe(x => {

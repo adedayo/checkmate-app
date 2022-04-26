@@ -36,7 +36,8 @@ export class GitlabSettingsComponent implements OnInit, OnDestroy {
     this.subscriptions = this.checkmateService.getGitLabIntegrations().subscribe(data => this.gitLabConnections = data);
   }
 
-  createIntegration() {
+  createIntegration(event: Event) {
+    event.preventDefault();
     const endpoint = this.connectForm.get('instanceURL').value as string;
     const apiKey = this.connectForm.get('accessToken').value as string;
     const apiKeyName = this.connectForm.get('apiKeyName').value as string;
@@ -47,15 +48,25 @@ export class GitlabSettingsComponent implements OnInit, OnDestroy {
       Name: apiKeyName,
     };
 
-    this.subscriptions.add(this.checkmateService.createGitLabIntegration(integration).subscribe(data => {
-      this.gitLabConnections = data;
-    }));
+    this.checkmateService.createGitLabIntegration(integration).subscribe({
+      next: data => {
+        this.gitLabConnections = data;
+      },
+      error: err => {
+        console.log('error -xx:', err);
+
+      },
+      complete: () => {
+        console.log('completed');
+
+      }
+    });
 
   }
 
   deleteBinding(id: string) {
-    this.subscriptions.add(this.checkmateService.deleteGitLabIntegration(id).subscribe(data => {
+    this.checkmateService.deleteGitLabIntegration(id).subscribe(data => {
       this.gitLabConnections = data;
-    }));
+    });
   }
 }

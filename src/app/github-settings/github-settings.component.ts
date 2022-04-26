@@ -55,15 +55,17 @@ export class GithubSettingsComponent implements OnInit, OnDestroy {
       AccountType: accountType,
     };
 
-    this.subscriptions.add(this.checkmateService.createGitHubIntegration(integration).subscribe(data => {
+    this.checkmateService.createGitHubIntegration(integration).subscribe(data => {
       this.gitHubConnections = data;
-    }));
+    });
+
+
 
   }
 
   deleteBinding(id: string) {
-    this.subscriptions.add(this.checkmateService.deleteGitHubIntegration(id).subscribe(data => {
+    this.checkmateService.deleteGitHubIntegration(id).subscribe(data => {
       this.gitHubConnections = data;
-    }));
+    });
   }
 }

@@ -29,7 +29,8 @@
       </div>
     </div>
     <div class="flex items-center w-full">
-      <form [formGroup]="connectForm" class="flex flex-col items-center justify-between w-full p-2 space-x-2 text-sm">
+      <form [formGroup]="connectForm" (ngSubmit)="createIntegration($event)"
+        class="flex flex-col items-center justify-between w-full p-2 space-x-2 text-sm">
         <div class="relative flex w-full focus:outline-none">
 
           <mat-form-field class="w-1/2 text-blue-800 focus:outline-none">
@@ -48,7 +49,8 @@
             <input matInput placeholder="Example: glpat-HmQHapi68EUbAZyeAbBa" formControlName="accessToken" required>
           </mat-form-field>
 
-          <div class="pl-10"><button [disabled]="!connectForm.valid" mat-button (click)="createIntegration()"
+          <div class="pl-10">
+            <button [disabled]="!connectForm.valid" mat-button type="submit"
               class="w-full py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">Monitor
               GitLab Instance</button>
           </div>
