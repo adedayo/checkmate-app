@@ -193,8 +193,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
             this.currentFile = '';
             this.scanning = false;
             this.progress = 0;
-            this.refreshProject(this.project.ID);
+            // this.refreshProject(this.projectSummary.ID);
           }
+        } else if (this.isProjectSummary(msg)) {
+          this.setProjectSummary(msg);
         }
       },
         err => {
@@ -264,12 +266,14 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   refreshProject(projectID: string) {
-    this.spinForProject = true;
+    // this.spinForProject = true;
     this.spinForProjectSummary = true;
-    this.project$ = this.checkMateService.getProject(projectID).subscribe(proj => {
-      this.setProject(proj);
-      this.spinForProject = false;
-    });
+    // this.project$ = this.checkMateService.getProject(projectID).subscribe(proj => {
+    //   console.log('Got project ', proj);
+
+    //   this.setProject(proj);
+    //   this.spinForProject = false;
+    // });
     this.projectSummary$ = this.checkMateService.getProjectSummary(projectID).subscribe(x => {
       this.setProjectSummary(x);
       this.spinForProjectSummary = false;
@@ -301,10 +305,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   updateGraph() {
-    if (this.projectSummary.LastScore && this.projectSummary.LastScore.SubMetrics) {
+    if (this.projectSummary.ScoreTrend) {
       const data = [];
       {
-        for (const [k, v] of Object.entries(this.projectSummary.LastScore.SubMetrics)) {
+        for (const [k, v] of Object.entries(this.projectSummary.ScoreTrend)) {
           const x = k.split(';');
           const tStamp = new Date(x[1]);
           data.push(
@@ -331,6 +335,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   setProjectSummary(x: ProjectSummary) {
     this.projectSummary = x;
     this.setScanID(x.LastScanID);
+    if (x.ScanPolicy && x.ScanPolicy.PolicyString) {
+      this.policy = x.ScanPolicy.PolicyString;
+    }
     this.setScanSummary(x.LastScanSummary);
   }
 
@@ -349,11 +356,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     return this.pagingForm.get('size') as FormControl;
   }
 
-  setProject(proj: Project) {
+  setProjectPolicy(proj: Project) {
     if (!proj || proj.ID === '') {
       return;
     }
-    this.project = proj;
     if (proj.ScanPolicy && proj.ScanPolicy.PolicyString) {
       this.policy = proj.ScanPolicy.PolicyString;
     }
@@ -367,12 +373,12 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   paginateIssues(page: number) {
-    if (!this.project) {
+    if (!this.projectSummary) {
       return;
     }
     this.showSpinner = true;
     const search: PaginatedSearch = {
-      ProjectID: this.project.ID,
+      ProjectID: this.projectSummary.ID,
       ScanID: this.currentScanID,
       PageSize: this.pageSizeValue,
       Page: page,
@@ -387,18 +393,18 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   savePolicy() {
-    this.checkMateService.updateProject(this.project.ID, {
-      Name: this.project.Name,
-      Workspace: this.project.Workspace,
-      Repositories: this.project.Repositories,
+    this.checkMateService.updateProject(this.projectSummary.ID, {
+      Name: this.projectSummary.Name,
+      Workspace: this.projectSummary.Workspace,
+      Repositories: this.projectSummary.Repositories,
       ScanPolicy: {
-        ID: this.project.ScanPolicy.ID,
-        Config: this.project.ScanPolicy.Config,
-        Policy: JSON.stringify(this.project.ScanPolicy.Policy),
+        ID: this.projectSummary.ScanPolicy.ID,
+        Config: this.projectSummary.ScanPolicy.Config,
+        Policy: JSON.stringify(this.projectSummary.ScanPolicy.Policy),
         PolicyString: this.policy
       }
     }).subscribe(proj => {
-      this.setProject(proj);
+      this.setProjectPolicy(proj);
     });
   }
 
@@ -481,7 +487,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   downloadCSVReport() {
     this.showSpinner = true;
-    this.checkMateService.downloadCSVReport(this.project.ID, this.currentScanID).subscribe(x => {
+    this.checkMateService.downloadCSVReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
       this.showSpinner = false;
       this.ipc.saveScanreport(x).then(val => {
         this.snackBar.open(`Saved report at ${val}`, 'close');
@@ -497,7 +503,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   downloadReport() {
     this.showSpinner = true;
-    this.checkMateService.downloadReport(this.project.ID, this.currentScanID).subscribe(x => {
+    this.checkMateService.downloadReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
       this.showSpinner = false;
       this.ipc.saveScanreport(x).then(val => {
         this.snackBar.open(`Saved report at ${val}`, 'close');
@@ -519,8 +525,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   downloadPolicy() {
-    this.ipc.savePolicy(`${this.project.Name.toLowerCase().replace(' ', '-')}_allow-list.yaml`,
-      this.project.ScanPolicy.PolicyString).then(val => console.log('Saved Policy as ', val));
+    this.ipc.savePolicy(`${this.projectSummary.Name.toLowerCase().replace(' ', '-')}_allow-list.yaml`,
+      this.projectSummary.ScanPolicy.PolicyString).then(val => console.log('Saved Policy as ', val));
   }
 
   focusIn() {
@@ -534,7 +540,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if (this.currentIssue) {
       const context: CodeContext = {
         Location: this.currentIssue.location,
-        ProjectID: this.project.ID,
+        ProjectID: this.projectSummary.ID,
         ScanID: this.currentScanID,
       };
       this.checkMateService.loadFullCode(context).subscribe(x => {
@@ -548,7 +554,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if (this.currentIssue) {
       const fix: ExcludeRequirement = {
         Issue: this.currentIssue,
-        ProjectID: this.project.ID,
+        ProjectID: this.projectSummary.ID,
         What: this.selectedFix,
       };
 
@@ -616,7 +622,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   onSelectScan(data): void {
     const scanID = data.extra.scanID;
-    this.checkMateService.getScanSummary(this.project.ID, scanID).subscribe(x => {
+    this.checkMateService.getScanSummary(this.projectSummary.ID, scanID).subscribe(x => {
       this.setScanSummary(x);
     });
     this.setScanID(scanID);
@@ -641,20 +647,22 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
     this.runScan$ = this.checkMateService.runScan(options).subscribe(
       // msg => {
-      //   this.showSpinner = false;
-      //   if (this.isScanProgress(msg)) {
-      //     const prog = msg;
-      //     this.currentFile = prog.CurrentFile;
-      //     if (prog.Total > 0) {
-      //       this.progress = (100 * prog.Position) / prog.Total;
-      //     }
-      //     if (msg.Position === msg.Total) {
-      //       this.currentFile = '';
-      //       this.scanning = false;
-      //       this.progress = 0;
-      //       this.refreshProject(this.project.ID);
-      //     }
-      //   }
+      // this.showSpinner = false;
+      // if (this.isScanProgress(msg)) {
+      // const prog = msg;
+      // this.currentFile = prog.CurrentFile;
+      // if (prog.Total > 0) {
+      //   this.progress = (100 * prog.Position) / prog.Total;
+      // }
+      // if (msg.Position === msg.Total) {
+      //   console.log('got last message');
+
+      //   this.currentFile = '';
+      //   this.scanning = false;
+      //   this.progress = 0;
+      //   this.refreshProject(this.projectSummary.ID);
+      // }
+      // }
       // },
       // err => {
 
@@ -673,8 +681,8 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
 
 
-  isProject(msg: ScanStatus): msg is Project {
-    return (msg as Project).ID !== undefined;
+  isProjectSummary(msg: ScanStatus): msg is ProjectSummary {
+    return (msg as ProjectSummary).ID !== undefined;
   }
 
   isScanSummary(msg: ScanStatus): msg is ScanSummary {

@@ -101,7 +101,8 @@
 
                 <div *ngIf="scanSummary.AdditionalInfo" class="flex justify-around mt-2 text-xs w-max">
                   <div class="text-gray-500">Last Scan</div>
-                  <div class="pl-2 text-blue-600">{{scanSummary.AdditionalInfo.timeStamp}}</div>
+                  <div class="pl-2 text-blue-600">{{scanSummary.AdditionalInfo.timeStamp |
+                    utcToLocal:'full'}}</div>
                 </div>
 
               </div>

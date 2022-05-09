@@ -90,7 +90,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(private checkmate: CheckMateService, private ipc: ElectronIPC,
     private snackBar: MatSnackBar, private fb: FormBuilder) {
-
+    this.showSpinner = true;
     this.workspaceForm = this.fb.group({
       wspace: [this.currentWorkspaceName],
     });
@@ -107,7 +107,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.showSpinner = true;
     this.subscriptions = this.workspaceForm.get('wspace').valueChanges.subscribe(x => {
       this.workspaceName = x;
     });
@@ -161,8 +160,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.showSpinner = false;
       },
       error: _err => {
+        console.log('Workspace error', _err);
         this.showSpinner = false;
-      }
+      },
     }));
   }
 

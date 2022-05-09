@@ -1,11 +1,11 @@
-<div *ngIf="project" class="flex flex-col w-full h-screen px-2 pb-4 overflow-y-auto ">
+<div *ngIf="projectSummary" class="flex flex-col w-full h-screen px-2 pb-4 overflow-y-auto ">
   <div class="absolute top-1/2 left-1/2" *ngIf="showSpinner">
     <mat-spinner></mat-spinner>
   </div>
 
   <div class="text-xl font-bold">
     <span class="text-purple-800 uppercase ">Project</span>
-    <span class="ml-2 text-blue-600">{{project.Name}}</span>
+    <span class="ml-2 text-blue-600">{{projectSummary.Name}}</span>
   </div>
 
   <!-- Timeline chart -->
@@ -75,7 +75,7 @@
 
               <div *ngIf="scanSummary.AdditionalInfo" class="flex justify-around mt-1 text-xs w-max">
                 <div class="text-gray-500">Scan Date</div>
-                <div class="pl-2 text-blue-600">{{scanSummary.AdditionalInfo.timeStamp}}</div>
+                <div class="pl-2 text-blue-600">{{scanSummary.AdditionalInfo.timeStamp | utcToLocal:'full'}}</div>
               </div>
             </div>
 
@@ -123,7 +123,8 @@
       <div class="flex justify-between px-2 py-4 bg-purple-100">
         <div *ngIf='scanSummary && scanSummary.AdditionalInfo' class="flex w-full">
           <div class="text-sm font-bold text-purple-900 min-w-max">Last Scan:</div>
-          <div class="pl-2 text-sm text-purple-800 min-w-max">{{scanSummary.AdditionalInfo.timeStamp}}
+          <div class="pl-2 text-sm text-purple-800 min-w-max">{{scanSummary.AdditionalInfo.timeStamp |
+            utcToLocal:'full' }}
           </div>
         </div>
         <button class="focus:outline-none" (click)="runScan()">
@@ -369,7 +370,7 @@
       </div>
 
       <!-- Policy -->
-      <div *ngIf="showPolicy && project.ScanPolicy && project.ScanPolicy.Policy" class="w-auto mt-2 mb-6">
+      <div *ngIf="showPolicy && projectSummary.ScanPolicy && projectSummary.ScanPolicy.Policy" class="w-auto mt-2 mb-6">
         <ngx-codemirror [(ngModel)]="policy" [options]="{
       lineNumbers: true,
       theme: 'material',

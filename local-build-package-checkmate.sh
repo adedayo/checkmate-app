@@ -8,4 +8,4 @@ goreleaser build --config .goreleaser-mac.yml --rm-dist --snapshot
 
 popd
 
-cp ../checkmate/dist/checkmate_darwin_amd64/checkmate checkmate-binary/darwin
+cp ../checkmate/dist/checkmate_darwin_amd64_v1/checkmate checkmate-binary/darwin

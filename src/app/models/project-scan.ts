@@ -4,18 +4,21 @@ import { Project } from './project';
 export interface ProjectSummary {
   ID: string;
   Name: string;
+  Workspace: string;
   Repositories?: Repository[];
   LastScan?: Date;
   LastScanID?: string;
   LastScore?: ScanResult;
   LastScanSummary?: ScanSummary;
+  ScoreTrend?: { [key: string]: number };
+  ScanPolicy: ScanPolicy;
   IsBeingScanned?: boolean;
   CreationDate?: Date;
   LastModification?: Date;
 }
 
 export type ScanStatus = ScanResult | ScanProgress | SecurityDiagnostic | ScanEnd |
-  ProjectScanOptions | Project | ScanSummary | MonitorOptions;
+  ProjectScanOptions | Project | ProjectSummary | ScanSummary | MonitorOptions;
 export interface ProjectDescription {
   Name: string;
   Workspace: string;

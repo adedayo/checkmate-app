@@ -23,6 +23,7 @@ export class GitlabReposComponent implements OnInit, OnDestroy {
   existingWorkspaces: string[] = ['Default'];
   projectForm: FormGroup;
   serviceForm: FormGroup;
+  pageForm: FormGroup;
   showSpinner = false;
   currentInstance = '';
   instanceName = '';
@@ -85,6 +86,11 @@ export class GitlabReposComponent implements OnInit, OnDestroy {
     this.showSpinner = true;
     this.serviceForm = this.fb.group({
       selectedService: [''],
+    });
+
+    this.pageForm = this.fb.group({
+      pageSize: [100, [Validators.required, Validators.pattern('^\\d+$'),
+      Validators.min(1), Validators.max(10000)]]
     });
 
     this.subscriptions = this.formService.projectsDetailState.subscribe(proj => {
@@ -211,11 +217,12 @@ export class GitlabReposComponent implements OnInit, OnDestroy {
     const nextC = this.nextCursors.get(this.currentInstance) || '';
 
     if (nextC === '' || this.hasMoreData(this.currentInstance)) {
+      const size = Math.ceil(this.pageSize / 7) * 7;
       const page: GitLabPagedSearch = {
         ServiceID: this.currentInstance,
         NextCursor: nextC,
         First: 7,
-        PageSize: 100
+        PageSize: size
       };
       this.showSpinner = true;
       this.checkMateService.gitLabDiscover(page).subscribe(data => {
@@ -257,6 +264,11 @@ export class GitlabReposComponent implements OnInit, OnDestroy {
   get newWorkspace(): boolean {
     return this.projectForm.get('newWorkspaceValue').value as string !== '';
   }
+
+  get pageSize(): number {
+    return this.pageForm.get('pageSize').value as number;
+  }
+
 
   convertToFormGroups(rs: AbstractControl[]): FormGroup[] {
     const out: FormGroup[] = [];

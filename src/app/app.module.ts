@@ -56,6 +56,7 @@ import { ProjectEditComponent } from './project-edit/project-edit.component';
 import { NgxIsElectronModule } from 'projects/ngx-is-electron/src/public-api';
 import { EnvironmentsService } from './services/environments.service';
 import { Initialiser } from './initialiseApp';
+import { UtcToLocalPipe } from './pipes/utc-to-local.pipe';
 
 @NgModule({
   declarations: [
@@ -85,6 +86,7 @@ import { Initialiser } from './initialiseApp';
     GithubFilterPipe,
     GithubProjectListitemComponent,
     ProjectEditComponent,
+    UtcToLocalPipe,
   ],
   imports: [
     BrowserModule,

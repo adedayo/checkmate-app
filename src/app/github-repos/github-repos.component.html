@@ -91,23 +91,25 @@
 
   <div class="flex flex-col p-2 mt-2 overflow-y-auto border-2 border-purple-200 rounded max-h-96"
     *ngIf="gitHubProjects">
-
     <div *ngFor="let projG of projects | githubFilter:projectSearch">
-
       <app-github-project-listitem [project]=projG [fb]=fb> </app-github-project-listitem>
     </div>
-
-
   </div>
 
   <div class="flex items-center justify-between mt-2 mr-2">
     <span class="pl-2 text-xs italic text-gray-600"> {{projects.length}} Project(s) retrieved, {{remainingProjCount}}
       remaining.
     </span>
-    <div *ngIf="showGetMoreButton()">
-      <button mat-button (click)="getMoreProjects()"
-        class="w-full py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-red-200 rounded-md hover:bg-red-300">Get
-        More Projects</button>
+    <div class="flex items-center space-x-1 w-1/3" *ngIf="showGetMoreButton()">
+      <button mat-button [disabled]="!pageForm.valid" (click)="getMoreProjects()"
+        class="w-full py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-red-200 rounded-md hover:bg-red-300">Retrieve
+        the next (approx.)</button>
+
+      <form class="flex items-center content-center" [formGroup]="pageForm">
+        <input formControlName="pageSize" (ngModel)="pageSize"
+          class="h-8 pl-2 w-16 ml-2 text-xs text-gray-600 placeholder-gray-400 bg-white border border-purple-400 rounded outline-none focus:outline-none" />
+        <span class="pl-1 text-xs italic text-gray-600 pr-2">projects</span>
+      </form>
     </div>
   </div>
 </div>
