@@ -17,6 +17,7 @@ import { ElectronIPC } from '../services/electron.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgxIsElectronService } from 'ngx-is-electron';
 import { WebSocketSubject } from 'rxjs/webSocket';
+import { saveAs } from 'file-saver';
 
 
 
@@ -487,41 +488,56 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   downloadCSVReport() {
     this.showSpinner = true;
-    this.checkMateService.downloadCSVReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
-      this.showSpinner = false;
-      this.ipc.saveScanreport(x).then(val => {
-        this.snackBar.open(`Saved report at ${val}`, 'close');
-        setTimeout(() => this.snackBar.dismiss(), 5000);
-      });
-    },
-      err => {
+    if (this.isInElectron) {
+      this.checkMateService.getCSVReportPath(this.projectSummary.ID, this.currentScanID).subscribe(x => {
         this.showSpinner = false;
-        this.snackBar.open('Error generating CSV report ' + err.error, 'close');
-      }
-    );
+        this.ipc.saveScanreport(x).then(val => {
+          this.snackBar.open(`Saved report at ${val}`, 'close');
+          setTimeout(() => this.snackBar.dismiss(), 5000);
+        });
+      },
+        err => {
+          this.showSpinner = false;
+          this.snackBar.open('Error generating CSV report ' + err.error, 'close');
+        }
+      );
+    } else {
+      this.checkMateService.downloadCSVReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
+        saveAs(x, `${this.projectSummary.Name}_Scan_${this.currentScanID}.csv`);
+      });
+    }
   }
 
   downloadReport() {
     this.showSpinner = true;
-    this.checkMateService.downloadReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
-      this.showSpinner = false;
-      this.ipc.saveScanreport(x).then(val => {
-        this.snackBar.open(`Saved report at ${val}`, 'close');
-        setTimeout(() => this.snackBar.dismiss(), 5000);
-      });
-    },
-      err => {
+    if (this.isInElectron) {
+      this.checkMateService.getPDFReportPath(this.projectSummary.ID, this.currentScanID).subscribe(x => {
         this.showSpinner = false;
-        const message = err.error as string;
-        // console.log(message);
 
-        if (message.includes('asciidoctor')) {
-          this.snackBar.open('Install asciidoctor-pdf to get PDF reports and ensure that it is in your PATH environment variable.' +
-            ' Installation detail may be found at https://github.com/asciidoctor/asciidoctor-pdf/#getting-started' +
-            '\n' + message, 'close');
+        this.ipc.saveScanreport(x).then(val => {
+          this.snackBar.open(`Saved report at ${val}`, 'close');
+          setTimeout(() => this.snackBar.dismiss(), 5000);
+        });
+
+
+      },
+        err => {
+          this.showSpinner = false;
+          const message = err.error as string;
+          // console.log(message);
+
+          if (message.includes('asciidoctor')) {
+            this.snackBar.open('Install asciidoctor-pdf to get PDF reports and ensure that it is in your PATH environment variable.' +
+              ' Installation detail may be found at https://github.com/asciidoctor/asciidoctor-pdf/#getting-started' +
+              '\n' + message, 'close');
+          }
         }
-      }
-    );
+      );
+    } else {
+      this.checkMateService.downloadPDFReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
+        saveAs(x, `${this.projectSummary.Name}_Scan_${this.currentScanID}.pdf`);
+      });
+    }
   }
 
   downloadPolicy() {

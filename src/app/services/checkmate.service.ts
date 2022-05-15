@@ -189,11 +189,36 @@ export class CheckMateService {
   }
 
 
-  downloadReport(projID: string, scanID: string): Observable<string> {
+  downloadWorkspaceCSVReport(currentWorkspaceName: string): Observable<any> {
+    return this.http.get(`${this.api}/downloadworkspacereport/${currentWorkspaceName}`, {
+      responseType: 'blob',
+      observe: 'body',
+      reportProgress: true
+    });
+  }
+
+  getPDFReportPath(projID: string, scanID: string): Observable<string> {
     return this.http.get<string>(`${this.api}/scanreport/${projID}/${scanID}`);
   }
 
-  downloadCSVReport(projID: string, scanID: string): Observable<string> {
+
+  downloadPDFReport(projID: string, scanID: string): Observable<any> {
+    return this.http.get(`${this.api}/downloadscanreport/${projID}/${scanID}`, {
+      responseType: 'blob',
+      observe: 'body',
+      reportProgress: true
+    });
+  }
+
+  downloadCSVReport(projID: string, scanID: string): Observable<any> {
+    return this.http.get(`${this.api}/downloadcsvscanreport/${projID}/${scanID}`, {
+      responseType: 'blob',
+      observe: 'body',
+      reportProgress: true
+    });
+  }
+
+  getCSVReportPath(projID: string, scanID: string): Observable<string> {
     return this.http.get<string>(`${this.api}/csvscanreport/${projID}/${scanID}`);
   }
 
