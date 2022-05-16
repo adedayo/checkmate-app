@@ -287,9 +287,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       );
     } else {
       this.checkmate.downloadWorkspaceCSVReport(this.currentWorkspaceName).subscribe(x => {
+        this.showSpinner = false;
         saveAs(x, `${this.currentWorkspaceName}_Workspace_Report.csv`);
-
-      });
+      },
+        err => {
+          this.showSpinner = false;
+          const message = err.error as string;
+          this.snackBar.open(message, 'close');
+        });
     }
   }
 

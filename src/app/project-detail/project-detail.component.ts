@@ -503,8 +503,14 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       );
     } else {
       this.checkMateService.downloadCSVReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
+        this.showSpinner = false;
         saveAs(x, `${this.projectSummary.Name}_Scan_${this.currentScanID}.csv`);
-      });
+      },
+        err => {
+          this.showSpinner = false;
+          const message = err.error as string;
+          this.snackBar.open(message, 'close');
+        });
     }
   }
 
@@ -535,8 +541,14 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       );
     } else {
       this.checkMateService.downloadPDFReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
+        this.showSpinner = false;
         saveAs(x, `${this.projectSummary.Name}_Scan_${this.currentScanID}.pdf`);
-      });
+      },
+        err => {
+          this.showSpinner = false;
+          const message = err.error as string;
+          this.snackBar.open(message, 'close');
+        });
     }
   }
 

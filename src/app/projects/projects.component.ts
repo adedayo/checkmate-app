@@ -5,6 +5,8 @@ import { CheckMateService } from '../services/checkmate.service';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ElectronIPC } from '../services/electron.service';
+import { NgxIsElectronService } from 'ngx-is-electron';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-projects',
@@ -18,15 +20,16 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   faSearch = faSearch;
   showSpinner = true;
   subscriptions: Subscription;
+  isInElectron: boolean;
 
   constructor(private checkmateService: CheckMateService, private ipc: ElectronIPC,
-    private snackBar: MatSnackBar) {
-
+    electronService: NgxIsElectronService, private snackBar: MatSnackBar) {
+    this.isInElectron = electronService.isElectronApp;
   }
 
   ngOnDestroy(): void {
     if (this.subscriptions) {
-      this.subscriptions.unsubscribe()
+      this.subscriptions.unsubscribe();
     }
   }
 
@@ -51,22 +54,35 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   downloadProjectsReport() {
 
     this.showSpinner = true;
-    this.checkmateService.downloadProjectScores('__cm_all').subscribe(x => {
-      this.showSpinner = false;
-      this.ipc.saveScanreport(x).then(val => {
-        if (val === '') {
-          this.snackBar.open(`Cancelled`, 'close');
-        } else {
-          this.snackBar.open(`Saved report at ${val}`, 'close');
-        }
-        setTimeout(() => this.snackBar.dismiss(), 5000);
-      });
-    },
-      err => {
+    if (this.isInElectron) {
+      this.checkmateService.downloadProjectScores('__cm_all').subscribe(x => {
         this.showSpinner = false;
-        this.snackBar.open('Error generating project summary report ' + err.error, 'close');
-      }
-    );
+        this.ipc.saveScanreport(x).then(val => {
+          if (val === '') {
+            this.snackBar.open(`Cancelled`, 'close');
+          } else {
+            this.snackBar.open(`Saved report at ${val}`, 'close');
+          }
+          setTimeout(() => this.snackBar.dismiss(), 5000);
+        });
+      },
+        err => {
+          this.showSpinner = false;
+          this.snackBar.open('Error generating project summary report ' + err.error, 'close');
+        }
+      );
+    } else {
+      this.checkmateService.downloadWorkspaceCSVReport('__cm_all').subscribe(x => {
+        this.showSpinner = false;
+        saveAs(x, `ProjectSummaries.csv`);
+      },
+        err => {
+          this.showSpinner = false;
+          this.snackBar.open('Error generating project summary report ' + err.error, 'close');
+        }
+      );
+    }
+
   }
 
 }
