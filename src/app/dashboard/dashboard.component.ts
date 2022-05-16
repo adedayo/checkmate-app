@@ -292,7 +292,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       },
         err => {
           this.showSpinner = false;
-          const message = err.error as string;
+          const message = err.message as string;
           this.snackBar.open(message, 'close');
         });
     }

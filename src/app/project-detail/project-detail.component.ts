@@ -508,7 +508,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       },
         err => {
           this.showSpinner = false;
-          const message = err.error as string;
+          const message = err.message as string;
           this.snackBar.open(message, 'close');
         });
     }
@@ -546,16 +546,26 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       },
         err => {
           this.showSpinner = false;
-          const message = err.error as string;
+          const message = err.message as string;
           this.snackBar.open(message, 'close');
         });
     }
   }
 
   downloadPolicy() {
-    this.ipc.savePolicy(`${this.projectSummary.Name.toLowerCase().replace(' ', '-')}_allow-list.yaml`,
-      this.projectSummary.ScanPolicy.PolicyString).then(val => console.log('Saved Policy as ', val));
+    const path = `${this.projectSummary.Name.toLowerCase().replace(' ', '-')}_allow-list.yaml`;
+    const policy = this.projectSummary.ScanPolicy.PolicyString;
+    if (this.isInElectron) {
+      this.ipc.savePolicy(path, policy).then(_val => {
+        // console.log('Saved Policy as ', _val);
+      });
+    } else {
+      console.log('about to save policy');
+      const blob = new Blob([policy]);
+      saveAs(blob, path);
+    }
   }
+
 
   focusIn() {
     this.issueFocussed = true;

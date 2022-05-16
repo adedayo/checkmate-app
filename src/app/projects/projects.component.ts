@@ -78,7 +78,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       },
         err => {
           this.showSpinner = false;
-          this.snackBar.open('Error generating project summary report ' + err.error, 'close');
+          this.snackBar.open('Error generating project summary report ' + err.message, 'close');
         }
       );
     }
