@@ -179,6 +179,13 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
     return this.fb.array([]);
   }
 
+  deleteProject() {
+    console.log('deleting project', this.project.ID);
+    this.subscriptions.add(this.checkMateService.deleteProject(this.project.ID).subscribe(_x => {
+      this.router.navigate(['projects']);
+    }));
+  }
+
   setProject(proj: Project) {
     if (!proj || proj.ID === '') {
       return;

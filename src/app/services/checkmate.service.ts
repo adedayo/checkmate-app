@@ -229,10 +229,11 @@ export class CheckMateService {
     );
   }
 
+  deleteProject(projectID: string): Observable<string> {
+    return this.http.post<string>(`${this.api}/deleteproject`, { ProjectID: projectID });
+  }
+
   updateProject(projectID: string, projDesc: ProjectDescription): Observable<Project> {
-    return this.http.post<Project>(
-      `${this.api}/updateproject/${projectID}`,
-      projDesc
-    );
+    return this.http.post<Project>(`${this.api}/updateproject/${projectID}`, projDesc);
   }
 }

@@ -12,12 +12,13 @@ import {
 import { CheckMateService } from '../services/checkmate.service';
 import { curveBumpX } from 'd3-shape';
 import { Subscription } from 'rxjs';
-import { faCog, faPlayCircle, faSave, faFileDownload, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faPlayCircle, faSave, faFileDownload, faSearch, faE } from '@fortawesome/free-solid-svg-icons';
 import { ElectronIPC } from '../services/electron.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NgxIsElectronService } from 'ngx-is-electron';
 import { WebSocketSubject } from 'rxjs/webSocket';
 import { saveAs } from 'file-saver';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
 
 
 
@@ -28,6 +29,7 @@ import { saveAs } from 'file-saver';
 })
 export class ProjectDetailComponent implements OnInit, OnDestroy {
   project: Project;
+  faEdit = faEdit;
   projectSummary: ProjectSummary;
   scanSummary: ScanSummary;
   selectedFix = 'ignore_here';
@@ -264,6 +266,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
 
 
+  }
+
+  editProject() {
+    this.router.navigate(['project-edit', this.projectSummary.ID]);
   }
 
   refreshProject(projectID: string) {

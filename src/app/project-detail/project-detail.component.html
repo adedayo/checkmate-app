@@ -6,6 +6,9 @@
   <div class="text-xl font-bold">
     <span class="text-purple-800 uppercase ">Project</span>
     <span class="ml-2 text-blue-600">{{projectSummary.Name}}</span>
+    <fa-icon class="ml-2 self-center cursor-pointer text-purple-800" (click)="editProject()" [icon]="faEdit"
+      matTooltip="Edit project">
+    </fa-icon>
   </div>
 
   <!-- Timeline chart -->
@@ -27,7 +30,6 @@
     <div class="w-full h-80">
       <div class="flex flex-col">
         <span class="pl-2 text-xs font-bold text-gray-500 uppercase">Summary</span>
-
 
         <div class="flex justify-around pl-6">
           <div *ngIf="scanSummary" class="flex flex-col items-center justify-center">

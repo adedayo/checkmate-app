@@ -1,9 +1,12 @@
 <div class="container fixed flex flex-col m-8 bg-white border-purple-100 rounded-lg shadow border-1 top-8 bottom-4">
 
-  <div class="flex justify-between px-2 text-lg text-center bg-purple-800 rounded-t-lg">
+  <div class="flex justify-between px-2 text-lg items-center text-center bg-purple-800 rounded-t-lg">
     <a *ngIf="project" [routerLink]="['/project-detail', project.ID]"
       class="py-4 text-base text-purple-50 min-w-max">Edit
       Project: {{project.Name}}</a>
+    <fa-icon class=" text-lg text-white cursor-pointer mr-2" (click)="deleteProject()"
+      matTooltip="Danger: delete project" [icon]="faDelete">
+    </fa-icon>
   </div>
 
   <div class="h-full p-2 overflow-y-scroll">
@@ -59,7 +62,7 @@
                 type="text" formControlName="location">
 
               <fa-icon class="w-1/12 text-lg text-purple-800 cursor-pointer" (click)="deleteRepo(i)"
-                matTooltip="Remove repository from project" title="Save" [icon]="faDelete"></fa-icon>
+                matTooltip="Remove repository from project" [icon]="faDelete"></fa-icon>
 
               <input type="checkbox" formControlName="monitor"
                 matTooltip="Let {{appName}} monitor repository continuously"

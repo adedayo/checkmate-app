@@ -3,7 +3,7 @@
     <a [routerLink]="['/project-detail', projectSummary.ID]"
       class="py-4 text-base text-purple-50 min-w-max">{{projectSummary.Name}}</a>
     <fa-icon class="self-center cursor-pointer text-purple-50" (click)="editProject()" [icon]="faSettings"
-      matTooltip="Configure Project"></fa-icon>
+      matTooltip="Edit project"></fa-icon>
   </div>
   <!-- Grade  -->
   <div *ngIf='projectSummary.LastScore' class="flex pl-2 bg-purple-50">
