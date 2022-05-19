@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
-import { faCog, faEdit, faPlayCircle, faShieldAlt, faSlidersH, faWrench } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlayCircle, faShieldAlt } from '@fortawesome/free-solid-svg-icons';
 import {
   ProjectSummary, ProjectScanOptions, ScanEnd, ScanProgress,
   SecurityDiagnostic, ScanStatus
