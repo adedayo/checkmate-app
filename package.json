@@ -139,6 +139,10 @@
       "!checkmate-binary/*",
       "!**/.metals",
       "!**/.vscode",
+      "!**/.angular",
+      "!**/.github",
+      "!nginx/",
+      "!projects/",
       "!.browserslistrc",
       "!**/*.ts",
       "!*.code-workspace",
@@ -157,6 +161,7 @@
       "!tsconfig.app.json",
       "!tslint.json",
       "!**/*.sh",
+      "!**/*.ps1",
       "!notes.txt",
       "!tailwind.config.js"
     ],
@@ -192,6 +197,13 @@
         {
           "from": "checkmate-binary/darwin/checkmate",
           "to": "checkmate",
+          "filter": [
+            "**/*"
+          ]
+        },
+        {
+          "from": "checkmate-binary/darwin/plugins/",
+          "to": "plugins/",
           "filter": [
             "**/*"
           ]

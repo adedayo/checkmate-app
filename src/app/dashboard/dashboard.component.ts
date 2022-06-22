@@ -266,6 +266,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ];
   }
 
+  downloadWorkspaceIssues() {
+    this.showSpinner = true;
+    if (this.isInElectron) {
+      this.checkmate.downloadWorkspaceIssuesCSVReportElectron(this.currentWorkspaceName).subscribe(x => {
+        this.showSpinner = false;
+        this.ipc.saveScanreport(x).then(val => {
+          if (val === '') {
+            this.snackBar.open(`Cancelled`, 'close');
+          } else {
+            this.snackBar.open(`Saved report at ${val}`, 'close');
+          }
+          setTimeout(() => this.snackBar.dismiss(), 5000);
+        });
+      },
+        err => {
+          this.showSpinner = false;
+          this.snackBar.open('Error generating project summary report ' + err.error, 'close');
+        }
+      );
+    } else {
+      this.checkmate.downloadWorkspaceIssuesCSVReport(this.currentWorkspaceName).subscribe(x => {
+        this.showSpinner = false;
+        saveAs(x, `${this.currentWorkspaceName}_Workspace_Issues.csv`);
+      },
+        err => {
+          this.showSpinner = false;
+          const message = err.message as string;
+          this.snackBar.open(message, 'close');
+        });
+    }
+  }
+
   downloadProjectsReport() {
     this.showSpinner = true;
     if (this.isInElectron) {

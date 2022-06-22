@@ -6,7 +6,17 @@ Integrating various text editor utilities: https://www.syncfusion.com/blogs/post
 Colour pallete: https://coolors.co/7400b8-6930c3-5e60ce-5390d9-4ea8de-48bfe3-56cfe1-64dfdf-72efdd-80ffdb
 
 
-packaging
+packaging with Github Actions
+
+change version of package.json to x.y.z
+git commit -am "commit notes"
+git push
+on Github, publish release
+
+
+
+
+packaging - old method
 
 nvm use v14.17.0
 change version of package.json to x.y.z
@@ -16,4 +26,3 @@ git push
 npm run electron:build
 npm run release
 
-on Github, publish release

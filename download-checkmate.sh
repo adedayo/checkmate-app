@@ -7,10 +7,10 @@ downloadDir="${binaryDir}/releases"
 darwinDir="${binaryDir}/darwin"
 linuxDir="${binaryDir}/linux"
 windowsDir="${binaryDir}/windows"
-mkdir -p "${darwinDir}"
-mkdir -p "${linuxDir}"
-mkdir -p "${windowsDir}"
-mkdir -p "${downloadDir}"
+mkdir -p "${darwinDir}/plugins"
+mkdir -p "${linuxDir}/plugins"
+mkdir -p "${windowsDir}/plugins"
+mkdir -p "${downloadDir}/plugins"
 
 # if [ ! -f "${darwinDir}/checkmate" ]; then #remove this constraint. This is only done during release
 #Only do this if we don't have a darwin executable

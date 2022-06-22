@@ -141,6 +141,10 @@ export class CheckMateService {
     return this.http.get<ProjectSummary[]>(`${this.api}/projectsummaries`);
   }
 
+  public downloadWorkspaceIssuesCSVReportElectron(workspace: string): Observable<string> {
+    return this.http.get<string>(`${this.api}/workspaceissueselectron/${workspace}`);
+  }
+
   public downloadProjectScores(workspace: string): Observable<string> {
     return this.http.get<string>(`${this.api}/projectsummariesreport/${workspace}`);
   }
@@ -188,6 +192,13 @@ export class CheckMateService {
     return this.http.post<string>(`${this.api}/project/issues/codecontext`, context);
   }
 
+  downloadWorkspaceIssuesCSVReport(currentWorkspaceName: string): Observable<any> {
+    return this.http.get(`${this.api}/downloadworkspaceissues/${currentWorkspaceName}`, {
+      responseType: 'blob',
+      observe: 'body',
+      reportProgress: true
+    });
+  }
 
   downloadWorkspaceCSVReport(currentWorkspaceName: string): Observable<any> {
     return this.http.get(`${this.api}/downloadworkspacereport/${currentWorkspaceName}`, {
