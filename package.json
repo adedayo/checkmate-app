@@ -94,6 +94,7 @@
     "eslint-plugin-jsdoc": "35.1.0",
     "eslint-plugin-prefer-arrow": "1.2.3",
     "follow-redirects": ">=1.14.9",
+    "got": ">=11.8.5",
     "jasmine-core": "3.7.1",
     "jasmine-spec-reporter": "7.0.0",
     "json-schema": "0.4.0",
