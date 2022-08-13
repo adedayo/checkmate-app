@@ -1,7 +1,7 @@
 {
   "name": "checkmate-app",
   "description": "Security static analysis tool. Find secrets in source code and configuration files",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "main.js",
   "license": "BSD-3-Clause",
   "repository": {
@@ -12,7 +12,8 @@
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
     "ng": "ng",
-    "local": "./local-build-package-checkmate.sh && npm run build:lib && npm run start",
+    "local": "./local-build-package-checkmate.sh && npm run it",
+    "it": "npm run build:lib && npm run start",
     "build:lib": "ng build ngx-is-electron",
     "start": "npm-run-all -p electron:serve ng:serve",
     "build": "npm run build:lib && npm run electron:serve-tsc && ng build --base-href ./",

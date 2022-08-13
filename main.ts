@@ -16,7 +16,7 @@ switch (platform()) {
     os = 'darwin';
     break;
   case 'win32':
-    os = 'win';
+    os = 'windows';
     cmExec += '.exe';
     break;
   default:
@@ -35,7 +35,7 @@ const apiPort = 17283;
 const cmArgs = [`api`, `--bind-localhost`, `--port`, `${apiPort}`,
   `--serve-git-service`];
 
-const checkMateAPI = spawn(appPath, cmArgs, { stdio: [process.stdin, process.stdout, process.stderr] });
+const checkMateAPI = spawn(appPath, cmArgs, { stdio: ['inherit' , 'inherit', 'inherit'] });
 
 
 ipcMain.handle('api-config', (_event, ..._args) => apiPort);
