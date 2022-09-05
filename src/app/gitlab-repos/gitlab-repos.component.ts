@@ -292,7 +292,7 @@ export class GitlabReposComponent implements OnInit, OnDestroy {
     this.formService.clearProjectForm();
 
     this.checkMateService.createProject(projDesc).subscribe(summary => {
-      this.router.navigate(['project-detail', summary.ID]);
+      this.router.navigate(['project-detail', summary.ID], { queryParams: { scan: 'y' } });
     });
   }
 

@@ -180,7 +180,7 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
   }
 
   deleteProject() {
-    console.log('deleting project', this.project.ID);
+    // console.log('deleting project', this.project.ID);
     this.subscriptions.add(this.checkMateService.deleteProject(this.project.ID).subscribe(_x => {
       this.router.navigate(['projects']);
     }));
@@ -237,7 +237,7 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
     // console.log(projDesc);
 
     this.subscriptions.add(this.checkMateService.updateProject(this.project.ID, projDesc).subscribe(x => {
-      this.router.navigate(['project-detail', x.ID]);
+      this.router.navigate(['project-detail', x.ID], { queryParams: { scan: 'y' } });
     }));
 
   }

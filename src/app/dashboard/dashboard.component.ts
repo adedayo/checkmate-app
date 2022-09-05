@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
 import { saveAs } from 'file-saver';
 import { NgxIsElectronService } from 'ngx-is-electron';
 import { faL } from '@fortawesome/free-solid-svg-icons';
+import { IssueFilter } from '../models/project';
 
 
 @Component({
@@ -32,6 +33,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   workspaceForm: FormGroup;
   subscriptions: Subscription;
   scanInProgress: boolean;
+
+  filterForm: FormGroup;
+  filter: IssueFilter = {
+    Confidence: [],
+    Tags: ['test', 'prod'],
+    ConfidentialFilesOnly: false,
+  };
+  filterForm$: Subscription;
+
+
 
   public set workspaceName(name: string) {
     this.currentWorkspaceName = name;
@@ -101,6 +112,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
       wspace: [this.currentWorkspaceName],
     });
 
+    this.filterForm = this.fb.group({
+      critical: [false],
+      high: [false],
+      med: [false],
+      low: [false],
+      info: [false],
+      prod: [true],
+      test: [true],
+      conf: [false],
+      unique: [false],
+    });
+
   }
 
   ngOnDestroy(): void {
@@ -110,6 +133,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.subscriptions) {
       this.subscriptions.unsubscribe();
     }
+
+    if (this.filterForm$) {
+      this.filterForm$.unsubscribe();
+    }
+
   }
 
   ngOnInit(): void {
@@ -170,6 +198,40 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.showSpinner = false;
       },
     }));
+
+    this.filterForm$ = this.filterForm.valueChanges.subscribe(x => {
+      this.filter.Confidence = [];
+      if (x.critical) {
+        this.filter.Confidence.push('Critical');
+      }
+      this.filter.Tags = [];
+      if (x.high) {
+        this.filter.Confidence.push('High');
+      }
+      if (x.med) {
+        this.filter.Confidence.push('Med');
+      }
+      if (x.low) {
+        this.filter.Confidence.push('Low');
+      }
+      if (x.info) {
+        this.filter.Confidence.push('Info');
+      }
+      if (x.test) {
+        this.filter.Tags.push('test');
+      }
+      if (x.prod) {
+        this.filter.Tags.push('prod');
+      }
+      if (x.conf) {
+        this.filter.Tags.push('confidential');
+      }
+      if (x.unique) {
+        this.filter.Tags.push('unique');
+      }
+    });
+
+
   }
 
 
@@ -269,7 +331,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   downloadWorkspaceIssues() {
     this.showSpinner = true;
     if (this.isInElectron) {
-      this.checkmate.downloadWorkspaceIssuesCSVReportElectron(this.currentWorkspaceName).subscribe(x => {
+      this.checkmate.downloadWorkspaceIssuesCSVReportElectron(this.currentWorkspaceName, this.filter).subscribe(x => {
         this.showSpinner = false;
         this.ipc.saveScanreport(x).then(val => {
           if (val === '') {
@@ -286,7 +348,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
       );
     } else {
-      this.checkmate.downloadWorkspaceIssuesCSVReport(this.currentWorkspaceName).subscribe(x => {
+      this.checkmate.downloadWorkspaceIssuesCSVReport(this.currentWorkspaceName, this.filter).subscribe(x => {
         this.showSpinner = false;
         saveAs(x, `${this.currentWorkspaceName}_Workspace_Issues.csv`);
       },

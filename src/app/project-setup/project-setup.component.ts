@@ -165,7 +165,7 @@ export class ProjectSetupComponent implements OnInit, OnDestroy {
     // console.log(projDesc);
 
     this.checkMateService.createProject(projDesc).subscribe(summary => {
-      this.router.navigate(['project-detail', summary.ID]);
+      this.router.navigate(['project-detail', summary.ID], { queryParams: { scan: 'y' } });
     });
   }
 
@@ -191,7 +191,8 @@ export class ProjectSetupComponent implements OnInit, OnDestroy {
     ]);
     const policy: ScanPolicy = {
       Config: options,
-      Policy: this.getExcludePolicy(),
+      // Policy: this.getExcludePolicy(),
+      PolicyString: this.getExcludePolicy(),
     };
     return policy;
   }

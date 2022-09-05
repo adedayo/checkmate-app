@@ -3,7 +3,7 @@ import {
   Component, OnDestroy, OnInit
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CodeContext, ExcludeRequirement, IssueFilter, PagedResult, PaginatedSearch, Project } from '../models/project';
 import {
   ProjectScanOptions, ProjectSummary, ScanEnd, ScanProgress,
@@ -28,6 +28,7 @@ import { faEdit } from '@fortawesome/free-solid-svg-icons';
   styleUrls: ['./project-detail.component.scss']
 })
 export class ProjectDetailComponent implements OnInit, OnDestroy {
+  projectID = '';
   project: Project;
   faEdit = faEdit;
   projectSummary: ProjectSummary;
@@ -144,6 +145,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   debug = false;
 
   constructor(private fb: FormBuilder, private router: Router,
+    private activatedRoute: ActivatedRoute,
     private checkMateService: CheckMateService,
     electronService: NgxIsElectronService, private ipc: ElectronIPC,
     private snackBar: MatSnackBar) {
@@ -179,7 +181,15 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if (path) {
       //get project ID from the route
       const subPaths = path.split('/');
-      const projectID = subPaths[subPaths.length - 1];
+      const projectID = subPaths[subPaths.length - 1].split('?')[0];
+      this.projectID = projectID;
+
+      // this.activatedRoute.queryParamMap.subscribe(p => {
+      //   if (p.has('scan')) {
+      //     this.runScan();
+      //   }
+      // });
+
       this.refreshProject(projectID);
 
       const socket = this.checkMateService.monitorProjectScan({ ProjectIDs: [projectID] });
@@ -234,20 +244,20 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.filterForm$ = this.filterForm.valueChanges.subscribe(x => {
       this.filter.Confidence = [];
       if (x.critical) {
-        this.filter.Confidence.push('critical');
+        this.filter.Confidence.push('Critical');
       }
       this.filter.Tags = [];
       if (x.high) {
-        this.filter.Confidence.push('high');
+        this.filter.Confidence.push('High');
       }
       if (x.med) {
-        this.filter.Confidence.push('med');
+        this.filter.Confidence.push('Med');
       }
       if (x.low) {
-        this.filter.Confidence.push('low');
+        this.filter.Confidence.push('Low');
       }
       if (x.info) {
-        this.filter.Confidence.push('info');
+        this.filter.Confidence.push('Info');
       }
       if (x.test) {
         this.filter.Tags.push('test');
@@ -495,7 +505,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   downloadCSVReport() {
     this.showSpinner = true;
     if (this.isInElectron) {
-      this.checkMateService.getCSVReportPath(this.projectSummary.ID, this.currentScanID).subscribe(x => {
+      this.checkMateService.getCSVReportPath(this.projectSummary.ID, this.currentScanID, this.filter).subscribe(x => {
         this.showSpinner = false;
         this.ipc.saveScanreport(x).then(val => {
           this.snackBar.open(`Saved report at ${val}`, 'close');
@@ -508,7 +518,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         }
       );
     } else {
-      this.checkMateService.downloadCSVReport(this.projectSummary.ID, this.currentScanID).subscribe(x => {
+      this.checkMateService.downloadCSVReport(this.projectSummary.ID, this.currentScanID, this.filter).subscribe(x => {
         this.showSpinner = false;
         saveAs(x, `${this.projectSummary.Name}_Scan_${this.currentScanID}.csv`);
       },
@@ -566,7 +576,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         // console.log('Saved Policy as ', _val);
       });
     } else {
-      console.log('about to save policy');
+      // console.log('about to save policy');
       const blob = new Blob([policy]);
       saveAs(blob, path);
     }
@@ -682,7 +692,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.showSpinner = true;
     const options: ProjectScanOptions = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      ProjectID: this.projectSummary.ID,
+      ProjectID: this.projectID,
     };
 
     if (this.runScan$) {
@@ -691,22 +701,24 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
     this.runScan$ = this.checkMateService.runScan(options).subscribe(
       // msg => {
-      // this.showSpinner = false;
-      // if (this.isScanProgress(msg)) {
-      // const prog = msg;
-      // this.currentFile = prog.CurrentFile;
-      // if (prog.Total > 0) {
-      //   this.progress = (100 * prog.Position) / prog.Total;
-      // }
-      // if (msg.Position === msg.Total) {
-      //   console.log('got last message');
+      //   console.log('got message', msg);
 
-      //   this.currentFile = '';
-      //   this.scanning = false;
-      //   this.progress = 0;
-      //   this.refreshProject(this.projectSummary.ID);
-      // }
-      // }
+      //   this.showSpinner = false;
+      //   if (this.isScanProgress(msg)) {
+      //     const prog = msg;
+      //     this.currentFile = prog.CurrentFile;
+      //     if (prog.Total > 0) {
+      //       this.progress = (100 * prog.Position) / prog.Total;
+      //     }
+      //     if (msg.Position === msg.Total) {
+      //       console.log('got last message');
+
+      //       this.currentFile = '';
+      //       this.scanning = false;
+      //       this.progress = 0;
+      //       this.refreshProject(this.projectID);
+      //     }
+      //   }
       // },
       // err => {
 

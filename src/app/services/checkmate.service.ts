@@ -9,7 +9,7 @@ import {
   ScanStatus, ScanSummary, Workspace, GitCapabilities, MonitorOptions
 } from '../models/project-scan';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
-import { CodeContext, ExcludeRequirement, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
+import { CodeContext, ExcludeRequirement, IssueFilter, PagedResult, PaginatedSearch, PolicyUpdateResult, Project } from '../models/project';
 import { EnvironmentsService } from './environments.service';
 import { GitLabPagedSearch, GitLabProjectSearchResult } from '../models/gitlab-project';
 import { GitService } from '../models/git';
@@ -141,9 +141,6 @@ export class CheckMateService {
     return this.http.get<ProjectSummary[]>(`${this.api}/projectsummaries`);
   }
 
-  public downloadWorkspaceIssuesCSVReportElectron(workspace: string): Observable<string> {
-    return this.http.get<string>(`${this.api}/workspaceissueselectron/${workspace}`);
-  }
 
   public downloadProjectScores(workspace: string): Observable<string> {
     return this.http.get<string>(`${this.api}/projectsummariesreport/${workspace}`);
@@ -192,8 +189,12 @@ export class CheckMateService {
     return this.http.post<string>(`${this.api}/project/issues/codecontext`, context);
   }
 
-  downloadWorkspaceIssuesCSVReport(currentWorkspaceName: string): Observable<any> {
-    return this.http.get(`${this.api}/downloadworkspaceissues/${currentWorkspaceName}`, {
+  public downloadWorkspaceIssuesCSVReportElectron(workspace: string, filter: IssueFilter): Observable<string> {
+    return this.http.post<string>(`${this.api}/workspaceissueselectron/${workspace}`, filter);
+  }
+
+  downloadWorkspaceIssuesCSVReport(currentWorkspaceName: string, filter: IssueFilter): Observable<any> {
+    return this.http.post(`${this.api}/downloadworkspaceissues/${currentWorkspaceName}`, filter, {
       responseType: 'blob',
       observe: 'body',
       reportProgress: true
@@ -221,16 +222,16 @@ export class CheckMateService {
     });
   }
 
-  downloadCSVReport(projID: string, scanID: string): Observable<any> {
-    return this.http.get(`${this.api}/downloadcsvscanreport/${projID}/${scanID}`, {
+  downloadCSVReport(projID: string, scanID: string, filter: IssueFilter): Observable<any> {
+    return this.http.post(`${this.api}/downloadcsvscanreport/${projID}/${scanID}`, filter, {
       responseType: 'blob',
       observe: 'body',
-      reportProgress: true
+      reportProgress: true,
     });
   }
 
-  getCSVReportPath(projID: string, scanID: string): Observable<string> {
-    return this.http.get<string>(`${this.api}/csvscanreport/${projID}/${scanID}`);
+  getCSVReportPath(projID: string, scanID: string, filter: IssueFilter): Observable<string> {
+    return this.http.post<string>(`${this.api}/csvscanreport/${projID}/${scanID}`, filter);
   }
 
   createProject(projDesc: ProjectDescription): Observable<ProjectSummary> {
