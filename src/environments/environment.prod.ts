@@ -5,5 +5,6 @@ export const environment: Environment = {
   apiHost: 'localhost',
   apiPath: 'api',
   apiPort: 17283,
-  wsProtocol: 'ws',
+  wsProtocol: 'wss',
+  httpProtocol: 'https'
 };

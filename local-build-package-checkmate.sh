@@ -7,8 +7,8 @@ pushd ../checkmate
 goreleaser build --config .goreleaser-mac.yml --rm-dist --snapshot
 
 popd
-
-cp ../checkmate/dist/checkmate_darwin_amd64_v1/checkmate checkmate-binary/darwin
+mkdir -p checkmate-binary/darwin
+cp ../checkmate/dist/checkmate_darwin_all/checkmate checkmate-binary/darwin
 
 
 #build and copy plugins

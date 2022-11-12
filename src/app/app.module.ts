@@ -25,6 +25,7 @@ import { ProjectSetupComponent } from './project-setup/project-setup.component';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule, MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/radio';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
@@ -57,6 +58,12 @@ import { NgxIsElectronModule } from 'projects/ngx-is-electron/src/public-api';
 import { EnvironmentsService } from './services/environments.service';
 import { Initialiser } from './initialiseApp';
 import { UtcToLocalPipe } from './pipes/utc-to-local.pipe';
+import { SettingsIntegrationsComponent } from './settings-integrations/settings-integrations.component';
+import { SettingsAuthenticationComponent } from './settings-authentication/settings-authentication.component';
+import { SettingsCertificatesComponent } from './settings-certificates/settings-certificates.component';
+import { SettingsAuthLdapComponent } from './settings-auth-ldap/settings-auth-ldap.component';
+import { SettingsAuthIdpComponent } from './settings-auth-idp/settings-auth-idp.component';
+import { SettingsAuthManualComponent } from './settings-auth-manual/settings-auth-manual.component';
 
 @NgModule({
   declarations: [
@@ -87,6 +94,12 @@ import { UtcToLocalPipe } from './pipes/utc-to-local.pipe';
     GithubProjectListitemComponent,
     ProjectEditComponent,
     UtcToLocalPipe,
+    SettingsIntegrationsComponent,
+    SettingsAuthenticationComponent,
+    SettingsCertificatesComponent,
+    SettingsAuthLdapComponent,
+    SettingsAuthIdpComponent,
+    SettingsAuthManualComponent,
   ],
   imports: [
     BrowserModule,
@@ -117,14 +130,23 @@ import { UtcToLocalPipe } from './pipes/utc-to-local.pipe';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule,
+    MatRadioModule,
     NgxIsElectronModule,
   ],
-  providers: [EnvironmentsService, {
-    provide: APP_INITIALIZER,
-    useFactory: Initialiser.initialiseApp,
-    deps: [EnvironmentsService],
-    multi: true,
-  }],
+  providers: [EnvironmentsService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: Initialiser.initialiseApp,
+      deps: [EnvironmentsService],
+      multi: true,
+    },
+    {
+      provide: MAT_RADIO_DEFAULT_OPTIONS,
+      useValue: {
+        color: 'primary'
+      }
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

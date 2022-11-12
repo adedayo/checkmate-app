@@ -49,7 +49,7 @@ export class CheckMateService {
         console.log(`error getting API port but attempting default port ${port}`, err);
       });
     }
-    this.api = `http://${this.env.getEnvironment().apiHost}:${this.apiPort}/${this.env.getEnvironment().apiPath}`;
+    this.api = `${this.env.getEnvironment().httpProtocol}://${this.env.getEnvironment().apiHost}:${this.apiPort}/${this.env.getEnvironment().apiPath}`;
     this.wsAPI =
       `${this.env.getEnvironment().wsProtocol}://${this.env.getEnvironment().apiHost}:${this.apiPort}/${this.env.getEnvironment().apiPath}`;
     this.http.get<GitCapabilities>(`${this.api}/git/capabilities`).subscribe(cap => this.gitCaps.next(cap));
