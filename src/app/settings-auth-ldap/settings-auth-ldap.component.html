@@ -1,5 +1,6 @@
-<div class="flex flex-col p-2 -mt-2 text-sm text-purple-800">
-  <span class="p-2 text-sm font-semibold uppercase bg-purple-100">Setup LDAP Authentication & Synchronization </span>
+<div class="relative flex flex-col p-0 mx-2 text-sm text-purple-800 border-2 border-purple-100 ">
+  <span class="p-2 text-sm font-semibold uppercase bg-purple-100">Setup LDAP Authentication & Synchronization
+  </span>
 
 
   <form class="flex items-center w-full p-2" [formGroup]="ldapForm" (ngSubmit)="configureLDAP($event)">
@@ -42,8 +43,8 @@
         </mat-radio-group>
       </div>
 
-      <div class="flex flex-col w-full mt-4 border-2 border-red-100 rounded-sm">
-        <span class="flex justify-between p-1 font-semibold bg-red-100 cursor-pointer"
+      <div *ngIf="serverFormValid" class="flex flex-col w-full mt-4 border-2 rounded-sm border-blue-50">
+        <span class="flex justify-between p-1 font-semibold cursor-pointer bg-blue-50"
           (click)="showTestAuthForm=!showTestAuthForm">
           <span>Click here to test LDAP Authentication</span>
           <mat-icon *ngIf="!showTestAuthForm" class="icon">arrow_drop_down</mat-icon>
@@ -59,14 +60,132 @@
 
             <mat-form-field class="w-3/4 text-blue-800">
               <mat-label>Password</mat-label>
-              <input class="" matInput type="password" formControlName="pwd" required>
+              <input class="focus:ring-0" matInput type="password" formControlName="pwd" required>
             </mat-form-field>
           </div>
-          <button [disabled]="!authForm.valid" mat-button type="submit"
-            class="py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">Test
+          <button [disabled]="!authForm.valid" mat-button type="submit" (click)="authUser()"
+            class="w-40 py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">Test
             Authentication</button>
-          <!-- <button class="p-1 bg-purple-400 rounded-xl">Test Authentication</button> -->
+
         </form>
+
+
+      </div>
+
+      <div class="flex flex-col w-full p-2 mt-4 border-2 border-purple-50">
+        <span class="flex justify-between p-1 -m-2 font-semibold bg-blue-50">Sync LDAP Users and Groups</span>
+        <!--
+        <mat-form-field class="text-blue-800 focus:outline-none">
+          <input type="checkbox" placeholder="Example: johnd" formControlName="username" required>
+        </mat-form-field> -->
+
+        <div class="pt-4 form-check">
+          <input formControlName="syncRequiresAuth"
+            class="float-left w-4 h-4 mt-1 mr-2 align-top transition duration-200 bg-white bg-center bg-no-repeat bg-contain border border-gray-300 rounded-sm appearance-none cursor-pointer checked:hover:bg-purple-600 form-check-input checked:bg-purple-600 checked:border-purple-600 focus:outline-none focus:checked:bg-purple-600 focus:ring-0"
+            type="checkbox" value="" id="flexCheckDefault">
+          <label class="inline-block text-purple-800 form-check-label" for="flexCheckDefault">
+            Sync Requires Authentication
+          </label>
+        </div>
+
+        <div *ngIf="syncRequiresAuth" class="pt-2">
+          <div class="flex w-full space-x-4">
+            <mat-form-field class="w-1/4 text-blue-800">
+              <mat-label>Sync Username</mat-label>
+              <input matInput placeholder="Example: johnd" formControlName="syncUserName" required>
+            </mat-form-field>
+
+            <mat-form-field class="w-3/4 text-blue-800">
+              <mat-label>Sync User Password</mat-label>
+              <input class="focus:ring-0" matInput type="password" formControlName="syncPassword" required>
+            </mat-form-field>
+          </div>
+        </div>
+
+
+        <div class="flex flex-col pt-2">
+          <span class="flex items-center justify-between p-1 -mx-2 font-semibold bg-blue-50">
+            <span>Base DNs to Sync <span class="text-xs text-blue-800">(ensure it includes DNs for users and user
+                groups)</span></span>
+            <button (click)="addBaseDN()" aria-label="Add Base DN">
+              <mat-icon class="">add_circle</mat-icon>
+            </button>
+          </span>
+
+          <div formArrayName="baseDNs">
+            <div *ngFor="let bdn of baseDNs.controls; let i = index">
+              <div [formGroup]="bdn" class="flex items-center justify-between w-full pr-4 space-x-4">
+                <mat-form-field class="w-3/4 text-blue-800 ">
+                  <mat-label>Base DN</mat-label>
+                  <input matInput placeholder="Example: dc=example,dc=org" formControlName="baseDN" required>
+                </mat-form-field>
+                <mat-icon class="cursor-pointer material-icons-outlined" (click)="deleteBaseDN(i)">
+                  delete_forever
+                </mat-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="flex flex-col mt-2 overflow-y-auto border-t-2 "> -->
+        <div class="pt-2">
+          <div (click)="colapseUserRules = !colapseUserRules"
+            class="flex items-center justify-between p-1 -mx-2 font-semibold cursor-pointer bg-blue-50">
+            <span>User Identification Filters
+              <span class="text-xs text-blue-800">(these are rules for identifying users in the LDAP tree)</span>
+            </span>
+            <button aria-label="Collapse or Expand" class="flex items-center">
+              <mat-icon *ngIf="colapseUserRules" class="">expand_less</mat-icon>
+              <mat-icon *ngIf="!colapseUserRules" class="">expand_more</mat-icon>
+            </button>
+          </div>
+          <app-filter-group *ngIf="colapseUserRules" formControlName="userFilter" [filter]="makeLDAPFilter()"
+            [isRoot]="true">
+          </app-filter-group>
+        </div>
+
+        <div class="pt-2">
+          <div (click)="colapseGroupRules = !colapseGroupRules"
+            class="flex items-center justify-between p-1 -mx-2 font-semibold cursor-pointer bg-blue-50">
+            <span>Group Identification Filters
+              <span class="text-xs text-blue-800">(these are rules for identifying groups in the LDAP tree)</span>
+            </span>
+            <button aria-label="Collapse or Expand" class="flex items-center">
+              <mat-icon *ngIf="colapseGroupRules" class="">expand_less</mat-icon>
+              <mat-icon *ngIf="!colapseGroupRules" class="">expand_more</mat-icon>
+            </button>
+          </div>
+          <app-filter-group *ngIf="colapseGroupRules" formControlName="groupFilter" [filter]="makeLDAPFilter()"
+            attributeValueExample="posixGroup" [isRoot]="true">
+          </app-filter-group>
+        </div>
+
+
+
+        <div class="pt-2">
+          <div (click)="colapseMembershipRules = !colapseMembershipRules"
+            class="flex items-center justify-between p-1 -mx-2 font-semibold cursor-pointer bg-blue-50">
+            <span>Group Membership Rules
+              <span class="text-xs text-blue-800">(this is how we map users to groups in the LDAP tree)</span>
+            </span>
+            <button aria-label="Collapse or Expand" class="flex items-center">
+              <mat-icon *ngIf="colapseMembershipRules" class="">expand_less</mat-icon>
+              <mat-icon *ngIf="!colapseMembershipRules" class="">expand_more</mat-icon>
+            </button>
+          </div>
+          <app-filter-group *ngIf="colapseMembershipRules" formControlName="groupMembershipFilter"
+            [filter]="makeLDAPFilter()" attributeValueExample="posixGroup" [isRoot]="true">
+          </app-filter-group>
+        </div>
+
+        <!-- </div> -->
+
+        <div class="mt-2">
+          <span></span>
+          <button [disabled]="!ldapForm.valid" mat-button type="submit"
+            class="float-right w-40 py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">Sync
+            Directory</button>
+        </div>
       </div>
 
     </div>

@@ -64,6 +64,8 @@ import { SettingsCertificatesComponent } from './settings-certificates/settings-
 import { SettingsAuthLdapComponent } from './settings-auth-ldap/settings-auth-ldap.component';
 import { SettingsAuthIdpComponent } from './settings-auth-idp/settings-auth-idp.component';
 import { SettingsAuthManualComponent } from './settings-auth-manual/settings-auth-manual.component';
+import { SimpleFilterComponent } from './simple-filter/simple-filter.component';
+import { FilterGroupComponent } from './filter-group/filter-group.component';
 
 @NgModule({
   declarations: [
@@ -100,6 +102,8 @@ import { SettingsAuthManualComponent } from './settings-auth-manual/settings-aut
     SettingsAuthLdapComponent,
     SettingsAuthIdpComponent,
     SettingsAuthManualComponent,
+    SimpleFilterComponent,
+    FilterGroupComponent,
   ],
   imports: [
     BrowserModule,

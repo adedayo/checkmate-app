@@ -1,0 +1,40 @@
+<form [formGroup]="form" class="flex flex-col p-4 pl-4 mt-2 overflow-y-auto border-2 max-h-96">
+
+
+  <div class="flex justify-between ">
+    <div class="inline-flex items-center justify-start mb-2 -ml-2 bg-white rounded-md cursor-pointer ">
+      <span (click)="operator=0" ngClass="{{operator===0?'bg-purple-200':''}}"
+        class="border-2 border-purple-400 h-6 w-16 text-primary uppercase bg-gray flex items-center space-x-[6px] rounded rounded-r-none border-r py-2 px-[18px] text-xs font-medium">
+        And
+      </span>
+      <span (click)="operator=1" ngClass="{{operator!==0?'bg-purple-200':''}}"
+        class="border-2 border-purple-400 h-6 w-16 text-body-color uppercase flex items-center space-x-[6px] rounded rounded-l-none border-l py-2 px-[18px] text-xs font-medium">
+        Or
+      </span>
+    </div>
+    <div class="cursor-pointer">
+      <span (click)="addFilter()"
+        class="p-1 text-xs font-semibold bg-pink-100 border-2 border-r border-purple-200 rounded-l">Add simple
+        rule</span>
+      <span (click)="addFilterGroup()" [ngClass]=" isRoot ? 'rounded-r':'' "
+        class="p-1 text-xs font-semibold bg-pink-100 border-2 border-l border-r border-purple-200">Add compound
+        rule</span>
+      <span *ngIf="!isRoot" class="p-1 text-xs font-semibold bg-pink-100 border-2 border-l border-purple-200 rounded-r"
+        (click)="remove.emit()">Delete group</span>
+    </div>
+  </div>
+
+  <ng-container formArrayName="filters">
+    <app-simple-filter [attributeNameExample]="attributeNameExample" [attributeValueExample]="attributeValueExample"
+      *ngFor="let c of filtersFormArray?.controls; index as j" [formControlName]="j" (remove)="deleteFilter(j)">
+    </app-simple-filter>
+  </ng-container>
+
+
+  <ng-container formArrayName="filterGroups">
+    <app-filter-group *ngFor="let s of filterGroupsFormArray?.controls; index as i" [formControlName]="i"
+      (remove)="deleteGroup(i)">
+    </app-filter-group>
+  </ng-container>
+
+</form>
