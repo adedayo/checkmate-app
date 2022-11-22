@@ -64,15 +64,19 @@
             </mat-form-field>
           </div>
           <button [disabled]="!authForm.valid" mat-button type="submit" (click)="authUser()"
-            class="w-40 py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">Test
-            Authentication</button>
+            class="w-40 py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">
+            <div class="flex items-center space-x-2">
+              <mat-icon>account_circle</mat-icon>
+              <span>Test Authentication</span>
+            </div>
+          </button>
 
         </form>
 
 
       </div>
 
-      <div class="flex flex-col w-full p-2 mt-4 border-2 border-purple-50">
+      <div class="flex flex-col w-full p-2 mt-4 border-2 border-blue-100">
         <span class="flex justify-between p-1 -m-2 font-semibold bg-blue-50">Sync LDAP Users and Groups</span>
         <!--
         <mat-form-field class="text-blue-800 focus:outline-none">
@@ -183,8 +187,12 @@
         <div class="mt-2">
           <span></span>
           <button [disabled]="!ldapForm.valid" mat-button type="submit"
-            class="float-right w-40 py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">Sync
-            Directory</button>
+            class="float-right w-40 py-2 mt-6 text-xs font-medium leading-3 text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200">
+            <div class="flex items-center space-x-2">
+              <mat-icon>sync</mat-icon>
+              <span>Sync Directory</span>
+            </div>
+          </button>
         </div>
       </div>
 
