@@ -66,6 +66,7 @@ import { SettingsAuthIdpComponent } from './settings-auth-idp/settings-auth-idp.
 import { SettingsAuthManualComponent } from './settings-auth-manual/settings-auth-manual.component';
 import { SimpleFilterComponent } from './simple-filter/simple-filter.component';
 import { FilterGroupComponent } from './filter-group/filter-group.component';
+import { LdapViewComponent } from './ldap-view/ldap-view.component';
 
 @NgModule({
   declarations: [
@@ -104,6 +105,7 @@ import { FilterGroupComponent } from './filter-group/filter-group.component';
     SettingsAuthManualComponent,
     SimpleFilterComponent,
     FilterGroupComponent,
+    LdapViewComponent,
   ],
   imports: [
     BrowserModule,

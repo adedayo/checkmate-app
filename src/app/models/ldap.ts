@@ -8,7 +8,7 @@ export interface LDAPConfig {
   port: string;
 }
 
-export interface LDAPConfigForm {
+export interface LDAPAuthData {
   server: string;
   port: string;
   tls: string;
@@ -18,6 +18,10 @@ export interface LDAPConfigForm {
   pwd?: string;
 }
 
+export interface AuthResult {
+  success: boolean;
+  errorMessage: string;
+}
 
 export interface LDAPFilter {
   operator: number;
@@ -25,8 +29,71 @@ export interface LDAPFilter {
   filterGroups: LDAPFilter[];
 }
 
+export interface GroupMembershipAssociator {
+  operator: number;
+  constraints: Constraint[];
+  additionalRules: GroupMembershipAssociator[];
+}
+
+export interface Constraint {
+  userAttribute: string;
+  groupAttribute: string;
+}
+
 
 export interface FilterExpression {
   name: string;
   value: string;
+}
+
+export interface BaseDN {
+  baseDN: string;
+}
+
+export interface LDAPSyncConfig {
+  server: string;
+  port: string;
+  urdns: string;
+  uid: string;
+  tls: string;
+  baseDNs: string[];
+  syncRequiresAuth: boolean;
+  syncUserName: string;
+  syncPassword: string;
+  userFilter: LDAPFilter;
+  groupFilter: LDAPFilter;
+  groupMembership: GroupMembershipAssociator;
+}
+
+
+export interface LDAPRecords {
+  entries: LDAPEntry[];
+  usersAndGroups: UsersAndGroups;
+}
+
+export interface UsersAndGroups {
+  users: User[];
+  groups: Group[];
+}
+
+export interface User {
+  id: string;
+  dn: string;
+}
+
+export interface Group {
+  id: string;
+  dn: string;
+  members: string[];
+}
+
+export interface LDAPEntry {
+  dn: string;
+  attributes: LDAPAttributes[];
+
+}
+
+export interface LDAPAttributes {
+  name: string;
+  values: string[];
 }

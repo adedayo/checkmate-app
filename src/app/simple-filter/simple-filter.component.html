@@ -1,12 +1,12 @@
 <form [formGroup]="form" class="flex items-center justify-between w-full">
   <div class="flex items-center w-full space-x-8">
     <mat-form-field class="w-1/3 text-blue-800 focus:outline-none">
-      <mat-label>Attribute</mat-label>
+      <mat-label>{{attributeNameLabel}}</mat-label>
       <input matInput placeholder="Example: {{attributeNameExample}}" formControlName="name" required>
     </mat-form-field>
-    <span class="text-xs ">equals/contains</span>
+    <span class="text-xs ">{{equalityLabel}}</span>
     <mat-form-field class="w-1/3 text-blue-800 focus:outline-none">
-      <mat-label>Value</mat-label>
+      <mat-label>{{attributeValueLabel}}</mat-label>
       <input matInput placeholder="Example: {{attributeValueExample}}" formControlName="value" required>
     </mat-form-field>
   </div>

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { LDAPConfigForm, LDAPFilter } from '../models/ldap';
+import { BaseDN, GroupMembershipAssociator, LDAPAuthData, LDAPFilter, LDAPRecords, LDAPSyncConfig } from '../models/ldap';
+import { CheckMateService } from '../services/checkmate.service';
 
 @Component({
   selector: 'app-settings-auth-ldap',
@@ -11,12 +12,14 @@ export class SettingsAuthLdapComponent implements OnInit {
 
   ldapForm: FormGroup = null;
   authForm: FormGroup;
+  ldapRecords: LDAPRecords;
   showTestAuthForm = false;
   colapseUserRules = true;
   colapseGroupRules = true;
   colapseMembershipRules = true;
+  showConfigForm = true;
 
-  constructor(private fb: FormBuilder) { }
+  constructor(private fb: FormBuilder, private checkMateService: CheckMateService,) { }
 
   ngOnInit(): void {
 
@@ -102,15 +105,20 @@ export class SettingsAuthLdapComponent implements OnInit {
   }
 
   authUser() {
-    console.log(this.ldapForm.value);
+    console.log(this.ldapConfigForm);
+    const data = this.ldapConfigForm;
+    this.checkMateService.login(data).subscribe(result => {
+      console.log(result);
+
+    });
   }
 
-  public get ldapConfigForm(): LDAPConfigForm {
+  public get ldapConfigForm(): LDAPAuthData {
     return {
       server: this.ldapForm.get('ldapServer').value as string,
       port: this.ldapForm.get('ldapPort').value as string,
-      urdns: this.ldapForm.get('urdns').value as string,
       uid: this.ldapForm.get('uid').value as string,
+      urdns: this.ldapForm.get('urdns').value as string,
       tls: this.ldapForm.get('tls').value.option as string,
       user: this.authForm.get('username').value as string,
       pwd: this.authForm.get('pwd').value as string
@@ -121,12 +129,52 @@ export class SettingsAuthLdapComponent implements OnInit {
     this.baseDNs.removeAt(i);
   }
 
-  configureLDAP(event) {
+  configureLDAP(_event: any) {
 
-    console.log(this.ldapForm.value);
+    const data: LDAPSyncConfig = {
+      server: this.ldapForm.get('ldapServer').value as string,
+      port: this.ldapForm.get('ldapPort').value as string,
+      urdns: this.ldapForm.get('urdns').value as string,
+      uid: this.ldapForm.get('uid').value as string,
+      tls: this.ldapForm.get('tls').value.option as string,
+      baseDNs: this.extractBaseDNs(this.ldapForm.get('baseDNs').value),
+      syncRequiresAuth: this.ldapForm.get('syncRequiresAuth').value as boolean,
+      syncUserName: this.ldapForm.get('syncUserName').value as string,
+      syncPassword: this.ldapForm.get('syncPassword').value as string,
+      userFilter: this.ldapForm.get('userFilter').value as LDAPFilter,
+      groupFilter: this.ldapForm.get('groupFilter').value as LDAPFilter,
+      groupMembership: this.toGroupMembership(this.ldapForm.get('groupMembershipFilter').value),
+    };
 
+    console.log(data);
+    this.checkMateService.syncLDAP(data).subscribe(ldap => {
+      this.ldapRecords = ldap;
+      console.log(ldap);
+      this.showConfigForm = false;
+
+    });
 
   }
+
+  toGroupMembership(data: LDAPFilter): GroupMembershipAssociator {
+
+
+    const gm: GroupMembershipAssociator = {
+      operator: data.operator,
+      constraints: [],
+      additionalRules: [],
+    };
+
+    data.filters.forEach(f => gm.constraints.push({
+      userAttribute: f.name,
+      groupAttribute: f.value,
+    }));
+    data.filterGroups.forEach(d => gm.additionalRules.push(this.toGroupMembership(d)));
+
+    return gm;
+  }
+
+
 
   makeLDAPFilter(): LDAPFilter {
     const filter: LDAPFilter = {
@@ -139,6 +187,12 @@ export class SettingsAuthLdapComponent implements OnInit {
       filterGroups: [],
     };
     return filter;
+  }
+
+  private extractBaseDNs(baseDNs: BaseDN[]): string[] {
+    const out: string[] = [];
+    baseDNs.forEach((b: BaseDN) => out.push(b.baseDN));
+    return out;
   }
 }
 

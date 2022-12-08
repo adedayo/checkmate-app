@@ -1,12 +1,12 @@
-<div class="grid h-full grid-cols-8 pb-5 overflow-auto">
-  <div class="z-0 flex w-48 h-full col-span-1 space-y-6 text-sm font-semibold text-gray-600 uppercase bg-purple-100">
+<div class="flex h-full overflow-auto min-h-fit">
+  <div class="flex flex-col space-y-6 text-sm font-semibold text-gray-600 uppercase bg-purple-100">
 
-    <nav class="flex flex-col w-full">
-      <a routerLinkActive="active-list-item" routerLink="settings-certs" title="Certificates"
+    <nav class="flex flex-col">
+      <!-- <a routerLinkActive="active-list-item" routerLink="settings-certs" title="Certificates"
         class="flex space-x-2  my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white focus:text-white transition duration-200">
         <mat-icon class="icon">link</mat-icon>
         <div class="pt-0.5">Certificates</div>
-      </a>
+      </a> -->
 
       <a routerLinkActive="active-list-item" routerLink="settings-integrations" title="Integrations"
         class="flex space-x-2 my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white focus:text-white transition duration-200">
@@ -16,14 +16,14 @@
 
       <a routerLinkActive="active-list-item" routerLink="settings-authentication" title="Authentication"
         class="flex space-x-2 my-2 py-2.5 px-2 focus:outline-none hover:bg-purple-700 focus:bg-purple-700 hover:text-white focus:text-white transition duration-200">
-        <mat-icon class="icon">verified_user</mat-icon>
+        <mat-icon class="">verified_user</mat-icon>
         <div class="pt-0.5">Authentication</div>
       </a>
     </nav>
   </div>
 
   <!-- Settings Body -->
-  <div class="flex flex-col w-full h-full col-span-7">
+  <div class="flex-col w-full h-full mb-3 overflow-auto">
     <router-outlet></router-outlet>
     <!-- <app-settings-integrations></app-settings-integrations> -->
   </div>

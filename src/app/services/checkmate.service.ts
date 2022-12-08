@@ -15,6 +15,7 @@ import { GitLabPagedSearch, GitLabProjectSearchResult } from '../models/gitlab-p
 import { GitService } from '../models/git';
 import { GitHubPagedSearch, GitHubProjectSearchResult } from '../models/github-project';
 import { NgxIsElectronService } from 'ngx-is-electron';
+import { AuthResult, LDAPAuthData, LDAPRecords, LDAPSyncConfig } from '../models/ldap';
 
 @Injectable({
   providedIn: 'root'
@@ -49,6 +50,7 @@ export class CheckMateService {
         console.log(`error getting API port but attempting default port ${port}`, err);
       });
     }
+    // eslint-disable-next-line max-len
     this.api = `${this.env.getEnvironment().httpProtocol}://${this.env.getEnvironment().apiHost}:${this.apiPort}/${this.env.getEnvironment().apiPath}`;
     this.wsAPI =
       `${this.env.getEnvironment().wsProtocol}://${this.env.getEnvironment().apiHost}:${this.apiPort}/${this.env.getEnvironment().apiPath}`;
@@ -247,5 +249,13 @@ export class CheckMateService {
 
   updateProject(projectID: string, projDesc: ProjectDescription): Observable<Project> {
     return this.http.post<Project>(`${this.api}/updateproject/${projectID}`, projDesc);
+  }
+
+  syncLDAP(data: LDAPSyncConfig): Observable<LDAPRecords> {
+    return this.http.post<LDAPRecords>(`${this.api}/ldap/sync`, data);
+  }
+
+  login(data: LDAPAuthData): Observable<AuthResult> {
+    return this.http.post<AuthResult>(`${this.api}/ldap/login`, data);
   }
 }

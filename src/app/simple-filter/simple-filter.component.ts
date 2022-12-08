@@ -25,6 +25,10 @@ export class SimpleFilterComponent implements ControlValueAccessor, OnInit {
   @Input() attributeNameExample = 'objectClass';
   @Input() attributeValueExample = 'inetOrgPerson';
 
+  @Input() attributeNameLabel = 'Attribute';
+  @Input() attributeValueLabel = 'Value';
+
+  @Input() equalityLabel = 'equals/contains';
 
   form: FormGroup;
   destroy$: Subject<void> = new Subject<void>();
