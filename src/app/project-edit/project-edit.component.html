@@ -1,10 +1,10 @@
 <div class="container fixed flex flex-col m-8 bg-white border-purple-100 rounded-lg shadow border-1 top-8 bottom-4">
 
-  <div class="flex justify-between px-2 text-lg items-center text-center bg-purple-800 rounded-t-lg">
+  <div class="flex items-center justify-between px-2 text-lg text-center bg-purple-800 rounded-t-lg">
     <a *ngIf="project" [routerLink]="['/project-detail', project.ID]"
       class="py-4 text-base text-purple-50 min-w-max">Edit
       Project: {{project.Name}}</a>
-    <fa-icon class=" text-lg text-white cursor-pointer mr-2" (click)="deleteProject()"
+    <fa-icon class="mr-2 text-lg text-white cursor-pointer " (click)="deleteProject()"
       matTooltip="Danger: delete project" [icon]="faDelete">
     </fa-icon>
   </div>
@@ -49,7 +49,7 @@
           </button>
         </div>
       </div>
-      <div class="flex flex-col grow w-full col-span-11">
+      <div class="flex flex-col w-full col-span-11 grow">
         <div class="flex items-center justify-start mb-1 space-x-4">
           <div class="w-11/12 pl-3 pr-3 border-b-2">Location</div>
           <div class="border-b-2">Monitor</div>
@@ -158,6 +158,25 @@
       theme: 'material',
       mode: 'yaml'
     }"></ngx-codemirror>
+        </div>
+      </div>
+
+
+      <!-- Set the same Git Service Provider for all Projects  -->
+      <div class="col-span-1 font-semibold text-right">Git Service</div>
+      <div formGroupName="unifyGitService"
+        class="flex flex-col w-full col-span-11 p-2 border-2 border-purple-200 rounded">
+        <div class="flex items-center space-x-2">
+          <div class="text-sm">Use the same Git API key for all repositories</div>
+          <input type="checkbox" formControlName="unify" matTooltip="Unify Git service provider"
+            class="text-purple-500 border-purple-500 rounded focus:ring-0">
+        </div>
+        <div class="flex items-center w-full mt-2 space-x-2" *ngIf="getUnifyGitService()">
+          <span class="w-1/4">Git Service Name</span>
+          <select [required]="getUnifyGitService()" formControlName="authProvider"
+            class="w-3/4 h-8 col-span-2 px-4 py-2 pr-8 mr-2 text-xs leading-tight bg-white border border-gray-400 rounded shadow hover:border-gray-500 focus:outline-none focus:shadow-outline focus:border-purple-500 focus:ring-purple-500">
+            <option *ngFor="let id of apiKeyIDs" [ngValue]="id.gitServiceID">{{id.apiKeyName}}</option>
+          </select>
         </div>
       </div>
     </form>

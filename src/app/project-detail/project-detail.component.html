@@ -136,27 +136,27 @@
     </div>
     <div *ngIf="expandReusedSecretsPanel" class="px-10 py-6">
       <div
-        *ngIf="scanSummary && scanSummary.AdditionalInfo && scanSummary.AdditionalInfo.prodandnonprodsecretreuse;else no_reuse">
+        *ngIf="scanSummary && scanSummary.AdditionalInfo && scanSummary.AdditionalInfo.prodAndNonProdSecretReuse && scanSummary.AdditionalInfo.prodAndNonProdSecretReuse.length>0 ;else no_reuse">
 
         <div class="flex flex-col overflow-y-auto max-h-32"
-          *ngFor="let sec of scanSummary.AdditionalInfo.prodandnonprodsecretreuse; let i = index">
+          *ngFor="let sec of scanSummary.AdditionalInfo.prodAndNonProdSecretReuse; let i = index">
           <div class="flex space-x-2">
             <div class="flex flex-col">
-              <span *ngIf="i === 0" class="text-xs text-purple-800 uppercase">Secret</span>
-              <div class="text-xs text-gray-500">{{sec.secret}}</div>
+              <span *ngIf="i === 0" class="text-xs text-purple-800 uppercase">Secret Checksum</span>
+              <div class="text-xs text-gray-500">{{sec.Secret}}</div>
             </div>
             <div class="flex flex-col text-xs">
               <span *ngIf="i === 0" class="text-purple-800 uppercase">Production</span>
-              <div class="flex space-x-1" *ngFor="let loc of sec.productionlocations; let j = index">
+              <div class="flex space-x-1" *ngFor="let loc of sec.productionLocations; let j = index">
                 <span class="text-gray-500">{{j+1}}.</span>
-                <div class="text-xs text-gray-500">{{loc.location}}</div>
+                <div class="text-xs text-gray-500">{{loc.Location}}</div>
               </div>
             </div>
             <div class="flex flex-col text-xs">
               <span *ngIf="i === 0" class="text-purple-800 uppercase">Non-Production</span>
-              <div class="flex space-x-1" *ngFor="let loc of sec.nonproductionlocations; let j = index">
+              <div class="flex space-x-1" *ngFor="let loc of sec.nonProductionLocations; let j = index">
                 <span class="text-gray-500">{{j+1}}.</span>
-                <div class="text-sm text-gray-500">{{loc.location}}</div>
+                <div class="text-sm text-gray-500">{{loc.Location}}</div>
               </div>
             </div>
           </div>

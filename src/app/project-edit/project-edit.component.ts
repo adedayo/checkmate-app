@@ -99,6 +99,10 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
             x: [this.project.ScanPolicy.Policy],
             policy: [this.project.ScanPolicy.PolicyString],
           }),
+          unifyGitService: this.fb.group({
+            unify: [false],
+            authProvider: ['']
+          }),
         });
         this.initialNewRepoValues = this.projectForm.get('newRepository').value;
       }));
@@ -130,6 +134,10 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
 
   getNewRepoRequiresAuth(): boolean {
     return this.newRepository.get('requiresAuth').value as boolean;
+  }
+
+  getUnifyGitService(): boolean {
+    return this.projectForm.get('unifyGitService.unify').value as boolean;
   }
 
   getNewRepoType(): string {
@@ -233,6 +241,17 @@ export class ProjectEditComponent implements OnInit, OnDestroy {
         Config: this.project.ScanPolicy.Config,
       },
     };
+
+    //unify git service ID if required
+    if (this.getUnifyGitService() && projDesc.Repositories) {
+      const serviceID = this.projectForm.get('unifyGitService.authProvider').value as string;
+      projDesc.Repositories.forEach((repo, i) => {
+        if (repo.LocationType === 'git') {
+          repo.GitServiceID = serviceID;
+          projDesc.Repositories[i] = repo;
+        }
+      });
+    }
 
     // console.log(projDesc);
 
