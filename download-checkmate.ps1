@@ -6,7 +6,7 @@ $artefacts | ForEach-Object -Process {
   if ($_ -like '*windows*') {
      Remove-Item "checkmate-binary" -Filter * -Recurse -ErrorAction Ignore
      New-Item -ItemType Directory -Path "checkmate-binary\windows"
-     Invoke-WebRequest -Uri $_ -OutFile "checkmate.tar.gz"
+     Invoke-RestMethod -Uri $_ -OutFile "checkmate.tar.gz"
      tar -xvzf ".\checkmate.tar.gz"
      Move-Item -Path .\checkmate.exe -Destination .\checkmate-binary\windows
   }
