@@ -57,6 +57,7 @@ export interface FormProject {
   Location: string;
   ServiceID: string;
   Monitor: boolean;
+  Attributes?: Map<string, any>;
 }
 
 

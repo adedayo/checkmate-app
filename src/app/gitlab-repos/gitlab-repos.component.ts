@@ -305,6 +305,7 @@ export class GitlabReposComponent implements OnInit, OnDestroy {
           Location: p.Location,
           GitServiceID: p.ServiceID,
           Monitor: p.Monitor,
+          Attributes: p.Attributes,
         });
       });
     });

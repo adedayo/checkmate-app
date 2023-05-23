@@ -90,6 +90,7 @@ export interface Repository {
   LocationType: string;
   GitServiceID?: string;
   Monitor: boolean;
+  Attributes?: Map<string, any>;
 }
 
 export interface ProjectScanOptions {

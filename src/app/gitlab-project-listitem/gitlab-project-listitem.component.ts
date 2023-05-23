@@ -79,6 +79,9 @@ export class GitlabProjectListitemComponent implements OnInit {
           Location: proj.HttpUrlToRepo,
           ServiceID: proj.InstanceID,
           Monitor: this.monitoredProjects[i],
+          Attributes: new Map([
+            ['archived', proj.Archived]
+          ]),
         });
       }
     }
