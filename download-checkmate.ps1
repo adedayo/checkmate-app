@@ -3,7 +3,7 @@ $Response = Invoke-WebRequest -UseBasicParsing -Uri https://api.github.com/repos
 $artefacts = $Response.Content | jq -r ".assets[].browser_download_url"
 
 $artefacts | ForEach-Object -Process {
-  if ($_ -like '*windows*') {
+  if ($_ -like '*windows_amd64*') {
      Remove-Item "checkmate-binary" -Filter * -Recurse -ErrorAction Ignore
      New-Item -ItemType Directory -Path "checkmate-binary\windows"
      Invoke-WebRequest -Uri $_ -OutFile "checkmate.tar.gz" -ErrorAction SilentlyContinue

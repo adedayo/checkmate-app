@@ -7,10 +7,17 @@ downloadDir="${binaryDir}/releases"
 darwinDir="${binaryDir}/darwin"
 linuxDir="${binaryDir}/linux"
 windowsDir="${binaryDir}/windows"
-mkdir -p "${darwinDir}/plugins"
-mkdir -p "${linuxDir}/plugins"
-mkdir -p "${windowsDir}/plugins"
-mkdir -p "${downloadDir}/plugins"
+
+# mkdir -p "${darwinDir}/plugins"
+# mkdir -p "${linuxDir}/plugins"
+# mkdir -p "${windowsDir}/plugins"
+# mkdir -p "${downloadDir}/plugins"
+
+
+mkdir -p "${darwinDir}"
+mkdir -p "${linuxDir}"
+mkdir -p "${windowsDir}"
+mkdir -p "${downloadDir}"
 
 # if [ ! -f "${darwinDir}/checkmate" ]; then #remove this constraint. This is only done during release
 #Only do this if we don't have a darwin executable
@@ -22,37 +29,41 @@ artefacts=$(curl -s https://api.github.com/repos/adedayo/checkmate/releases/late
 
 
 for x in $artefacts; do
-  if [[ "$x" == *x86_64* ]]; then
-    echo "$x"
+  if [[ "$x" == *darwin* || "$x" == *linux_amd64* ]]; then
+    # echo "$x"
+    os=$(uname | tr '[:upper:]' '[:lower:]')
+    xx=$(echo "$x" | tr '[:upper:]' '[:lower:]')
+    if [[ "$xx" == *"$os"* ]]; then #only download for current OS
 
-    IFS='/'
-    read -a xs <<<"$x"
-    gzFile="${xs[${#xs[@]}-1]}"
+      # echo "Our OS = ${os}"
+      # echo "XX = ${xx}"
 
-    if [ ! -f "${downloadDir}/${gzFile}" ]; then
-     os=$(uname | tr '[:upper:]' '[:lower:]')
-     echo "${os}"
-     xx=$(echo "$x" | tr '[:upper:]' '[:lower:]')
-     if [[ "$xx" == *"$os"* ]]; then #only download for current OS
-        pushd "${downloadDir}"
-        curl -O -L "$x"
-        tar xvfz "${gzFile}"
-        ls
-        popd
+      IFS='/'
+      read -a xs <<<"$x"
+      gzFile="${xs[${#xs[@]}-1]}"
 
-        if [[ "$x" == *Darwin* ]]; then
-          mv "${downloadDir}/checkmate" "${binaryDir}/darwin/"
-        fi
-        if [[ "$x" == *linux* ]]; then
-          mv "${downloadDir}/checkmate" "${binaryDir}/linux/"
-        fi
-        if [[ "$x" == *windows* ]]; then
-          mv "${downloadDir}/checkmate.exe" "${binaryDir}/windows/"
-        fi
+      if [ ! -f "${downloadDir}/${gzFile}" ]; then
+
+          pushd "${downloadDir}"
+          curl -O -L "$x"
+          tar xvfz "${gzFile}"
+          # ls
+          popd
+
+          if [[ "$x" == *darwin* ]]; then
+            mv "${downloadDir}/checkmate" "${binaryDir}/darwin/"
+          fi
+          if [[ "$x" == *linux* ]]; then
+            mv "${downloadDir}/checkmate" "${binaryDir}/linux/"
+          fi
+          if [[ "$x" == *windows* ]]; then
+            mv "${downloadDir}/checkmate.exe" "${binaryDir}/windows/"
+          fi
+
       fi
     fi
 
-    ls -alshR "${binaryDir}"
+    # ls -alshR "${binaryDir}"
 
     IFS=' '
    fi
