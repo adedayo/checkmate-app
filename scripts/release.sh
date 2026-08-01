@@ -51,8 +51,8 @@ echo "  - Verifying Angular frontend build..."
 (cd frontend && npm run build)
 
 echo "  - Verifying Go backend compilation..."
-go build -ldflags "-X main.AppVersion=$VERSION" -o /tmp/checkmate-app-test .
-rm -f /tmp/checkmate-app-test
+go build -ldflags "-X main.AppVersion=$VERSION" -o /tmp/CheckMate-test .
+rm -f /tmp/CheckMate-test
 
 # 4. Git Commit & Tagging
 echo "  - Committing version bump..."

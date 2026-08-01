@@ -77,17 +77,16 @@ jobs:
       - name: Create macOS DMG & ZIP
         run: |
           cd build/bin
-          mv checkmate-app.app CheckMate.app
-          hdiutil create -volname "CheckMate" -srcfolder "CheckMate.app" -ov -format UDZO "checkmate-app-macos-universal.dmg"
-          zip -r "checkmate-app-macos-universal.zip" "CheckMate.app"
+          hdiutil create -volname "CheckMate" -srcfolder "CheckMate.app" -ov -format UDZO "CheckMate-macos-universal.dmg"
+          zip -r "CheckMate-macos-universal.zip" "CheckMate.app"
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-artifacts
           path: |
-            build/bin/checkmate-app-macos-universal.dmg
-            build/bin/checkmate-app-macos-universal.zip
+            build/bin/CheckMate-macos-universal.dmg
+            build/bin/CheckMate-macos-universal.zip
 
   build-windows:
     name: Build Windows Installer (EXE)
@@ -126,7 +125,7 @@ jobs:
       - name: Compress Windows Zip
         run: |
           cd build/bin
-          Compress-Archive -Path "checkmate-app.exe" -DestinationPath "checkmate-app-windows-amd64.zip"
+          Compress-Archive -Path "CheckMate.exe" -DestinationPath "CheckMate-windows-amd64.zip"
 
       - name: Upload Windows Artifacts
         uses: actions/upload-artifact@v4
@@ -134,7 +133,7 @@ jobs:
           name: windows-artifacts
           path: |
             build/bin/*installer*.exe
-            build/bin/checkmate-app-windows-amd64.zip
+            build/bin/CheckMate-windows-amd64.zip
 
   build-linux:
     name: Build Linux Packages (AppImage/Deb)
@@ -177,13 +176,13 @@ jobs:
       - name: Package Linux Assets
         run: |
           cd build/bin
-          tar -czvf checkmate-app-linux-amd64.tar.gz checkmate-app
+          tar -czvf CheckMate-linux-amd64.tar.gz CheckMate
 
       - name: Upload Linux Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: linux-artifacts
-          path: build/bin/checkmate-app-linux-amd64.tar.gz
+          path: build/bin/CheckMate-linux-amd64.tar.gz
 
   build-docker:
     name: Build & Push Docker Image
@@ -254,7 +253,7 @@ jobs:
           formula-name: checkmate-app
           formula-path: Casks/checkmate-app.rb
           homebrew-tap: adedayo/homebrew-tap
-          download-url: https://github.com/adedayo/checkmate-app/releases/download/${{ github.ref_name }}/checkmate-app-macos-universal.dmg
+          download-url: https://github.com/adedayo/checkmate-app/releases/download/${{ github.ref_name }}/CheckMate-macos-universal.dmg
           commit-message: "Update checkmate-app cask to ${{ github.ref_name }}"
         env:
           COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}

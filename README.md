@@ -57,7 +57,7 @@ Download the latest `.dmg` or `.zip` release from [GitHub Releases](https://gith
 ### 🪟 Windows
 
 #### Option 1: Native Installer
-Download and run `checkmate-app-windows-installer.exe` from [GitHub Releases](https://github.com/adedayo/checkmate-app/releases/latest).
+Download and run `CheckMate-amd64-installer.exe` from [GitHub Releases](https://github.com/adedayo/checkmate-app/releases/latest).
 
 #### Option 2: Winget
 ```cmd
@@ -70,12 +70,11 @@ winget install adedayo.checkmate-app
 
 Download the Linux package from [GitHub Releases](https://github.com/adedayo/checkmate-app/releases/latest):
 ```bash
-# Debian / Ubuntu
-sudo dpkg -i checkmate-app_amd64.deb
+# Extract the binary
+tar -xzvf CheckMate-linux-amd64.tar.gz
 
-# Standalone AppImage
-chmod +x checkmate-app-x86_64.AppImage
-./checkmate-app-x86_64.AppImage
+# Run the app
+./CheckMate
 ```
 
 ---

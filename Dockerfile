@@ -28,7 +28,7 @@ ARG VERSION=v2.1.0
 RUN go mod edit -dropreplace github.com/adedayo/checkmate && \
     go mod edit -droprequire github.com/adedayo/checkmate && \
     go get github.com/adedayo/checkmate@main
-RUN CGO_ENABLED=1 GOOS=linux go build -tags webkit2_41 -ldflags "-s -w -X main.AppVersion=${VERSION}" -o checkmate-app .
+RUN CGO_ENABLED=1 GOOS=linux go build -tags webkit2_41 -ldflags "-s -w -X main.AppVersion=${VERSION}" -o CheckMate .
 
 # Stage 2: Production Minimal Runtime Image
 FROM alpine:3.20
@@ -38,7 +38,7 @@ RUN apk add --no-cache ca-certificates git tzdata
 WORKDIR /app
 
 # Copy compiled binary from builder
-COPY --from=builder /app/checkmate-app /app/checkmate-app
+COPY --from=builder /app/CheckMate /app/CheckMate
 
 # Create default data directory for SQLite store
 RUN mkdir -p /root/.checkmate
@@ -51,4 +51,4 @@ EXPOSE 8080
 
 VOLUME ["/root/.checkmate"]
 
-ENTRYPOINT ["/app/checkmate-app"]
+ENTRYPOINT ["/app/CheckMate"]
