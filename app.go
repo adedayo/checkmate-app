@@ -23,7 +23,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var AppVersion = "v2.0.6"
+var AppVersion = "v2.0.7"
 
 // App struct
 type App struct {
