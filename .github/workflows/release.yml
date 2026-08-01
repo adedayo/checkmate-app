@@ -136,7 +136,7 @@ jobs:
 
       - name: Build Linux Binary
         run: |
-          wails build -platform linux/amd64 -clean -ldflags "-X main.AppVersion=${{ github.ref_name }}"
+          wails build -platform linux/amd64 -clean -tags webkit2_41 -ldflags "-X main.AppVersion=${{ github.ref_name }}"
 
       - name: Package Linux Assets
         run: |

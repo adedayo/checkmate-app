@@ -25,7 +25,7 @@ RUN npm run build
 # Build Go Server / Application Binary
 WORKDIR /app
 ARG VERSION=v2.1.0
-RUN CGO_ENABLED=1 GOOS=linux go build -ldflags "-s -w -X main.AppVersion=${VERSION}" -o checkmate-app .
+RUN CGO_ENABLED=1 GOOS=linux go build -tags webkit2_41 -ldflags "-s -w -X main.AppVersion=${VERSION}" -o checkmate-app .
 
 # Stage 2: Production Minimal Runtime Image
 FROM alpine:3.20
