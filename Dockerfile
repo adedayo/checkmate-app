@@ -3,12 +3,15 @@
 FROM golang:1.24-alpine AS builder
 
 # Install Node.js, npm, git, and build dependencies
-RUN apk add --no-cache nodejs npm git gcc g++ musl-dev pkgconfig gtk+3.0-dev webkit2gtk-dev
+RUN apk add --no-cache nodejs npm git gcc g++ musl-dev pkgconfig gtk+3.0-dev webkit2gtk-4.1-dev
 
 WORKDIR /app
 
 # Copy dependency manifests
 COPY go.mod go.sum ./
+RUN go mod edit -dropreplace github.com/adedayo/checkmate && \
+    go mod edit -droprequire github.com/adedayo/checkmate && \
+    go get github.com/adedayo/checkmate@main
 RUN go mod download
 
 # Copy source files

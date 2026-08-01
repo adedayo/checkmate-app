@@ -18,6 +18,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Checkout Checkmate
+        uses: actions/checkout@v4
+        with:
+          repository: adedayo/checkmate
+          path: ../checkmate
+
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
@@ -58,6 +64,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Checkout Checkmate
+        uses: actions/checkout@v4
+        with:
+          repository: adedayo/checkmate
+          path: ../checkmate
+
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
@@ -97,6 +109,12 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Checkout Checkmate
+        uses: actions/checkout@v4
+        with:
+          repository: adedayo/checkmate
+          path: ../checkmate
 
       - name: Install Linux Dependencies
         run: |
