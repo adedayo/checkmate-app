@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for checkmate-app
 # Stage 1: Build Frontend and Go Application
-FROM golang:1.24-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 # Install Node.js, npm, git, and build dependencies
 RUN apk add --no-cache nodejs npm git gcc g++ musl-dev pkgconfig gtk+3.0-dev webkit2gtk-4.1-dev

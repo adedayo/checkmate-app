@@ -18,18 +18,18 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+          cache-dependency-path: go.sum
+
       - name: Prepare Go Modules
         run: |
           go mod edit -dropreplace github.com/adedayo/checkmate
           go mod edit -droprequire github.com/adedayo/checkmate
           go get github.com/adedayo/checkmate@main
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-          cache: true
-          cache-dependency-path: go.sum
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -64,17 +64,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+
       - name: Prepare Go Modules
         run: |
           go mod edit -dropreplace github.com/adedayo/checkmate
           go mod edit -droprequire github.com/adedayo/checkmate
           go get github.com/adedayo/checkmate@main
-
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-          cache: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -110,12 +110,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Prepare Go Modules
-        run: |
-          go mod edit -dropreplace github.com/adedayo/checkmate
-          go mod edit -droprequire github.com/adedayo/checkmate
-          go get github.com/adedayo/checkmate@main
-
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
@@ -124,7 +118,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.26'
+
+      - name: Prepare Go Modules
+        run: |
+          go mod edit -dropreplace github.com/adedayo/checkmate
+          go mod edit -droprequire github.com/adedayo/checkmate
+          go get github.com/adedayo/checkmate@main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
