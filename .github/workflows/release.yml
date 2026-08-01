@@ -46,6 +46,7 @@ jobs:
       - name: Create macOS DMG & ZIP
         run: |
           cd build/bin
+          mv checkmate-app.app CheckMate.app
           hdiutil create -volname "CheckMate" -srcfolder "CheckMate.app" -ov -format UDZO "CheckMate-macos-universal.dmg"
           zip -r "CheckMate-macos-universal.zip" "CheckMate.app"
 
