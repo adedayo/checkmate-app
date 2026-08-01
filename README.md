@@ -9,6 +9,10 @@
 [![Docker](https://img.shields.io/badge/docker-ghcr.io%2Fadedayo%2Fcheckmate--app-blue?style=flat-square&logo=docker)](https://github.com/adedayo/checkmate-app/pkgs/container/checkmate-app)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-emerald?style=flat-square)](LICENSE)
 
+<br/>
+
+![CheckMate App Executive Dashboard](docs/dashboard.png)
+
 </div>
 
 ---
