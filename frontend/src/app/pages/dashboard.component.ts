@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { GetDashboardAnalytics, GetAppVersion, CheckForUpdates } from '../../../wailsjs/go/main/App';
+import { BrowserOpenURL } from '../../../wailsjs/runtime/runtime';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,10 +29,10 @@ import { GetDashboardAnalytics, GetAppVersion, CheckForUpdates } from '../../../
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <a [href]="updateInfo()?.downloadUrl || updateInfo()?.htmlUrl" target="_blank" class="px-3.5 py-1.5 bg-white hover:bg-cyan-50 text-slate-900 font-bold text-xs rounded-lg shadow transition-colors flex items-center gap-1.5">
+            <button (click)="openUpdateUrl()" class="px-3.5 py-1.5 bg-white hover:bg-cyan-50 text-slate-900 font-bold text-xs rounded-lg shadow transition-colors flex items-center gap-1.5">
               <span>Get Update</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-            </a>
+            </button>
             <button (click)="dismissUpdateBanner()" class="p-1.5 text-cyan-200 hover:text-white rounded-lg hover:bg-white/10 transition-colors" title="Dismiss">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -626,6 +627,16 @@ export class DashboardComponent implements OnInit {
 
   dismissUpdateBanner() {
     this.showUpdateBanner.set(false);
+  }
+
+  openUpdateUrl() {
+    const info = this.updateInfo();
+    if (info) {
+      const url = info.downloadUrl || info.htmlUrl;
+      if (url) {
+        BrowserOpenURL(url);
+      }
+    }
   }
 
   fetchAnalytics() {
