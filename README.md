@@ -36,18 +36,18 @@ Unlike traditional flat security scanners, CheckMate App correlates findings acr
 
 ### 🍏 macOS (Apple Silicon & Intel)
 
-> [!NOTE]
-> **macOS Gatekeeper Warning:** Because CheckMate App is a free open-source tool, it is not code-signed with a paid Apple Developer certificate. macOS Gatekeeper may show a "malware" or "cannot be opened" warning.
-> To bypass this securely, run the following command in your terminal **after installation**:
-> ```bash
-> xattr -cr /Applications/checkmate-app.app
-> ```
-> Alternatively, **Right-Click** the app in Finder and select **Open**.
-
 #### Option 1: Homebrew Cask (Recommended)
 ```bash
 brew install --cask adedayo/tap/checkmate-app
 ```
+
+> [!NOTE]
+> **macOS Gatekeeper Warning:** Because CheckMate App is a free open-source tool, it is not code-signed with a paid Apple Developer certificate. macOS Gatekeeper may show a "malware" or "cannot be opened" warning.
+> To bypass this securely, run the following command in your terminal **after installation**:
+> ```bash
+> xattr -cr /Applications/CheckMate.app
+> ```
+> Alternatively, **Right-Click** the app in Finder and select **Open**.
 
 #### Option 2: Direct Download
 Download the latest `.dmg` or `.zip` release from [GitHub Releases](https://github.com/adedayo/checkmate-app/releases/latest).

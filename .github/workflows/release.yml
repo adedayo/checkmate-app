@@ -77,8 +77,9 @@ jobs:
       - name: Create macOS DMG & ZIP
         run: |
           cd build/bin
-          hdiutil create -volname "CheckMate" -srcfolder "checkmate-app.app" -ov -format UDZO "checkmate-app-macos-universal.dmg"
-          zip -r "checkmate-app-macos-universal.zip" "checkmate-app.app"
+          mv checkmate-app.app CheckMate.app
+          hdiutil create -volname "CheckMate" -srcfolder "CheckMate.app" -ov -format UDZO "checkmate-app-macos-universal.dmg"
+          zip -r "checkmate-app-macos-universal.zip" "CheckMate.app"
 
       - name: Upload macOS Artifacts
         uses: actions/upload-artifact@v4
