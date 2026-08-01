@@ -24,11 +24,32 @@ Unlike traditional flat security scanners, CheckMate App correlates findings acr
 ## ✨ Features
 
 - 📊 **Executive & Analyst Dashboard**: Unified security posture rating (0–100%) with real-time workspace and environment filtering.
+- 🤖 **Bring Your Own AI (BYO AI) Auto-Triage**: Connect local LLMs (Ollama) or cloud models (OpenAI, Anthropic, DeepSeek) for automated finding analysis, false positive likelihood scoring, and auto-suppression with persistent human-in-the-loop override memory.
 - 🔑 **Cross-Project Reused Secrets Inventory**: Detects secret keys reused across multiple repositories to mitigate lateral movement risk.
 - 🎯 **Highest ROI Remediation Playbook**: Ranks top 5 actions that yield the largest percentage reduction in exposure (e.g. rotating 1 reused secret key eliminates 14 leak instances).
 - 🧪 **Production vs. Non-Production Risk Profiling**: Heuristically classifies leaks in live code vs. test suites, mocks, and fixtures.
 - 📈 **Multi-Scan Posture Trends**: Custom interactive SVG trend charts tracking critical and high findings over historical scan executions.
 - 🔄 **In-App Auto-Update Checking**: Built-in release detection that notifies analysts when a new version is available on GitHub Releases.
+
+---
+
+## 🤖 Bring Your Own AI (BYO AI) Auto-Triage & Auto-Suppression
+
+CheckMate App includes a privacy-first **BYO AI Triage Engine** that eliminates alert fatigue without compromising code confidentiality.
+
+### Key Capabilities
+- **Multi-Provider Support:** Connect your choice of AI provider:
+  - 🦙 **Ollama** (Local, air-gapped LLMs like `llama3`, `mistral`, `codellama` — zero code leaves your machine)
+  - 🧠 **OpenAI** (`gpt-4o`, `gpt-4-turbo`)
+  - 🤖 **Anthropic** (`claude-3-5-sonnet`, `claude-3-haiku`)
+  - ⚡ **DeepSeek** (`deepseek-chat`, `deepseek-coder`)
+  - 🔌 **Custom OpenAI-Compatible Endpoints** (vLLM, LocalAI, LM Studio)
+- **Automated Triage & Confidence Thresholding:** Analyzes finding entropy, structural context, and code evidence. When a finding exceeds your configured confidence threshold (e.g., `fpLikelihood >= 80%`), CheckMate automatically creates an exception record and suppresses the finding.
+- **Privacy & Prompt Redaction:** Choose between **`REDACTED`** mode (masks sensitive credentials before sending to LLM) or **`FULL`** context mode.
+- **Human-in-the-Loop & Decision Memory:**
+  - Analysts can view detailed AI annotations, confidence scores, and reasoning summaries in the finding detail drawer.
+  - If an analyst marks a finding as **"True Positive"** or deletes an AI-generated suppression, CheckMate flags the finding with `UserOverridden = true`.
+  - CheckMate's persistent database remembers your decision across future scan runs: **the AI engine will NEVER re-suppress a user-confirmed finding on subsequent scans**.
 
 ---
 
