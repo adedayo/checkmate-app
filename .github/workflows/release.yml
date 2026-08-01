@@ -18,11 +18,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Checkout Checkmate
-        uses: actions/checkout@v4
-        with:
-          repository: adedayo/checkmate
-          path: ../checkmate
+      - name: Prepare Go Modules
+        run: |
+          go mod edit -dropreplace github.com/adedayo/checkmate
+          go mod edit -droprequire github.com/adedayo/checkmate
+          go get github.com/adedayo/checkmate@main
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -64,11 +64,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Checkout Checkmate
-        uses: actions/checkout@v4
-        with:
-          repository: adedayo/checkmate
-          path: ../checkmate
+      - name: Prepare Go Modules
+        run: |
+          go mod edit -dropreplace github.com/adedayo/checkmate
+          go mod edit -droprequire github.com/adedayo/checkmate
+          go get github.com/adedayo/checkmate@main
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -110,11 +110,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Checkout Checkmate
-        uses: actions/checkout@v4
-        with:
-          repository: adedayo/checkmate
-          path: ../checkmate
+      - name: Prepare Go Modules
+        run: |
+          go mod edit -dropreplace github.com/adedayo/checkmate
+          go mod edit -droprequire github.com/adedayo/checkmate
+          go get github.com/adedayo/checkmate@main
 
       - name: Install Linux Dependencies
         run: |
