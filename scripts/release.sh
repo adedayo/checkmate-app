@@ -37,12 +37,16 @@ if [ "$BRANCH" != "main" ]; then
   read -r
 fi
 
-# 1. Update AppVersion in app.go
+# 1. Run Test Suite
+echo "  - Running test suite..."
+./test.sh
+
+# 2. Update AppVersion in app.go
 echo "  - Updating AppVersion in app.go..."
 sed -i.bak "s/var AppVersion = \".*\"/var AppVersion = \"$VERSION\"/g" app.go
 rm -f app.go.bak
 
-# 2. Build & Test Verification
+# 3. Build Verification
 echo "  - Verifying Angular frontend build..."
 (cd frontend && npm run build)
 
@@ -50,7 +54,7 @@ echo "  - Verifying Go backend compilation..."
 go build -ldflags "-X main.AppVersion=$VERSION" -o /tmp/checkmate-app-test .
 rm -f /tmp/checkmate-app-test
 
-# 3. Git Commit & Tagging
+# 4. Git Commit & Tagging
 echo "  - Committing version bump..."
 git add app.go
 git commit -m "build(release): bump version to $VERSION" || true
