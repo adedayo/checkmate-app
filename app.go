@@ -9,12 +9,15 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/adedayo/checkmate/pkg/ai"
 	"github.com/adedayo/checkmate/pkg/core/diagnostics"
 	"github.com/adedayo/checkmate/pkg/core/projects"
 	"github.com/adedayo/checkmate/pkg/gitservice/utils"
 	secrets "github.com/adedayo/checkmate/pkg/plugin/secrets-finder/pkg"
+	"github.com/adedayo/checkmate/pkg/sdk"
 	"github.com/adedayo/checkmate/pkg/store"
 	"github.com/adedayo/checkmate/pkg/store/sqlite"
 	"github.com/google/uuid"
@@ -781,7 +784,7 @@ func (a *App) GetProjectFindings(projectID string, scanID string) ([]*diagnostic
 		return nil, err
 	}
 
-	// Apply dynamic exclusions to accurately reflect newly created exceptions in the UI
+	// Apply dynamic exclusions to accurately reflect newly created/deleted exceptions in the UI
 	exProvider, err := a.store.BuildExclusionProvider(projectID)
 	if err == nil && exProvider != nil {
 		for _, diag := range results {
@@ -803,6 +806,9 @@ func (a *App) GetProjectFindings(projectID string, scanID string) ([]*diagnostic
 			   exProvider.ShouldExcludeHashOnPath(loc, hash) || 
 			   exProvider.ShouldExclude(loc, src) {
 				diag.Excluded = true
+			} else {
+				// Ensure that if the suppression was removed, the finding is un-suppressed immediately
+				diag.Excluded = false
 			}
 		}
 	}
@@ -961,6 +967,8 @@ func (a *App) StartScan(projectID string) error {
 
 	log.Printf("Scan completed for project: %s", projectID)
 
+	go a.triggerBulkAITriage(projectID, proj.LastScanID)
+
 	return nil
 }
 
@@ -1037,12 +1045,93 @@ func (a *App) GetExceptions(projectID string) ([]*store.Exception, error) {
 	return a.store.ListExceptions(projectID)
 }
 
-// RemoveException deletes an exception from the database.
+// RemoveException deletes an exception from the database and marks associated findings as UserOverridden so AI won't re-suppress them.
 func (a *App) RemoveException(id string) error {
 	if a.store == nil {
 		return fmt.Errorf("store not initialized")
 	}
+
+	exc, err := a.store.GetException(id)
+	if err == nil && exc != nil && exc.ProjectID != "" {
+		findings, _ := a.GetProjectFindings(exc.ProjectID, "")
+		for _, f := range findings {
+			match := false
+			loc := ""
+			if f.Location != nil {
+				loc = *f.Location
+			}
+			hash := ""
+			if f.SHA256 != nil {
+				hash = *f.SHA256
+			}
+			if exc.Scope != nil {
+				if exc.Scope.Path != "" && exc.Scope.Path == loc && exc.Scope.SecretChecksum == hash {
+					match = true
+				} else if exc.Scope.SecretChecksum != "" && exc.Scope.SecretChecksum == hash {
+					match = true
+				}
+			}
+			if match {
+				ann, _ := f.AIAnnotation.(*sdk.AIAnnotation)
+				if ann == nil {
+					ann = &sdk.AIAnnotation{Summary: "Exception removed by user."}
+				}
+				ann.UserOverridden = true
+				ann.UserDecision = "true_positive"
+				_ = a.store.UpdateFindingAIAnnotation(f.ID, ann)
+			}
+		}
+	}
+
 	return a.store.DeleteException(id)
+}
+
+// MarkFindingTruePositive marks a finding as a true positive, preventing future AI auto-suppression and removing any active exception.
+func (a *App) MarkFindingTruePositive(projectID string, findingID string) error {
+	if a.store == nil {
+		return fmt.Errorf("store not initialized")
+	}
+
+	finding, err := a.store.GetFinding(findingID)
+	if err != nil {
+		return fmt.Errorf("failed to get finding: %w", err)
+	}
+
+	ann := finding.AIAnnotation
+	if ann == nil {
+		ann = &sdk.AIAnnotation{}
+	}
+	ann.UserOverridden = true
+	ann.UserDecision = "true_positive"
+	ann.Summary = "Marked as True Positive by user."
+
+	if err := a.store.UpdateFindingAIAnnotation(findingID, ann); err != nil {
+		log.Printf("MarkFindingTruePositive: %v", err)
+	}
+
+	exceptions, err := a.store.ListExceptions(projectID)
+	if err == nil {
+		for _, exc := range exceptions {
+			if exc.Scope != nil {
+				checksum := finding.SecretChecksum
+				loc := finding.File
+
+				match := false
+				if exc.Scope.SecretChecksum != "" && exc.Scope.SecretChecksum == checksum {
+					match = true
+				}
+				if exc.Scope.Path != "" && exc.Scope.Path == loc && exc.Scope.SecretChecksum == checksum {
+					match = true
+				}
+
+				if match {
+					_ = a.store.DeleteException(exc.ID)
+				}
+			}
+		}
+	}
+
+	return nil
 }
 
 // ExportExceptions opens a save file dialog and exports exceptions as a YAML file.
@@ -1197,4 +1286,136 @@ func (a *App) ImportExceptions(projectID string) error {
 	}
 	
 	return nil
+}
+
+// GetAISettings retrieves the current AI settings
+func (a *App) GetAISettings() (*store.AISettings, error) {
+	return a.store.GetAISettings()
+}
+
+// UpdateAISettings saves new AI settings
+func (a *App) UpdateAISettings(settings *store.AISettings) error {
+	return a.store.UpdateAISettings(settings)
+}
+
+// AITriageFinding runs AI triage on a specific finding and saves the annotation
+func (a *App) AITriageFinding(findingID string) (*sdk.AIAnnotation, error) {
+	finding, err := a.store.GetFinding(findingID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get finding: %w", err)
+	}
+
+	settings, err := a.store.GetAISettings()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get AI settings: %w", err)
+	}
+
+	if !settings.Enabled {
+		return nil, fmt.Errorf("AI triage is not enabled")
+	}
+
+	annotation, err := ai.TriageFinding(settings, finding)
+	if err != nil {
+		return nil, fmt.Errorf("AI triage failed: %w", err)
+	}
+
+	if err := a.store.UpdateFindingAIAnnotation(findingID, annotation); err != nil {
+		return nil, fmt.Errorf("failed to save AI annotation: %w", err)
+	}
+
+	return annotation, nil
+}
+
+type AITriageProgress struct {
+	Total          int `json:"total"`
+	Completed      int `json:"completed"`
+	Failed         int `json:"failed"`
+	AutoSuppressed int `json:"autoSuppressed"`
+}
+
+func (a *App) triggerBulkAITriage(projectID, scanID string) {
+	settings, err := a.store.GetAISettings()
+	if err != nil || !settings.Enabled {
+		return
+	}
+
+	findings, err := a.GetProjectFindings(projectID, scanID)
+	if err != nil {
+		return
+	}
+
+	var toTriage []*diagnostics.SecurityDiagnostic
+	for _, f := range findings {
+		if f.AIAnnotation == nil && f.ID != "" && !f.Excluded {
+			toTriage = append(toTriage, f)
+		}
+	}
+
+	total := len(toTriage)
+	if total == 0 {
+		return
+	}
+
+	log.Printf("Starting bulk AI triage for project %s (scan %s), findings: %d", projectID, scanID, total)
+
+	progress := AITriageProgress{Total: total}
+	runtime.EventsEmit(a.ctx, "ai-triage-progress", progress)
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	semaphore := make(chan struct{}, 3) // Concurrency limit of 3
+
+	for _, f := range toTriage {
+		wg.Add(1)
+		go func(diag *diagnostics.SecurityDiagnostic) {
+			defer wg.Done()
+			semaphore <- struct{}{}        // acquire
+			defer func() { <-semaphore }() // release
+
+			ann, err := a.AITriageFinding(diag.ID)
+			
+			mu.Lock()
+			if err != nil {
+				log.Printf("Bulk triage failed for finding %s: %v", diag.ID, err)
+				progress.Failed++
+			} else {
+				progress.Completed++
+				if ann != nil && ann.FPLikelihood >= 0.75 && !ann.UserOverridden && ann.UserDecision != "true_positive" {
+					// Auto-suppress
+					hash := ""
+					if diag.SHA256 != nil {
+						hash = *diag.SHA256
+					}
+					loc := ""
+					if diag.Location != nil {
+						loc = *diag.Location
+					}
+					
+					if hash != "" && loc != "" {
+						reasonText := fmt.Sprintf("Auto-suppressed by AI triage (FP Likelihood: %.0f%%) - %s", ann.FPLikelihood*100, ann.Summary)
+						if diag.Source != nil && *diag.Source != "" {
+							reasonText += "\nSnippet: " + strings.TrimSpace(*diag.Source)
+						}
+						opts := SuppressionOptions{
+							ScopeType:   "pathHash",
+							MatchString: hash,
+							Path:        loc,
+							Reason:      reasonText,
+						}
+						// Calling SuppressFinding internally
+						err := a.SuppressFinding(projectID, *diag, opts)
+						if err == nil {
+							progress.AutoSuppressed++
+						}
+					}
+				}
+				runtime.EventsEmit(a.ctx, "scan-finding-updated", diag.ID)
+			}
+			runtime.EventsEmit(a.ctx, "ai-triage-progress", progress)
+			mu.Unlock()
+		}(f)
+	}
+
+	wg.Wait()
+	log.Printf("Completed bulk AI triage. Annotated %d findings, auto-suppressed %d.", progress.Completed, progress.AutoSuppressed)
 }

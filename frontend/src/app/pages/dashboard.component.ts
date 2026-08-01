@@ -51,7 +51,7 @@ import { BrowserOpenURL } from '../../../wailsjs/runtime/runtime';
               <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-cyan-100 dark:bg-cyan-950/80 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800">
                 CheckMate Security Intelligence
               </span>
-              <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">{{ appVersion() }} Executive Dashboard</span>
+              <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">Executive Dashboard</span>
             </div>
             <h1 class="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Secret Exposure Posture</h1>
             <p class="text-slate-600 dark:text-slate-400 mt-1 max-w-2xl text-sm md:text-base">
@@ -108,56 +108,136 @@ import { BrowserOpenURL } from '../../../wailsjs/runtime/runtime';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           
           <!-- Overall Security Posture Score -->
-          <div class="relative overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
-            <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider">Overall Posture Score</span>
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded" [ngClass]="getScoreBadgeClass(analytics().overallSecurityScore)">
-                {{ getScoreStatusText(analytics().overallSecurityScore) }}
-              </span>
-            </div>
-            <div class="flex items-baseline gap-3 my-2">
-              <div class="text-4xl font-extrabold tracking-tight" [ngClass]="getScoreTextColor(analytics().overallSecurityScore)">
-                {{ analytics().overallSecurityScore }}%
+          <div class="relative rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold uppercase tracking-wider">Overall Posture Score</span>
+                  
+                  <!-- Rich Popover Tooltip -->
+                  <div class="relative group/tooltip inline-block">
+                    <button type="button" class="text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors p-0.5 rounded focus:outline-none flex items-center">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </button>
+                    <div class="absolute left-0 top-full mt-1.5 hidden group-hover/tooltip:block group-focus-within/tooltip:block w-72 p-3.5 bg-slate-900 dark:bg-slate-800 text-white text-xs rounded-xl shadow-2xl border border-slate-700/80 z-50 pointer-events-none animate-in fade-in duration-150">
+                      <div class="font-bold text-cyan-400 mb-1 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Overall Posture Score
+                      </div>
+                      <p class="text-slate-300 leading-relaxed">
+                        Weighted security health index across codebases (100% = Pristine).
+                      </p>
+                      <div class="mt-2 pt-2 border-t border-slate-700/60 font-mono text-[11px] text-slate-400 space-y-0.5">
+                        <div class="text-slate-300 font-semibold mb-1">Severity Penalties per leak:</div>
+                        <div>• Critical: <span class="text-rose-400 font-bold">-25%</span></div>
+                        <div>• High: <span class="text-amber-400 font-bold">-10%</span></div>
+                        <div>• Medium: <span class="text-yellow-400">-3%</span></div>
+                        <div>• Low: <span class="text-blue-400">-1%</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded" [ngClass]="getScoreBadgeClass(analytics().overallSecurityScore)">
+                  {{ getScoreStatusText(analytics().overallSecurityScore) }}
+                </span>
               </div>
-              <div class="text-xs text-slate-400 dark:text-slate-500">Across {{ analytics().totalProjects }} codebases</div>
+              <div class="flex items-baseline gap-3 my-2">
+                <div class="text-4xl font-extrabold tracking-tight" [ngClass]="getScoreTextColor(analytics().overallSecurityScore)">
+                  {{ analytics().overallSecurityScore }}%
+                </div>
+                <div class="text-xs text-slate-400 dark:text-slate-500">Across {{ analytics().totalProjects }} codebases</div>
+              </div>
             </div>
-            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden mt-2">
-              <div class="h-full rounded-full transition-all duration-500" [ngClass]="getScoreBarClass(analytics().overallSecurityScore)" [style.width.%]="analytics().overallSecurityScore"></div>
+            <div>
+              <p class="text-[11px] text-slate-400 dark:text-slate-500 mb-2">
+                Weighted code health index (100% = zero active secret leaks).
+              </p>
+              <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500" [ngClass]="getScoreBarClass(analytics().overallSecurityScore)" [style.width.%]="analytics().overallSecurityScore"></div>
+              </div>
             </div>
           </div>
 
           <!-- Total Active Leaks & Severities -->
           <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
-            <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider">Active Secret Leaks</span>
-              <span class="text-xs font-semibold text-slate-400 font-mono">{{ analytics().excludedFindings }} Excluded</span>
+            <div>
+              <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold uppercase tracking-wider">Active Secret Leaks</span>
+                  
+                  <!-- Rich Popover Tooltip -->
+                  <div class="relative group/tooltip inline-block">
+                    <button type="button" class="text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors p-0.5 rounded focus:outline-none flex items-center">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </button>
+                    <div class="absolute left-0 top-full mt-1.5 hidden group-hover/tooltip:block group-focus-within/tooltip:block w-64 p-3.5 bg-slate-900 dark:bg-slate-800 text-white text-xs rounded-xl shadow-2xl border border-slate-700/80 z-50 pointer-events-none animate-in fade-in duration-150">
+                      <div class="font-bold text-cyan-400 mb-1">Active Secret Leaks</div>
+                      <p class="text-slate-300 leading-relaxed">
+                        Total active, unmitigated credentials exposed across all scanned projects.
+                      </p>
+                      <p class="mt-2 text-[11px] text-slate-400 pt-1.5 border-t border-slate-700/60">
+                        Suppressed false positives are excluded.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+                <span class="text-xs font-semibold text-slate-400 font-mono">{{ analytics().excludedFindings }} Excluded</span>
+              </div>
+              <div class="text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight my-1">
+                {{ analytics().totalFindings }}
+              </div>
             </div>
-            <div class="text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight my-1">
-              {{ analytics().totalFindings }}
-            </div>
-            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-              <span class="px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold rounded border border-rose-500/20">
-                {{ analytics().criticalFindings }} Critical
-              </span>
-              <span class="px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold rounded border border-amber-500/20">
-                {{ analytics().highFindings }} High
-              </span>
-              <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium rounded">
-                {{ analytics().mediumFindings + analytics().lowFindings }} Med/Low
-              </span>
+            <div>
+              <p class="text-[11px] text-slate-400 dark:text-slate-500 mb-2">
+                Unmitigated credentials currently exposed in source code.
+              </p>
+              <div class="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <span class="px-2 py-0.5 bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold rounded border border-rose-500/20">
+                  {{ analytics().criticalFindings }} Critical
+                </span>
+                <span class="px-2 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold rounded border border-amber-500/20">
+                  {{ analytics().highFindings }} High
+                </span>
+                <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-medium rounded">
+                  {{ analytics().mediumFindings + analytics().lowFindings }} Med/Low
+                </span>
+              </div>
             </div>
           </div>
 
           <!-- Reused Secrets Exposure -->
           <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
-            <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider">Reused Secret Keys</span>
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                Lateral Risk
-              </span>
-            </div>
-            <div class="text-4xl font-extrabold text-purple-600 dark:text-purple-400 tracking-tight my-1">
-              {{ analytics().reusedSecretsCount }} <span class="text-sm font-semibold text-slate-400 font-normal">keys</span>
+            <div>
+              <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold uppercase tracking-wider">Reused Secret Keys</span>
+                  
+                  <!-- Rich Popover Tooltip -->
+                  <div class="relative group/tooltip inline-block">
+                    <button type="button" class="text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors p-0.5 rounded focus:outline-none flex items-center">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </button>
+                    <div class="absolute left-0 top-full mt-1.5 hidden group-hover/tooltip:block group-focus-within/tooltip:block w-64 p-3.5 bg-slate-900 dark:bg-slate-800 text-white text-xs rounded-xl shadow-2xl border border-slate-700/80 z-50 pointer-events-none animate-in fade-in duration-150">
+                      <div class="font-bold text-purple-400 mb-1">Lateral Movement Risk</div>
+                      <p class="text-slate-300 leading-relaxed">
+                        Unique secret keys found across multiple repositories.
+                      </p>
+                      <p class="mt-2 text-[11px] text-slate-400 pt-1.5 border-t border-slate-700/60">
+                        Compromise of one repository leaks access to all connected environments.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                  Lateral Risk
+                </span>
+              </div>
+              <div class="text-4xl font-extrabold text-purple-600 dark:text-purple-400 tracking-tight my-1">
+                {{ analytics().reusedSecretsCount }} <span class="text-sm font-semibold text-slate-400 font-normal">keys</span>
+              </div>
             </div>
             <div class="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
               Generating <strong class="text-slate-800 dark:text-slate-200">{{ analytics().reusedSecretLeaks }}</strong> leak instances across {{ analytics().totalProjects }} projects
@@ -166,19 +246,45 @@ import { BrowserOpenURL } from '../../../wailsjs/runtime/runtime';
 
           <!-- Production vs Non-Production Leak Split -->
           <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between">
-            <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
-              <span class="text-xs font-bold uppercase tracking-wider">Production Exposure</span>
-              <span class="px-2 py-0.5 text-[10px] font-bold rounded" [ngClass]="analytics().productionLeaks > 0 ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'">
-                {{ analytics().productionLeaks > 0 ? 'High Priority' : 'Clean' }}
-              </span>
+            <div>
+              <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold uppercase tracking-wider">Production Exposure</span>
+                  
+                  <!-- Rich Popover Tooltip -->
+                  <div class="relative group/tooltip inline-block">
+                    <button type="button" class="text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors p-0.5 rounded focus:outline-none flex items-center">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </button>
+                    <div class="absolute right-0 top-full mt-1.5 hidden group-hover/tooltip:block group-focus-within/tooltip:block w-64 p-3.5 bg-slate-900 dark:bg-slate-800 text-white text-xs rounded-xl shadow-2xl border border-slate-700/80 z-50 pointer-events-none animate-in fade-in duration-150">
+                      <div class="font-bold text-rose-400 mb-1">Production Exposure</div>
+                      <p class="text-slate-300 leading-relaxed">
+                        Secret leaks in production repositories vs non-production/test environments.
+                      </p>
+                      <p class="mt-2 text-[11px] text-slate-400 pt-1.5 border-t border-slate-700/60">
+                        Prod leaks require urgent emergency credential rotation.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded" [ngClass]="analytics().productionLeaks > 0 ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'">
+                  {{ analytics().productionLeaks > 0 ? 'High Priority' : 'Clean' }}
+                </span>
+              </div>
+              <div class="flex items-baseline gap-2 my-1">
+                <span class="text-4xl font-extrabold text-rose-600 dark:text-rose-400 tracking-tight">{{ analytics().productionLeaks }}</span>
+                <span class="text-xs text-slate-400">Prod vs {{ analytics().nonProductionLeaks }} Non-Prod</span>
+              </div>
             </div>
-            <div class="flex items-baseline gap-2 my-1">
-              <span class="text-4xl font-extrabold text-rose-600 dark:text-rose-400 tracking-tight">{{ analytics().productionLeaks }}</span>
-              <span class="text-xs text-slate-400">Prod vs {{ analytics().nonProductionLeaks }} Non-Prod</span>
-            </div>
-            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden flex mt-2">
-              <div class="bg-rose-500 h-full transition-all" [style.width.%]="getProdRatioPercent()"></div>
-              <div class="bg-blue-500 h-full transition-all" [style.width.%]="100 - getProdRatioPercent()"></div>
+            <div>
+              <p class="text-[11px] text-slate-400 dark:text-slate-500 mb-1">
+                Prod leaks require urgent credential rotation.
+              </p>
+              <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden flex">
+                <div class="bg-rose-500 h-full transition-all" [style.width.%]="getProdRatioPercent()"></div>
+                <div class="bg-blue-500 h-full transition-all" [style.width.%]="100 - getProdRatioPercent()"></div>
+              </div>
             </div>
           </div>
 

@@ -136,6 +136,7 @@ export namespace diagnostics {
 		}
 	}
 	export class SecurityDiagnostic {
+	    id?: string;
 	    justification?: Justification;
 	    range?: code.Range;
 	    rawRange?: CharRange;
@@ -146,6 +147,7 @@ export namespace diagnostics {
 	    providerID?: string;
 	    Excluded: boolean;
 	    tags?: string[];
+	    aiAnnotation?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new SecurityDiagnostic(source);
@@ -153,6 +155,7 @@ export namespace diagnostics {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
 	        this.justification = this.convertValues(source["justification"], Justification);
 	        this.range = this.convertValues(source["range"], code.Range);
 	        this.rawRange = this.convertValues(source["rawRange"], CharRange);
@@ -163,6 +166,7 @@ export namespace diagnostics {
 	        this.providerID = source["providerID"];
 	        this.Excluded = source["Excluded"];
 	        this.tags = source["tags"];
+	        this.aiAnnotation = source["aiAnnotation"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -981,8 +985,88 @@ export namespace projects {
 
 }
 
+export namespace sdk {
+	
+	export class AIAnnotation {
+	    Model: string;
+	    Provider: string;
+	    PromptMode: string;
+	    FPLikelihood: number;
+	    Summary: string;
+	    RemediationHint: string;
+	    ContextClues: string[];
+	    // Go type: time
+	    GeneratedAt: any;
+	    PromptTokens: number;
+	    CompletionTokens: number;
+	    userOverridden?: boolean;
+	    userDecision?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AIAnnotation(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Model = source["Model"];
+	        this.Provider = source["Provider"];
+	        this.PromptMode = source["PromptMode"];
+	        this.FPLikelihood = source["FPLikelihood"];
+	        this.Summary = source["Summary"];
+	        this.RemediationHint = source["RemediationHint"];
+	        this.ContextClues = source["ContextClues"];
+	        this.GeneratedAt = this.convertValues(source["GeneratedAt"], null);
+	        this.PromptTokens = source["PromptTokens"];
+	        this.CompletionTokens = source["CompletionTokens"];
+	        this.userOverridden = source["userOverridden"];
+	        this.userDecision = source["userDecision"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace store {
 	
+	export class AISettings {
+	    enabled: boolean;
+	    provider: string;
+	    model: string;
+	    baseUrl: string;
+	    apiKey: string;
+	    defaultPromptMode: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AISettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.enabled = source["enabled"];
+	        this.provider = source["provider"];
+	        this.model = source["model"];
+	        this.baseUrl = source["baseUrl"];
+	        this.apiKey = source["apiKey"];
+	        this.defaultPromptMode = source["defaultPromptMode"];
+	    }
+	}
 	export class AuditEvent {
 	    action: string;
 	    // Go type: time

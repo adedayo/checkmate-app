@@ -32,7 +32,8 @@ describe('ProjectDetailComponent', () => {
           GetProjects: getProjectsSpy,
           GetProjectFindings: getFindingsSpy,
           StartScan: startScanSpy,
-          GetExceptions: vi.fn().mockResolvedValue([])
+          GetExceptions: vi.fn().mockResolvedValue([]),
+          GetAISettings: vi.fn().mockResolvedValue({ Provider: 'none', Enabled: false })
         }
       }
     };

@@ -95,7 +95,12 @@ export class ProjectsComponent implements OnInit {
   fetchProjects(retries = 3) {
     try {
       GetProjects().then((data: any) => {
-        this.projects.set(data || []);
+        const sorted = (data || []).sort((a: any, b: any) => {
+          const dateA = new Date(a.LastScan || a.lastScan || 0).getTime();
+          const dateB = new Date(b.LastScan || b.lastScan || 0).getTime();
+          return dateB - dateA;
+        });
+        this.projects.set(sorted);
       }).catch(err => {
         console.warn("Failed to fetch projects", err);
       });
