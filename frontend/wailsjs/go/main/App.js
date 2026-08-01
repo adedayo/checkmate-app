@@ -6,16 +6,16 @@ export function AddRepository(arg1, arg2) {
   return window['go']['main']['App']['AddRepository'](arg1, arg2);
 }
 
+export function CheckForUpdates() {
+  return window['go']['main']['App']['CheckForUpdates']();
+}
+
 export function CreateProject(arg1, arg2) {
   return window['go']['main']['App']['CreateProject'](arg1, arg2);
 }
 
 export function DeleteProjectScans(arg1) {
   return window['go']['main']['App']['DeleteProjectScans'](arg1);
-}
-
-export function CheckForUpdates() {
-  return window['go']['main']['App']['CheckForUpdates']();
 }
 
 export function ExportExceptions(arg1) {

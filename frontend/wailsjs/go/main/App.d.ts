@@ -7,9 +7,9 @@ import {diagnostics} from '../models';
 
 export function AddRepository(arg1:string,arg2:string):Promise<projects.ProjectSummary>;
 
-export function CreateProject(arg1:string,arg2:string):Promise<projects.ProjectSummary>;
-
 export function CheckForUpdates():Promise<main.UpdateInfo>;
+
+export function CreateProject(arg1:string,arg2:string):Promise<projects.ProjectSummary>;
 
 export function DeleteProjectScans(arg1:string):Promise<void>;
 
