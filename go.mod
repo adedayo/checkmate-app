@@ -3,7 +3,7 @@ module checkmate-app
 go 1.26.1
 
 require (
-	github.com/adedayo/checkmate v0.0.0-00010101000000-000000000000
+	github.com/adedayo/checkmate v1.3.3
 	github.com/google/uuid v1.6.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/wailsapp/wails/v2 v2.13.0
@@ -67,7 +67,3 @@ require (
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.54.0 // indirect
 )
-
-// replace github.com/wailsapp/wails/v2 v2.13.0 => /Users/dayo/go/pkg/mod
-
-replace github.com/adedayo/checkmate => ../checkmate

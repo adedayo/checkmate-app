@@ -7,8 +7,13 @@
         <string>{{.Info.ProductName}}</string>
         <key>CFBundleExecutable</key>
         <string>{{.OutputFilename}}</string>
+        <!-- Not com.wails.* . This identifier is what macOS keys preferences,
+             saved state, notification permissions and the signing certificate
+             against; inheriting the framework's default namespace makes the
+             application indistinguishable from every other Wails app and cannot
+             be corrected later without orphaning all of them. -->
         <key>CFBundleIdentifier</key>
-        <string>com.wails.{{safeBundleID .Name}}</string>
+        <string>com.adedayo.checkmate</string>
         <key>CFBundleVersion</key>
         <string>{{.Info.ProductVersion}}</string>
         <key>CFBundleGetInfoString</key>
@@ -17,8 +22,15 @@
         <string>{{.Info.ProductVersion}}</string>
         <key>CFBundleIconFile</key>
         <string>iconfile</string>
+        <key>LSApplicationCategoryType</key>
+        <string>public.app-category.developer-tools</string>
+
+        <!-- 10.15 is the WKWebView floor Wails targets. Declaring 10.13, the
+             Wails default, lets the bundle launch on systems where the webview
+             then fails to initialise, which presents to the user as an app
+             that opens a blank window rather than one that declines to install. -->
         <key>LSMinimumSystemVersion</key>
-        <string>10.13.0</string>
+        <string>10.15.0</string>
         <key>NSHighResolutionCapable</key>
         <string>true</string>
         <key>NSHumanReadableCopyright</key>
@@ -48,7 +60,7 @@
           {{range .Info.Protocols}}
             <dict>
                 <key>CFBundleURLName</key>
-                <string>com.wails.{{.Scheme}}</string>
+                <string>com.adedayo.checkmate.{{.Scheme}}</string>
                 <key>CFBundleURLSchemes</key>
                 <array>
                     <string>{{.Scheme}}</string>

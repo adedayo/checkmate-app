@@ -67,12 +67,22 @@ brew install --cask adedayo/tap/checkmate-app
 ```
 
 > [!NOTE]
-> **macOS Gatekeeper Warning:** Because CheckMate App is a free open-source tool, it is not code-signed with a paid Apple Developer certificate. macOS Gatekeeper may show a "malware" or "cannot be opened" warning.
-> To bypass this securely, run the following command in your terminal **after installation**:
+> **macOS Gatekeeper.** CheckMate is free open-source software and is not
+> code-signed with a paid Apple Developer certificate — we are not going to
+> charge the community, however indirectly, to fund a $99/year rent to Apple.
+> The Homebrew cask above verifies the download's SHA-256 and clears the
+> quarantine flag for you, so **this route needs no workaround**.
+>
+> If you download the `.dmg` directly, macOS will say Apple "cannot check it".
+> Verify it yourself against `SHA256SUMS` (see
+> [docs/distribution.md](docs/distribution.md)), then clear the flag on that
+> one app:
 > ```bash
-> xattr -cr /Applications/CheckMate.app
+> xattr -dr com.apple.quarantine /Applications/CheckMate.app
 > ```
-> Alternatively, **Right-Click** the app in Finder and select **Open**.
+> That is scoped to this app. Do not run `spctl --master-disable`, which
+> disables Gatekeeper for everything you will ever download. Right-clicking the
+> app in Finder and choosing **Open** achieves the same per-app exception.
 
 #### Option 2: Direct Download
 Download the latest `.dmg` or `.zip` release from [GitHub Releases](https://github.com/adedayo/checkmate-app/releases/latest).

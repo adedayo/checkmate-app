@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=CheckMate
+GenericName=Secret & SAST Scanner
+Comment=Local SAST and secret exposure intelligence
+Exec=checkmate-app
+Icon=checkmate-app
+Terminal=false
+Categories=Development;Security;
+Keywords=security;sast;secrets;scanning;credentials;
+StartupWMClass=CheckMate

@@ -1,0 +1,50 @@
+# nfpm configuration for the CheckMate desktop application.
+#
+# The release workflow previously advertised "AppImage/Deb" and produced only a
+# tarball. A tarball does not declare its own dependencies, and CheckMate links
+# against GTK and WebKit at runtime, so a user who unpacked one onto a machine
+# without them got a linker error rather than an install failure naming the
+# package they were missing. That is what these declarations are for.
+#
+# Rendered by the release workflow with ${VERSION} and ${ARCH} expanded.
+
+name: checkmate-app
+arch: ${ARCH}
+platform: linux
+version: ${VERSION}
+section: utils
+priority: optional
+maintainer: Adedayo Adetoye <3177640+adedayo@users.noreply.github.com>
+description: |
+  Local SAST and secret exposure intelligence.
+  CheckMate scans source repositories for exposed credentials and insecure
+  code patterns, correlates credential reuse across projects, and reports
+  findings locally. Analysis runs on your machine; nothing is uploaded.
+vendor: Adedayo Adetoye
+homepage: https://github.com/adedayo/checkmate-app
+license: Apache-2.0
+
+depends:
+  - libgtk-3-0
+  - libwebkit2gtk-4.1-0
+
+# RPM distributions name the same libraries differently. Without this, the
+# .rpm either declares dependencies that do not exist on the target or declares
+# none and fails at first launch.
+overrides:
+  rpm:
+    depends:
+      - gtk3
+      - webkit2gtk4.1
+
+contents:
+  - src: ./build/bin/CheckMate
+    dst: /usr/bin/checkmate-app
+    file_info:
+      mode: 0755
+
+  - src: ./packaging/linux/checkmate-app.desktop
+    dst: /usr/share/applications/checkmate-app.desktop
+
+  - src: ./build/appicon.png
+    dst: /usr/share/icons/hicolor/512x512/apps/checkmate-app.png

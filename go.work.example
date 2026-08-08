@@ -1,0 +1,31 @@
+# Local multi-repository development.
+#
+# Rename to go.work to build against a local checkmate checkout:
+#
+#   cp go.work.example go.work
+#
+# This replaces the committed
+# `replace github.com/adedayo/checkmate => ../checkmate` directive that used to
+# live in go.mod. The difference matters. A replace in go.mod is part of the
+# module and travels with every build, which is why the release pipeline had to
+# strip it out and re-resolve the dependency to @main at build time. That made
+# every release build depend on the state of another repository's default
+# branch: a v2.1.0 tag did not identify the code that was built, two builds of
+# the same tag were not the same artefact, and an SBOM or provenance statement
+# over the result described a dependency graph that existed only during that
+# CI run.
+#
+# go.work is git-ignored, local-only, and invisible to `go build` in CI. The
+# committed go.mod now pins a released checkmate version, and the release
+# pipeline builds the repository exactly as committed.
+#
+# Bumping the pin is a reviewed change, not a side effect of a rebuild:
+#
+#   go get github.com/adedayo/checkmate@v1.3.4
+
+go 1.26.1
+
+use (
+.
+../checkmate
+)
