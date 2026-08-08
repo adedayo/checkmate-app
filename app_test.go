@@ -26,7 +26,7 @@ func setupTestApp(t *testing.T) (*App, func()) {
 	app := &App{
 		store: pm,
 	}
-	
+
 	app.startup(context.Background())
 
 	cleanup := func() {
@@ -81,7 +81,7 @@ func TestProjectLifecycle(t *testing.T) {
 	if len(projects) != 1 {
 		t.Fatalf("Expected 1 project, got %d", len(projects))
 	}
-	
+
 	retrieved := projects[0]
 	if retrieved.ID != proj.ID {
 		t.Errorf("Expected retrieved ID %s to match created ID %s", retrieved.ID, proj.ID)
@@ -106,7 +106,7 @@ func TestAddRepository(t *testing.T) {
 	if len(updatedProj.Repositories) != 1 {
 		t.Fatalf("Expected 1 repository, got %d", len(updatedProj.Repositories))
 	}
-	
+
 	if updatedProj.Repositories[0].Location != repoUrl {
 		t.Errorf("Expected repo location %s, got %s", repoUrl, updatedProj.Repositories[0].Location)
 	}

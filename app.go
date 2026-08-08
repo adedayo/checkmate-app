@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"checkmate-app/pkg/version"
 	"github.com/adedayo/checkmate/pkg/ai"
 	"github.com/adedayo/checkmate/pkg/core/diagnostics"
 	"github.com/adedayo/checkmate/pkg/core/projects"
@@ -26,7 +27,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var AppVersion = "v2.1.0"
+// AppVersion is retained as the name the frontend already binds to, but it is
+// no longer a literal: it is derived from pkg/version, which is what the release
+// pipeline stamps. Previously this was a hard-coded string that the release
+// script rewrote with sed and the workflow independently re-stamped, so three
+// places could disagree about the version and nothing checked that they did not.
+var AppVersion = version.Get().Version
 
 // App struct
 type App struct {
@@ -35,9 +41,23 @@ type App struct {
 }
 
 // GetAppVersion returns the current runtime version of the CheckMate application.
-// Can be injected at build time via -ldflags "-X main.AppVersion=v2.1.0"
+//
+// Stamped at link time via
+// -ldflags "-X checkmate-app/pkg/version.Version=v2.2.0". An unstamped build
+// reports the module version and VCS stamp the Go toolchain embeds, rather than
+// a literal that was only true at the moment it was typed.
 func (a *App) GetAppVersion() string {
 	return AppVersion
+}
+
+// GetBuildInfo returns the full build identity: version, commit, build date,
+// Go version and platform.
+//
+// A support request that says "the latest one" is not a version, and a bug
+// report against a version with no commit cannot be bisected. This is bound so
+// the About view can show something a maintainer can act on.
+func (a *App) GetBuildInfo() version.Info {
+	return version.Get()
 }
 
 type UpdateInfo struct {
@@ -119,7 +139,7 @@ func (a *App) CheckForUpdates() (*UpdateInfo, error) {
 // NewApp creates a new App application struct
 func NewApp() *App {
 	app := &App{}
-	
+
 	// Initialize CheckMate SQLite store
 	cmDataPath, err := homedir.Expand("~/.checkmate")
 	if err != nil {
@@ -132,7 +152,7 @@ func NewApp() *App {
 			app.store = pm
 		}
 	}
-	
+
 	return app
 }
 
@@ -770,7 +790,7 @@ func (a *App) GetProjectFindings(projectID string, scanID string) ([]*diagnostic
 	if err != nil {
 		return nil, err
 	}
-	
+
 	targetScanID := scanID
 	if targetScanID == "" {
 		targetScanID = proj.LastScanID
@@ -800,11 +820,11 @@ func (a *App) GetProjectFindings(projectID string, scanID string) ([]*diagnostic
 			if diag.Location != nil {
 				loc = *diag.Location
 			}
-			if exProvider.ShouldExcludeHash(hash) || 
-			   exProvider.ShouldExcludeValue(src) || 
-			   exProvider.ShouldExcludePath(loc) || 
-			   exProvider.ShouldExcludeHashOnPath(loc, hash) || 
-			   exProvider.ShouldExclude(loc, src) {
+			if exProvider.ShouldExcludeHash(hash) ||
+				exProvider.ShouldExcludeValue(src) ||
+				exProvider.ShouldExcludePath(loc) ||
+				exProvider.ShouldExcludeHashOnPath(loc, hash) ||
+				exProvider.ShouldExclude(loc, src) {
 				diag.Excluded = true
 			} else {
 				// Ensure that if the suppression was removed, the finding is un-suppressed immediately
@@ -829,7 +849,7 @@ func (a *App) GetProjectScanHistory(projectID string, limit int) ([]ScanHistory,
 	if a.store == nil {
 		return nil, fmt.Errorf("store not initialized")
 	}
-	
+
 	scanRecords, err := a.store.ListProjectScans(projectID, limit, 0)
 	if err != nil {
 		return nil, err
@@ -851,7 +871,7 @@ func (a *App) GetProjectScanHistory(projectID string, limit int) ([]ScanHistory,
 			})
 		}
 	}
-	
+
 	return history, nil
 }
 
@@ -899,6 +919,7 @@ func (a *App) AddRepository(projectID string, repoUrl string) (*projects.Project
 
 // dummyConsumer implements diagnostics.SecurityDiagnosticsConsumer
 type dummyConsumer struct{}
+
 func (d *dummyConsumer) ReceiveDiagnostic(diagnostic *diagnostics.SecurityDiagnostic) {}
 
 // StartScan triggers an asynchronous scan for a given project ID
@@ -937,7 +958,7 @@ func (a *App) StartScan(projectID string) error {
 
 	scanIDC := func(id string) {
 		log.Printf("Scan started with ID: %s", id)
-		
+
 		var ch <-chan store.ScanEvent
 		ch, cleanup = a.store.GetBroker().Subscribe(id)
 
@@ -960,7 +981,7 @@ func (a *App) StartScan(projectID string) error {
 	// Run scan synchronously for Wails IPC call
 	a.store.RunScan(a.ctx, proj.ID, proj.ScanPolicy, secrets.MakeSecretScanner(secOptions), scanIDC,
 		utils.GitRepositoryStatusChecker, progressMon, summariser, projects.SimpleWorkspaceSummariser, consumer)
-	
+
 	if cleanup != nil {
 		cleanup()
 	}
@@ -1007,7 +1028,7 @@ func (a *App) SuppressFinding(projectID string, diagnostic diagnostics.SecurityD
 	case "globalRegex":
 		scope.RegexMatch = opts.MatchString
 	case "pathRegex":
-		scope.RegexMatch = opts.MatchString 
+		scope.RegexMatch = opts.MatchString
 	case "pathString":
 		scope.Path = opts.Path
 		scope.StringMatch = opts.MatchString
@@ -1139,7 +1160,7 @@ func (a *App) ExportExceptions(projectID string) error {
 	if a.store == nil {
 		return fmt.Errorf("store not initialized")
 	}
-	
+
 	path, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
 		Title:           "Export Exceptions",
 		DefaultFilename: "checkmate-exceptions.yaml",
@@ -1147,18 +1168,18 @@ func (a *App) ExportExceptions(projectID string) error {
 			{DisplayName: "YAML Files", Pattern: "*.yaml;*.yml"},
 		},
 	})
-	
+
 	if err != nil || path == "" {
 		return err
 	}
-	
+
 	// We use the same builder function but just want the definition.
 	// Since BuildExclusionProvider doesn't expose the struct, let's write a small mapper here.
 	allExceptions, err := a.store.ListExceptions(projectID)
 	if err != nil {
 		return err
 	}
-	
+
 	def := &diagnostics.ExcludeDefinition{
 		GloballyExcludedRegExs:  []string{},
 		GloballyExcludedStrings: []string{},
@@ -1205,12 +1226,12 @@ func (a *App) ExportExceptions(projectID string) error {
 			}
 		}
 	}
-	
+
 	yamlData, err := yaml.Marshal(def)
 	if err != nil {
 		return err
 	}
-	
+
 	return os.WriteFile(path, yamlData, 0644)
 }
 
@@ -1219,28 +1240,28 @@ func (a *App) ImportExceptions(projectID string) error {
 	if a.store == nil {
 		return fmt.Errorf("store not initialized")
 	}
-	
+
 	path, err := runtime.OpenFileDialog(a.ctx, runtime.OpenDialogOptions{
 		Title: "Import Exceptions",
 		Filters: []runtime.FileFilter{
 			{DisplayName: "YAML Files", Pattern: "*.yaml;*.yml"},
 		},
 	})
-	
+
 	if err != nil || path == "" {
 		return err
 	}
-	
+
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	
+
 	var def diagnostics.ExcludeDefinition
 	if err := yaml.Unmarshal(data, &def); err != nil {
 		return fmt.Errorf("failed to parse YAML: %v", err)
 	}
-	
+
 	// Convert YAML fields back to database Exceptions
 	now := time.Now()
 	createExc := func(scopeType string, scope store.ExceptionScopeDetail) {
@@ -1284,7 +1305,7 @@ func (a *App) ImportExceptions(projectID string) error {
 			createExc("pathRegexRegex", store.ExceptionScopeDetail{Type: "pathRegexRegex", Path: path, RegexMatch: reg})
 		}
 	}
-	
+
 	return nil
 }
 
@@ -1373,7 +1394,7 @@ func (a *App) triggerBulkAITriage(projectID, scanID string) {
 			defer func() { <-semaphore }() // release
 
 			ann, err := a.AITriageFinding(diag.ID)
-			
+
 			mu.Lock()
 			if err != nil {
 				log.Printf("Bulk triage failed for finding %s: %v", diag.ID, err)
@@ -1390,7 +1411,7 @@ func (a *App) triggerBulkAITriage(projectID, scanID string) {
 					if diag.Location != nil {
 						loc = *diag.Location
 					}
-					
+
 					if hash != "" && loc != "" {
 						reasonText := fmt.Sprintf("Auto-suppressed by AI triage (FP Likelihood: %.0f%%) - %s", ann.FPLikelihood*100, ann.Summary)
 						if diag.Source != nil && *diag.Source != "" {

@@ -9,5 +9,12 @@
   "author": {
     "name": "Adedayo Adetoye",
     "email": "3177640+adedayo@users.noreply.github.com"
+  },
+  "info": {
+    "companyName": "Adedayo Adetoye",
+    "productName": "CheckMate",
+    "productVersion": "2.1.0",
+    "copyright": "Copyright © 2026 Adedayo Adetoye.",
+    "comments": "Local SAST and secret exposure intelligence desktop engine."
   }
 }

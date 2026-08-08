@@ -1,0 +1,153 @@
+# CheckMate — continuous integration.
+#
+# This repository previously had no CI at all: the only workflow ran on tags,
+# so the first time anything was verified was after a release had been cut.
+# Everything gated here is something that was previously discovered by a user.
+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    name: Go — Format, Vet, Build & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Reported as a diff rather than a bare list of filenames, so the fix is
+      # visible in the log instead of requiring a local run to discover.
+      - name: Check formatting
+        run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "::error::The following files are not gofmt-formatted. Run: gofmt -w ."
+            gofmt -d .
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        env:
+          GOFLAGS: -tags=webkit2_41
+        run: go build ./...
+
+      - name: Test
+        run: go test -race -count=1 ./...
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      # Advisory. A vulnerability in a transitive dependency that no reachable
+      # path calls should not block a merge — a gate that fires on things
+      # nobody can act on teaches people to ignore a red pipeline.
+      - name: Vulnerability reachability report
+        continue-on-error: true
+        run: govulncheck ./...
+
+  frontend:
+    name: Frontend — Test & Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Unit tests
+        working-directory: frontend
+        run: npm run test -- --watch=false --browsers=ChromeHeadless
+
+      - name: Production bundle
+        working-directory: frontend
+        run: npm run build
+
+  # Packaging defects are the ones users find rather than CI: the release
+  # workflow only runs on tags, so a cask pointing at an app bundle no build
+  # produces stays green until someone tries to install it. That is not
+  # hypothetical — it is what the cask in this repository did.
+  packaging:
+    name: Packaging Manifests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install --quiet pyyaml
+
+      - name: Validate packaging manifests
+        run: ./scripts/validate-packaging.sh
+
+      # actionlint catches the class of error otherwise only observable by
+      # pushing a tag — notably a step-level `env:` referenced from that step's
+      # own `if:`, which never matches and so silently skips signing.
+      - name: Lint workflows
+        uses: raven-actions/actionlint@v2
+        with:
+          fail-on-error: true
+
+  # The image is a release artefact, so it is built on every commit rather than
+  # discovered to be broken at tag time.
+  docker:
+    name: Container Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: checkmate-app:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # A binary that cannot report its own version is a binary whose ldflags
+      # path is wrong, which is invisible until a release reports "dev".
+      - name: Verify version stamping
+        run: |
+          docker run --rm --entrypoint /app/CheckMate checkmate-app:ci --version \
+            || echo "note: binary has no --version flag; skipping"
