@@ -20,7 +20,13 @@ FROM node:24-alpine AS frontend
 
 WORKDIR /app
 
-COPY frontend/package*.json ./
+# .npmrc carries legacy-peer-deps=true, which this dependency tree currently
+# needs: @swimlane/ngx-charts@25 declares a peer on
+# @angular/platform-browser-dynamic, which resolves to 20.x and conflicts with
+# Angular 22. Copying only package*.json left it out, so `npm ci` resolved
+# strictly here and failed in the container while succeeding on developer
+# machines — where .npmrc is present.
+COPY frontend/package*.json frontend/.npmrc ./
 RUN npm ci
 
 COPY frontend/ ./

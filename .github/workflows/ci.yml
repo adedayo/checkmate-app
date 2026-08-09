@@ -35,6 +35,24 @@ jobs:
           go-version-file: go.mod
           cache: true
 
+      # main.go has //go:embed all:frontend/dist/frontend, and embed is
+      # resolved by the compiler — so vet, build and test all fail with
+      # "no matching files found" unless the bundle exists first. It is only
+      # produced by the frontend build, which meant every Go step here failed
+      # on a clean checkout while passing locally, where dist/ is left over
+      # from a previous run.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend bundle for embedding
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
       # Reported as a diff rather than a bare list of filenames, so the fix is
       # visible in the log instead of requiring a local run to discover.
       - name: Check formatting
@@ -84,9 +102,13 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      # This project runs Angular's vitest builder, not Karma. `--browsers`
+      # is a Karma flag; vitest rejects it unless one of the
+      # @vitest/browser-* packages is installed, so the job failed before
+      # running a single test. The suite is jsdom-based and needs no browser.
       - name: Unit tests
         working-directory: frontend
-        run: npm run test -- --watch=false --browsers=ChromeHeadless
+        run: npm run test -- --watch=false
 
       - name: Production bundle
         working-directory: frontend

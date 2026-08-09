@@ -112,7 +112,7 @@ jobs:
 
       - name: Install Wails CLI
         run: |
-          go install github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}
+          go install "github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}"
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
       - name: Build universal app bundle
@@ -328,7 +328,7 @@ jobs:
 
       - name: Install Wails CLI and nfpm
         run: |
-          go install github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}
+          go install "github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}"
           go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.41.3
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
@@ -468,7 +468,9 @@ jobs:
         working-directory: staging
         run: |
           set -euo pipefail
-          sha256sum * > SHA256SUMS
+          # ./* rather than *: a release artefact whose name begins with a
+          # dash would otherwise be read by sha256sum as an option.
+          sha256sum ./* > SHA256SUMS
           cat SHA256SUMS
 
       - uses: sigstore/cosign-installer@v3
