@@ -4,6 +4,7 @@ import {sdk} from '../models';
 import {projects} from '../models';
 import {main} from '../models';
 import {store} from '../models';
+import {version} from '../models';
 import {diagnostics} from '../models';
 
 export function AITriageFinding(arg1:string):Promise<sdk.AIAnnotation>;
@@ -20,7 +21,11 @@ export function ExportExceptions(arg1:string):Promise<void>;
 
 export function GetAISettings():Promise<store.AISettings>;
 
+export function GetActiveScan(arg1:string):Promise<main.ScanProgress>;
+
 export function GetAppVersion():Promise<string>;
+
+export function GetBuildInfo():Promise<version.Info>;
 
 export function GetDashboardAnalytics():Promise<main.DashboardAnalytics>;
 

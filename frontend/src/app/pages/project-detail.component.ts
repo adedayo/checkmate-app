@@ -1,7 +1,7 @@
 import { Component, signal, computed, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { GetProjects, AddRepository, RemoveRepository, StartScan, GetProjectFindings, SuppressFinding, GetExceptions, RemoveException, ExportExceptions, ImportExceptions, GetProjectScanHistory, DeleteProjectScans, SelectDirectory, UpdateProjectDetails, AITriageFinding, GetAISettings, MarkFindingTruePositive } from '../../../wailsjs/go/main/App';
+import { GetProjects, AddRepository, RemoveRepository, StartScan, GetProjectFindings, SuppressFinding, GetExceptions, RemoveException, ExportExceptions, ImportExceptions, GetProjectScanHistory, DeleteProjectScans, SelectDirectory, UpdateProjectDetails, AITriageFinding, GetAISettings, MarkFindingTruePositive, GetActiveScan } from '../../../wailsjs/go/main/App';
 import { EventsOn, EventsOff } from '../../../wailsjs/runtime/runtime';
 import { CommonModule } from '@angular/common';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
@@ -101,6 +101,42 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
           }
         </button>
       </div>
+
+      <!-- Scan progress. A sibling of the header card rather than a child:
+           the header is a flex row, and a file path placed in it would be
+           squeezed against the button and resize it as paths of differing
+           length arrive. -->
+      @if (scanning() && scanProgress(); as _p) {
+        <div class="mt-4 p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+          <div class="flex items-baseline justify-between gap-4">
+            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">
+              {{ scanCountLabel() }}
+            </span>
+            @if (scanPercent() !== null) {
+              <span class="text-sm font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
+                {{ scanPercent() }}%
+              </span>
+            }
+          </div>
+
+          <div class="mt-2 h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+            @if (scanPercent() !== null) {
+              <div class="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 transition-all duration-300"
+                   [style.width.%]="scanPercent()"></div>
+            } @else {
+              <!-- Total is still being discovered, so there is no honest
+                   fraction to draw. Indeterminate rather than a bar at zero. -->
+              <div class="h-full w-1/3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 animate-pulse"></div>
+            }
+          </div>
+
+          @if (scanCurrentFile()) {
+            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400 font-mono truncate" [title]="scanProgress()?.currentFile">
+              {{ scanCurrentFile() }}
+            </p>
+          }
+        </div>
+      }
 
       <!-- Trawl-style Tabs -->
       <div class="flex space-x-6 border-b border-slate-200 dark:border-slate-800">
@@ -690,11 +726,38 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     const p = this.scanProgress();
     if (!p || p.position <= 0) return 'Scanning...';
 
-    if (p.total > 0 && p.position <= p.total) {
-      const pct = Math.floor((p.position / p.total) * 100);
-      return `Scanning... ${pct}%`;
-    }
+    const pct = this.scanPercent();
+    if (pct !== null) return `Scanning... ${pct}%`;
     return `Scanning... ${p.position.toLocaleString()} files`;
+  });
+
+  // Null while the denominator is still moving, so callers can distinguish
+  // "no meaningful percentage yet" from "0%".
+  scanPercent = computed<number | null>(() => {
+    const p = this.scanProgress();
+    if (!p || p.position <= 0 || p.total <= 0 || p.position > p.total) return null;
+    return Math.min(100, Math.floor((p.position / p.total) * 100));
+  });
+
+  // "1,234 of 22,591 files" once the total is trustworthy, otherwise just the
+  // count discovered so far — an N that is still climbing reads as though the
+  // scan is shrinking when it overtakes an earlier estimate.
+  scanCountLabel = computed(() => {
+    const p = this.scanProgress();
+    if (!p || p.position <= 0) return '';
+    const pos = p.position.toLocaleString();
+    if (p.total > 0 && p.position <= p.total) {
+      return `${pos} of ${p.total.toLocaleString()} files`;
+    }
+    return `${pos} files scanned`;
+  });
+
+  // Paths in a deep tree are long enough to break the layout, and the
+  // informative end is the right-hand one.
+  scanCurrentFile = computed(() => {
+    const f = this.scanProgress()?.currentFile ?? '';
+    if (!f) return '';
+    return f.length > 80 ? '…' + f.slice(-79) : f;
   });
 
   activeTab = signal<'overview' | 'vulnerabilities' | 'exceptions' | 'trends'>('overview');
@@ -804,7 +867,16 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     });
 
     EventsOn("scan-progress", (progress: any) => {
+      // "scan-progress" is a single global channel. Without this guard, a scan
+      // running on another project would drive this project's progress bar.
+      // Events predating the projectId field are accepted rather than dropped.
+      const pid = this.currentProjectId();
+      if (progress?.projectId && pid && progress.projectId !== pid) return;
+
       this.scanProgress.set(progress);
+      // A scan may have been started elsewhere — from another view, or before
+      // this component existed. Progress arriving is proof it is running.
+      if (!this.scanning()) this.scanning.set(true);
     });
 
     EventsOn("ai-triage-progress", (progress: any) => {
@@ -835,9 +907,73 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       const id = params.get('id');
       if (id) {
         this.fetchProject(id);
+        // A scan started before this component existed is still running in the
+        // backend, but the events it emitted while we were elsewhere are gone.
+        // Ask for the current state rather than waiting for the next event, so
+        // the bar appears immediately instead of up to a tick later — and so a
+        // scan still walking the directory tree, which emits nothing for a
+        // while on a large repository, is visible at all.
+        this.resumeActiveScan(id);
       }
     });
     this.checkAISettings();
+  }
+
+  // The id from the route, which is available before the project has loaded.
+  private routeProjectId: string | null = null;
+
+  private currentProjectId(): string | null {
+    const proj = this.project();
+    return proj?.id || proj?.ID || this.routeProjectId;
+  }
+
+  private async resumeActiveScan(projectID: string) {
+    this.routeProjectId = projectID;
+    try {
+      const active = await GetActiveScan(projectID);
+      if (!active) return;
+
+      this.scanning.set(true);
+      this.scanProgress.set(active);
+      this.activeTab.set('vulnerabilities');
+      // This component did not call StartScan, so no promise will tell it when
+      // the scan ends. Watch for completion instead.
+      this.watchAdoptedScan(projectID);
+    } catch {
+      // A backend that cannot answer is not a reason to block the view.
+    }
+  }
+
+  // Completion detector for a scan this component did not start.
+  //
+  // runScan() clears `scanning` when its StartScan promise resolves. A scan
+  // adopted on navigation has no such promise here, so without this the
+  // spinner would run until the view was destroyed again.
+  private adoptedScanPoll: any = null;
+
+  private watchAdoptedScan(projectID: string) {
+    if (this.adoptedScanPoll) return;
+    this.adoptedScanPoll = setInterval(async () => {
+      try {
+        const active = await GetActiveScan(projectID);
+        if (active) return;
+
+        this.stopWatchingAdoptedScan();
+        this.scanning.set(false);
+        this.scanProgress.set(null);
+        this.fetchProject(projectID);
+      } catch {
+        this.stopWatchingAdoptedScan();
+        this.scanning.set(false);
+      }
+    }, 1500);
+  }
+
+  private stopWatchingAdoptedScan() {
+    if (this.adoptedScanPoll) {
+      clearInterval(this.adoptedScanPoll);
+      this.adoptedScanPoll = null;
+    }
   }
 
   ngOnDestroy() {
@@ -850,6 +986,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     EventsOff("scan-finding-updated");
 
     if (this.fetchFindingsTimeout) clearTimeout(this.fetchFindingsTimeout);
+    // Same reasoning as the listeners: the interval outlives the component and
+    // would keep calling into a destroyed view, once per navigation.
+    this.stopWatchingAdoptedScan();
   }
 
   async checkAISettings() {
@@ -1106,6 +1245,13 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   runScan() {
     const proj = this.project();
     if (!proj) return;
+
+    const pid = proj.id || proj.ID;
+    this.routeProjectId = pid;
+
+    // This component now owns the scan lifecycle via the StartScan promise, so
+    // the adopted-scan poller would be a second, competing completion source.
+    this.stopWatchingAdoptedScan();
 
     this.findings.set([]);
     this.scanning.set(true);

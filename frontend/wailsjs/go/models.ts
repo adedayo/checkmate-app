@@ -518,6 +518,24 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class ScanProgress {
+	    projectId: string;
+	    position: number;
+	    total: number;
+	    currentFile: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new ScanProgress(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.projectId = source["projectId"];
+	        this.position = source["position"];
+	        this.total = source["total"];
+	        this.currentFile = source["currentFile"];
+	    }
+	}
 	export class SuppressionOptions {
 	    scopeType: string;
 	    matchString: string;
@@ -1216,6 +1234,31 @@ export namespace store {
 	        this.totalFindings = source["totalFindings"];
 	        this.findingsBySeverity = source["findingsBySeverity"];
 	        this.score = source["score"];
+	    }
+	}
+
+}
+
+export namespace version {
+	
+	export class Info {
+	    version: string;
+	    commit?: string;
+	    buildDate?: string;
+	    goVersion: string;
+	    platform: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Info(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.version = source["version"];
+	        this.commit = source["commit"];
+	        this.buildDate = source["buildDate"];
+	        this.goVersion = source["goVersion"];
+	        this.platform = source["platform"];
 	    }
 	}
 

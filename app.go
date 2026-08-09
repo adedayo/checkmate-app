@@ -39,6 +39,19 @@ var AppVersion = version.Get().Version
 type App struct {
 	ctx   context.Context
 	store store.PlatformStore
+
+	// activeScans is the authoritative record of which projects are being
+	// scanned and how far along they are.
+	//
+	// The frontend cannot own this. A scan outlives the component that started
+	// it: navigating away from the project detail view destroys the component,
+	// unregisters its Wails listeners and discards its progress signal, so on
+	// return the UI has no way to know a scan is still running — the events it
+	// missed are gone, and the next one only tells it a position, not whose.
+	// Holding it here means the view can ask rather than remember, and the
+	// answer survives navigation.
+	scanMu      sync.RWMutex
+	activeScans map[string]*ScanProgress
 }
 
 // GetAppVersion returns the current runtime version of the CheckMate application.
@@ -936,6 +949,14 @@ func (a *App) StartScan(projectID string) error {
 
 	log.Printf("Triggering scan for project: %s", projectID)
 
+	// Mark the project as being scanned before any work begins, so a view
+	// opened a moment later sees the scan even if no progress event has been
+	// emitted yet. Deferred rather than cleared at the end of the happy path:
+	// an early return or a panic would otherwise leave the project advertised
+	// as scanning forever, with no way back short of restarting the app.
+	a.markScanStarted(projectID)
+	defer a.markScanFinished(projectID)
+
 	exProvider, err := a.store.BuildExclusionProvider(projectID)
 	if err != nil || exProvider == nil {
 		exProvider = diagnostics.MakeEmptyExcludes()
@@ -976,16 +997,24 @@ func (a *App) StartScan(projectID string) error {
 		// Output progress to standard log so it shows up in wails dev terminal
 		log.Printf("Scan progress: %d/%d (%s)", p.Position, p.Total, p.CurrentFile)
 
+		progress := ScanProgress{
+			ProjectID:   projectID,
+			Position:    p.Position,
+			Total:       p.Total,
+			CurrentFile: p.CurrentFile,
+		}
+
+		// Recorded as well as emitted. The event reaches whoever is listening
+		// now; the record answers whoever asks later, which is what makes the
+		// progress bar survive navigating away and back mid-scan.
+		a.recordScanProgress(progress)
+
 		// Broadcast to the frontend. Progress is already coalesced by the
 		// engine onto a 250ms ticker (CHECKMATE_PROGRESS_INTERVAL), so this
 		// emits roughly four events a second regardless of corpus size — it
 		// does not need throttling here, and adding a second throttle would
 		// only make a short scan look stalled.
-		runtime.EventsEmit(a.ctx, "scan-progress", ScanProgress{
-			Position:    p.Position,
-			Total:       p.Total,
-			CurrentFile: p.CurrentFile,
-		})
+		runtime.EventsEmit(a.ctx, "scan-progress", progress)
 	}
 
 	consumer := &dummyConsumer{}
@@ -1010,6 +1039,63 @@ type SuppressionOptions struct {
 	MatchString string `json:"matchString"`
 	Path        string `json:"path"`
 	Reason      string `json:"reason"`
+}
+
+// markScanStarted records that a scan has begun for a project.
+//
+// The zero-valued progress is deliberate: it distinguishes "scanning, nothing
+// counted yet" from "not scanning", which a nil entry would not. The view uses
+// that distinction to show an indeterminate bar rather than 0%.
+func (a *App) markScanStarted(projectID string) {
+	a.scanMu.Lock()
+	defer a.scanMu.Unlock()
+	if a.activeScans == nil {
+		a.activeScans = make(map[string]*ScanProgress)
+	}
+	a.activeScans[projectID] = &ScanProgress{
+		ProjectID:   projectID,
+		CurrentFile: "starting scan ...",
+	}
+}
+
+func (a *App) recordScanProgress(p ScanProgress) {
+	a.scanMu.Lock()
+	defer a.scanMu.Unlock()
+	if a.activeScans == nil {
+		return // scan already finished; a late event must not resurrect it
+	}
+	if _, running := a.activeScans[p.ProjectID]; !running {
+		return
+	}
+	snapshot := p
+	a.activeScans[p.ProjectID] = &snapshot
+}
+
+func (a *App) markScanFinished(projectID string) {
+	a.scanMu.Lock()
+	defer a.scanMu.Unlock()
+	delete(a.activeScans, projectID)
+}
+
+// GetActiveScan reports the progress of a scan currently running for the given
+// project, or nil if none is running.
+//
+// This is what lets the project detail view show a scan it did not start. The
+// view is destroyed and rebuilt on every navigation, so it cannot remember;
+// asking on initialisation is the only way for the answer to be correct after
+// the user has been elsewhere.
+func (a *App) GetActiveScan(projectID string) (*ScanProgress, error) {
+	a.scanMu.RLock()
+	defer a.scanMu.RUnlock()
+
+	p, running := a.activeScans[projectID]
+	if !running || p == nil {
+		return nil, nil
+	}
+	// Copied so a caller cannot mutate the record through the pointer, and so
+	// the value cannot change under the marshaller while a scan is running.
+	snapshot := *p
+	return &snapshot, nil
 }
 
 // SuppressFinding marks a finding as a false positive
@@ -1366,13 +1452,19 @@ type AITriageProgress struct {
 	AutoSuppressed int `json:"autoSuppressed"`
 }
 
-// ScanProgress is the payload of the "scan-progress" Wails event.
+// ScanProgress is the payload of the "scan-progress" Wails event, and the
+// value returned by GetActiveScan.
 //
 // Position and Total are file counts. Total is the running discovered count
 // while the directory walk is still in flight and becomes exact when it
 // finishes, so it can rise during a scan — the frontend must treat it as a
 // moving denominator rather than a fixed one.
+//
+// ProjectID is carried on the event because "scan-progress" is a single global
+// channel: a listener that cannot attribute an event to a project will render
+// one project's progress in another project's view.
 type ScanProgress struct {
+	ProjectID   string `json:"projectId"`
 	Position    int64  `json:"position"`
 	Total       int64  `json:"total"`
 	CurrentFile string `json:"currentFile"`
