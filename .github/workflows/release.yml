@@ -429,6 +429,11 @@ jobs:
 
       - name: Build and push
         uses: docker/build-push-action@v6
+        env:
+          # Suppresses the .dockerbuild build-record artefact. It is a debugging
+          # aid we do not consume, and as a run artefact it is indistinguishable
+          # to a downloader from something that belongs in the release.
+          DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           context: .
           file: ./Dockerfile
@@ -459,10 +464,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Named explicitly rather than downloading everything. Other jobs may
+      # upload artefacts of their own — docker/build-push-action attaches a
+      # build record — and an unfiltered download makes the release depend on
+      # artefacts that are not release assets. In v2.2.0 that build record
+      # failed to download and took the entire publication with it, after all
+      # six platforms had built successfully. Anything not listed here is not
+      # a release asset and must not be able to break, or enter, a release.
       - uses: actions/download-artifact@v4
         with:
           path: staging
+          pattern: '{macos,linux-amd64,linux-arm64,windows-amd64,windows-arm64}'
           merge-multiple: true
+
+      # A pattern that matches nothing yields an empty staging directory, and
+      # a release that silently ships no binaries. Assert the manifest instead
+      # of trusting the glob.
+      - name: Verify expected artefacts are present
+        working-directory: staging
+        run: |
+          set -euo pipefail
+          missing=0
+          for f in \
+            "${APP_NAME}-macos-universal.dmg" \
+            "${APP_NAME}-windows-amd64.zip" \
+            "${APP_NAME}-windows-arm64.zip"
+          do
+            [ -f "$f" ] || { echo "::error::missing expected artefact: $f"; missing=1; }
+          done
+          for pat in '*linux*amd64*' '*linux*arm64*'; do
+            compgen -G "$pat" > /dev/null \
+              || { echo "::error::no artefact matching: $pat"; missing=1; }
+          done
+          [ "$missing" -eq 0 ] || { echo "--- staging ---"; ls -la; exit 1; }
+          echo "✔ all expected platform artefacts present"
+        shell: bash
 
       - name: Checksums
         working-directory: staging
