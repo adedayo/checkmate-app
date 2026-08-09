@@ -99,4 +99,37 @@ describe('ProjectDetailComponent', () => {
     expect(component.scanning()).toBe(false);
     expect(component.activeTab()).toBe('vulnerabilities');
   });
+
+  describe('scanProgressLabel', () => {
+    // The engine reports Total as a running discovered count, so it climbs
+    // while the walk is in flight. These cases are the ones that would
+    // otherwise show a nonsense percentage.
+
+    it('falls back to a generic label before any progress arrives', () => {
+      component.scanProgress.set(null);
+      expect(component.scanProgressLabel()).toBe('Scanning...');
+    });
+
+    it('shows a percentage once position and total are sane', () => {
+      component.scanProgress.set({ position: 250, total: 1000, currentFile: 'a.go' });
+      expect(component.scanProgressLabel()).toBe('Scanning... 25%');
+    });
+
+    it('never reports above 100% when position outruns a stale total', () => {
+      // Position can exceed Total mid-walk, since Total is still being
+      // discovered. Showing "Scanning... 400%" would be worse than a count.
+      component.scanProgress.set({ position: 400, total: 100, currentFile: 'b.go' });
+      expect(component.scanProgressLabel()).toBe('Scanning... 400 files');
+    });
+
+    it('shows a file count when the total is not yet known', () => {
+      component.scanProgress.set({ position: 42, total: 0, currentFile: 'c.go' });
+      expect(component.scanProgressLabel()).toBe('Scanning... 42 files');
+    });
+
+    it('does not show 0% at the very start of a scan', () => {
+      component.scanProgress.set({ position: 0, total: 0, currentFile: 'starting scan ...' });
+      expect(component.scanProgressLabel()).toBe('Scanning...');
+    });
+  });
 });

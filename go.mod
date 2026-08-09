@@ -3,7 +3,7 @@ module checkmate-app
 go 1.26.1
 
 require (
-	github.com/adedayo/checkmate v1.3.3
+	github.com/adedayo/checkmate v1.4.0
 	github.com/google/uuid v1.6.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/wailsapp/wails/v2 v2.13.0
@@ -62,7 +62,7 @@ require (
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	modernc.org/libc v1.74.3 // indirect
+	modernc.org/libc v1.74.4 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/sqlite v1.54.0 // indirect

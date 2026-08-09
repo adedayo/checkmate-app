@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit, HostListener, ChangeDetectorRef } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GetProjects, AddRepository, RemoveRepository, StartScan, GetProjectFindings, SuppressFinding, GetExceptions, RemoveException, ExportExceptions, ImportExceptions, GetProjectScanHistory, DeleteProjectScans, SelectDirectory, UpdateProjectDetails, AITriageFinding, GetAISettings, MarkFindingTruePositive } from '../../../wailsjs/go/main/App';
@@ -94,7 +94,7 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
         <button (click)="runScan()" [disabled]="scanning()" class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:opacity-50 text-white rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
           @if (scanning()) {
             <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-            Scanning...
+            {{ scanProgressLabel() }}
           } @else {
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             Run Scan
@@ -675,11 +675,28 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
     </div>
   `
 })
-export class ProjectDetailComponent implements OnInit {
+export class ProjectDetailComponent implements OnInit, OnDestroy {
   project = signal<any>(null);
   findings = signal<any[]>([]);
   newRepoLocation = '';
   scanning = signal(false);
+  scanProgress = signal<{ position: number; total: number; currentFile: string } | null>(null);
+
+  // The engine reports Total as the running discovered count while the walk is
+  // still in flight, so it climbs during a scan and the percentage would jump
+  // around early on. Show a bare file count until the two are close enough for
+  // a percentage to be honest, and never render a figure above 100%.
+  scanProgressLabel = computed(() => {
+    const p = this.scanProgress();
+    if (!p || p.position <= 0) return 'Scanning...';
+
+    if (p.total > 0 && p.position <= p.total) {
+      const pct = Math.floor((p.position / p.total) * 100);
+      return `Scanning... ${pct}%`;
+    }
+    return `Scanning... ${p.position.toLocaleString()} files`;
+  });
+
   activeTab = signal<'overview' | 'vulnerabilities' | 'exceptions' | 'trends'>('overview');
 
   exceptions = signal<any[]>([]);
@@ -786,6 +803,10 @@ export class ProjectDetailComponent implements OnInit {
       this.findings.update(f => [...f, finding]);
     });
 
+    EventsOn("scan-progress", (progress: any) => {
+      this.scanProgress.set(progress);
+    });
+
     EventsOn("ai-triage-progress", (progress: any) => {
       this.aiTriageProgress.set(progress);
       if (progress.completed + progress.failed >= progress.total) {
@@ -817,6 +838,18 @@ export class ProjectDetailComponent implements OnInit {
       }
     });
     this.checkAISettings();
+  }
+
+  ngOnDestroy() {
+    // These listeners are registered on the Wails runtime, which outlives the
+    // component. Without this, navigating away and back stacks a second set of
+    // handlers and every finding gets appended twice.
+    EventsOff("scan-finding");
+    EventsOff("scan-progress");
+    EventsOff("ai-triage-progress");
+    EventsOff("scan-finding-updated");
+
+    if (this.fetchFindingsTimeout) clearTimeout(this.fetchFindingsTimeout);
   }
 
   async checkAISettings() {
@@ -1076,14 +1109,19 @@ export class ProjectDetailComponent implements OnInit {
 
     this.findings.set([]);
     this.scanning.set(true);
+    // Clear any progress left from a previous scan, or the button would
+    // briefly show the last run's percentage before the first event arrives.
+    this.scanProgress.set(null);
     this.activeTab.set('vulnerabilities');
 
     StartScan(proj.ID).then(() => {
       this.scanning.set(false);
+      this.scanProgress.set(null);
       this.fetchProject(proj.ID);
     }).catch(err => {
       alert("Error triggering scan: " + err);
       this.scanning.set(false);
+      this.scanProgress.set(null);
     });
   }
 

@@ -974,6 +974,17 @@ func (a *App) StartScan(projectID string) error {
 	progressMon := func(p diagnostics.Progress) {
 		// Output progress to standard log so it shows up in wails dev terminal
 		log.Printf("Scan progress: %d/%d (%s)", p.Position, p.Total, p.CurrentFile)
+
+		// Broadcast to the frontend. Progress is already coalesced by the
+		// engine onto a 250ms ticker (CHECKMATE_PROGRESS_INTERVAL), so this
+		// emits roughly four events a second regardless of corpus size — it
+		// does not need throttling here, and adding a second throttle would
+		// only make a short scan look stalled.
+		runtime.EventsEmit(a.ctx, "scan-progress", ScanProgress{
+			Position:    p.Position,
+			Total:       p.Total,
+			CurrentFile: p.CurrentFile,
+		})
 	}
 
 	consumer := &dummyConsumer{}
@@ -1352,6 +1363,18 @@ type AITriageProgress struct {
 	Completed      int `json:"completed"`
 	Failed         int `json:"failed"`
 	AutoSuppressed int `json:"autoSuppressed"`
+}
+
+// ScanProgress is the payload of the "scan-progress" Wails event.
+//
+// Position and Total are file counts. Total is the running discovered count
+// while the directory walk is still in flight and becomes exact when it
+// finishes, so it can rise during a scan — the frontend must treat it as a
+// moving denominator rather than a fixed one.
+type ScanProgress struct {
+	Position    int64  `json:"position"`
+	Total       int64  `json:"total"`
+	CurrentFile string `json:"currentFile"`
 }
 
 func (a *App) triggerBulkAITriage(projectID, scanID string) {
