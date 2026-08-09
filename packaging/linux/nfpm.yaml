@@ -46,5 +46,9 @@ contents:
   - src: ./packaging/linux/checkmate-app.desktop
     dst: /usr/share/applications/checkmate-app.desktop
 
-  - src: ./build/appicon.png
+  # The hicolor theme addresses icons by resolution, and the directory is the
+  # claim rather than the image. build/appicon.png is 1024x1024 and was being
+  # installed here as though it were 512x512, so every .deb and .rpm shipped an
+  # icon whose declared size was a lie. This file is genuinely 512x512.
+  - src: ./packaging/linux/checkmate-app.png
     dst: /usr/share/icons/hicolor/512x512/apps/checkmate-app.png

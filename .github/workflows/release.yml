@@ -376,12 +376,33 @@ jobs:
           mkdir -p AppDir/usr/bin
           cp "build/bin/${APP_NAME}" AppDir/usr/bin/checkmate-app
 
+          # packaging/linux/checkmate-app.png rather than build/appicon.png for
+          # two reasons. linuxdeploy accepts icons only at the hicolor sizes and
+          # rejects the 1024x1024 appicon outright, which is why no AppImage has
+          # ever been produced by this pipeline. It also derives the installed
+          # icon name from the file's basename, which must match the desktop
+          # entry's Icon=checkmate-app or the AppImage builds without an icon.
           ./linuxdeploy --appdir AppDir \
             --desktop-file packaging/linux/checkmate-app.desktop \
-            --icon-file build/appicon.png \
+            --icon-file packaging/linux/checkmate-app.png \
             --output appimage
 
           mv CheckMate*.AppImage "build/bin/${APP_NAME}-linux-${{ matrix.arch }}.AppImage"
+
+      # continue-on-error keeps a failed AppImage from sinking the release, but
+      # it also meant nobody noticed it had never succeeded: the upload globs
+      # *.AppImage alongside artefacts that do exist, so if-no-files-found never
+      # fires. State the outcome where it will be read.
+      - name: Report AppImage outcome
+        if: always()
+        run: |
+          set -euo pipefail
+          if ls build/bin/*.AppImage > /dev/null 2>&1; then
+            echo "✔ AppImage produced for ${{ matrix.arch }}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::No AppImage produced for ${{ matrix.arch }} — this release ships without one."
+            echo "⚠ AppImage MISSING for ${{ matrix.arch }}" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - uses: actions/upload-artifact@v4
         with:

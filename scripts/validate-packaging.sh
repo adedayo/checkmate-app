@@ -31,6 +31,7 @@ for f in \
   build/windows/installer/project.nsi \
   packaging/linux/nfpm.yaml \
   packaging/linux/checkmate-app.desktop \
+  packaging/linux/checkmate-app.png \
   packaging/homebrew/checkmate-app.rb \
   .github/workflows/release.yml \
   .nvmrc \
@@ -136,6 +137,73 @@ def desktop_entry():
         if key not in text:
             raise ValueError(f"missing {key}")
 check("linux desktop entry has the required keys", desktop_entry)
+
+def png_size(path):
+    """Read width and height from a PNG IHDR chunk.
+
+    Stdlib only: this runs on release runners, and a validator that skips
+    itself when an image library is absent is a validator that passes when it
+    matters least.
+    """
+    with open(path, "rb") as f:
+        header = f.read(24)
+    if header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
+        raise ValueError(f"{path}: not a PNG")
+    return int.from_bytes(header[16:20], "big"), int.from_bytes(header[20:24], "big")
+
+def linux_icon_is_what_everything_claims():
+    """The Linux icon is described in three places. They must agree.
+
+    This check exists because they did not. build/appicon.png is 1024x1024,
+    which linuxdeploy rejects outright — no AppImage was ever produced — while
+    nfpm installed that same file into hicolor/512x512, so the .deb and .rpm
+    shipped an icon whose directory misdescribed it. Neither failure was
+    visible in a release artefact list.
+    """
+    import yaml
+
+    icon = "packaging/linux/checkmate-app.png"
+    w, h = png_size(icon)
+    if (w, h) != (512, 512):
+        raise ValueError(f"{icon} is {w}x{h}; linuxdeploy requires a hicolor size (512x512)")
+
+    # linuxdeploy names the installed icon after the file's basename, so a
+    # mismatch with Icon= yields an AppImage with no icon and no error.
+    desktop = open("packaging/linux/checkmate-app.desktop").read()
+    icon_key = next(
+        (l.split("=", 1)[1].strip() for l in desktop.splitlines() if l.startswith("Icon=")),
+        None,
+    )
+    stem = os.path.splitext(os.path.basename(icon))[0]
+    if icon_key != stem:
+        raise ValueError(f"desktop Icon={icon_key!r} does not match icon basename {stem!r}")
+
+    # The hicolor directory is a claim about the pixels, not a resize request.
+    d = yaml.safe_load(open("packaging/linux/nfpm.yaml"))
+    for entry in d["contents"]:
+        dst = entry.get("dst", "")
+        m = re.search(r"/icons/hicolor/(\d+)x(\d+)/", dst)
+        if not m:
+            continue
+        claimed = (int(m.group(1)), int(m.group(2)))
+        sw, sh = png_size(entry["src"].lstrip("./"))
+        if (sw, sh) != claimed:
+            raise ValueError(
+                f"nfpm installs {entry['src']} ({sw}x{sh}) into {dst} "
+                f"which claims {claimed[0]}x{claimed[1]}"
+            )
+
+    # And the workflow must actually use it.
+    wf = open(".github/workflows/release.yml").read()
+    if f"--icon-file {icon}" not in wf:
+        raise ValueError(f"release workflow does not pass {icon} to linuxdeploy")
+
+try:
+    import yaml  # noqa: F401
+    check("linux icon is 512x512 and consistent everywhere it is referenced",
+          linux_icon_is_what_everything_claims)
+except ImportError:
+    print("  ~ PyYAML not installed; skipping linux icon check")
 
 try:
     import yaml
