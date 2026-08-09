@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"checkmate-app/pkg/version"
+
 	"github.com/adedayo/checkmate/pkg/ai"
 	"github.com/adedayo/checkmate/pkg/core/diagnostics"
 	"github.com/adedayo/checkmate/pkg/core/projects"
