@@ -32,7 +32,6 @@ for f in \
   packaging/linux/nfpm.yaml \
   packaging/linux/checkmate-app.desktop \
   packaging/homebrew/checkmate-app.rb \
-  packaging/scoop/checkmate-app.json \
   .github/workflows/release.yml \
   .nvmrc \
   Dockerfile
@@ -41,7 +40,7 @@ do
 done
 
 python3 - <<'PY' || exit 1
-import json, re, sys
+import glob, json, os, re, sys
 
 failures = 0
 
@@ -56,8 +55,6 @@ def check(label, fn):
 
 check("build/windows/info.json is valid JSON",
       lambda: json.load(open("build/windows/info.json")))
-check("packaging/scoop/checkmate-app.json is valid JSON",
-      lambda: json.load(open("packaging/scoop/checkmate-app.json")))
 check("wails.json is valid JSON",
       lambda: json.load(open("wails.json")))
 
@@ -149,6 +146,31 @@ try:
     check("release workflow is valid YAML", workflow)
 except ImportError:
     print("  ~ PyYAML not installed; skipping YAML checks")
+
+# Scoop was removed because its manifest existed but no release job published
+# it, so the documentation advertised an install path that could not work. An
+# orphaned manifest is worse than a missing one: it reads to a user as a
+# supported route, and nothing fails to tell you otherwise. This check makes
+# that condition loud.
+def every_manifest_is_published():
+    workflows = ""
+    for wf in glob.glob(".github/workflows/*.yml"):
+        workflows += open(wf).read()
+
+    orphans = []
+    for manifest in glob.glob("packaging/**/*.*", recursive=True):
+        if not os.path.isfile(manifest):
+            continue
+        name = os.path.basename(manifest)
+        # Some manifests are referenced by directory (the linux job passes a
+        # path to nfpm) rather than by filename, so accept either form.
+        if name in workflows or os.path.dirname(manifest) in workflows:
+            continue
+        orphans.append(manifest)
+
+    if orphans:
+        raise ValueError("no release job publishes: " + ", ".join(sorted(orphans)))
+check("every packaging manifest has a publisher", every_manifest_is_published)
 
 sys.exit(1 if failures else 0)
 PY
