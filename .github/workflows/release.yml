@@ -49,7 +49,7 @@ jobs:
       ldflags: ${{ steps.v.outputs.ldflags }}
       publish: ${{ steps.v.outputs.publish }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - id: v
         run: |
@@ -97,14 +97,14 @@ jobs:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -195,8 +195,33 @@ jobs:
           # bundle arrives unnotarised.
           ditto -c -k --keepParent "${APP_NAME}.app" "${APP_NAME}-macos-universal.zip"
 
-          hdiutil create -volname "${APP_NAME}" -srcfolder "${APP_NAME}.app" \
-            -ov -format UDZO "${APP_NAME}-macos-universal.dmg"
+          # hdiutil intermittently fails with "Resource busy" on CI runners:
+          # something else still holds the source folder — Spotlight indexing
+          # the freshly signed bundle, or a stale attachment from an earlier
+          # create — and the failure is transient rather than a defect in what
+          # is being packaged. Observed on the v2.3.0 run, where every other
+          # platform succeeded and a plain re-run passed unchanged.
+          #
+          # So: retry rather than fail the release. Detaching any leftover
+          # mount of the same volume first addresses the recurring cause; the
+          # sleep gives indexing time to release the folder. A hard failure
+          # after three attempts is a real problem and still fails the job.
+          for attempt in 1 2 3; do
+            if hdiutil create -volname "${APP_NAME}" -srcfolder "${APP_NAME}.app" \
+                 -ov -format UDZO "${APP_NAME}-macos-universal.dmg"; then
+              echo "DMG created on attempt ${attempt}."
+              break
+            fi
+
+            if [ "${attempt}" -eq 3 ]; then
+              echo "hdiutil failed three times; failing the job." >&2
+              exit 1
+            fi
+
+            echo "hdiutil failed (attempt ${attempt}); detaching stale mounts and retrying." >&2
+            hdiutil detach "/Volumes/${APP_NAME}" -force 2>/dev/null || true
+            sleep 15
+          done
 
       - name: Sign and staple the DMG
         if: env.SIGNED == 'true'
@@ -210,7 +235,7 @@ jobs:
             --password "$APPLE_APP_PASSWORD" --wait --timeout 30m
           xcrun stapler staple "${APP_NAME}-macos-universal.dmg"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: macos
           path: |
@@ -231,14 +256,14 @@ jobs:
       WINDOWS_CERT_PFX: ${{ secrets.WINDOWS_CERT_PFX }}
       WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -281,7 +306,7 @@ jobs:
             Rename-Item $_.FullName "$env:APP_NAME-windows-${{ matrix.arch }}-installer.exe"
           }
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: windows-${{ matrix.arch }}
           path: |
@@ -306,7 +331,7 @@ jobs:
             # reliably needs a sysroot this pipeline has no reason to maintain.
             runner: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install build dependencies
         run: |
@@ -315,12 +340,12 @@ jobs:
             libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config \
             fuse libfuse2 desktop-file-utils
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -404,7 +429,7 @@ jobs:
             echo "⚠ AppImage MISSING for ${{ matrix.arch }}" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: linux-${{ matrix.arch }}
           path: |
@@ -424,14 +449,14 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
 
       - name: Docker tags
         id: tags
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository_owner }}/checkmate-app
           tags: |
@@ -442,14 +467,14 @@ jobs:
 
       - name: Log in to GHCR
         if: needs.meta.outputs.publish == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         env:
           # Suppresses the .dockerbuild build-record artefact. It is a debugging
           # aid we do not consume, and as a run artefact it is indistinguishable
@@ -483,7 +508,7 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Named explicitly rather than downloading everything. Other jobs may
       # upload artefacts of their own — docker/build-push-action attaches a
@@ -492,7 +517,7 @@ jobs:
       # failed to download and took the entire publication with it, after all
       # six platforms had built successfully. Anything not listed here is not
       # a release asset and must not be able to break, or enter, a release.
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: staging
           pattern: '{macos,linux-amd64,linux-arm64,windows-amd64,windows-arm64}'
@@ -530,7 +555,7 @@ jobs:
           sha256sum ./* > SHA256SUMS
           cat SHA256SUMS
 
-      - uses: sigstore/cosign-installer@v3
+      - uses: sigstore/cosign-installer@v4
 
       - name: Sign artefacts
         working-directory: staging
@@ -559,13 +584,13 @@ jobs:
 
       - name: Build provenance attestation
         if: needs.meta.outputs.publish == 'true'
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: 'staging/*'
 
       - name: Create GitHub release
         if: needs.meta.outputs.publish == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: staging/*
           tag_name: ${{ needs.meta.outputs.version }}
@@ -612,7 +637,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update Homebrew cask
-        uses: mislav/bump-homebrew-formula-action@v3
+        uses: mislav/bump-homebrew-formula-action@v4
         with:
           formula-name: checkmate-app
           formula-path: Casks/checkmate-app.rb
@@ -624,7 +649,7 @@ jobs:
 
       - name: Submit to winget
         continue-on-error: true
-        uses: vedantmgoyal2009/winget-releaser@v2
+        uses: vedantmgoyal9/winget-releaser@v2
         with:
           identifier: Adedayo.CheckMate
           version: ${{ needs.meta.outputs.version }}
