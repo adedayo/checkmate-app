@@ -555,12 +555,27 @@ jobs:
           sha256sum ./* > SHA256SUMS
           cat SHA256SUMS
 
-      # Pinned to an exact version, not `@v4`. sigstore publishes only exact
-      # patch tags for this action — there is no moving `v4` — so `@v4` is
-      # unresolvable and fails the job at set-up, before a single step runs.
-      # That is what broke the v2.3.1 publish after all seven builds had
-      # succeeded. Bump this deliberately; it will not drift on its own.
-      - uses: sigstore/cosign-installer@v4.1.2
+      # Held at v3 deliberately. Do not bump to v4 without also doing the work
+      # described below.
+      #
+      # cosign-installer v4 installs cosign v4, which defaults to the new
+      # Sigstore bundle format. In that mode `--output-signature` and
+      # `--output-certificate` are ignored, and signing then fails outright on
+      # the empty `--bundle` path ("create bundle file: open : no such file or
+      # directory"). That broke the v2.3.2 publish after all seven builds had
+      # succeeded.
+      #
+      # The detached `.sig` + `.pem` pair is a published interface, not an
+      # implementation detail: it appears in the generated release notes below,
+      # in docs/distribution.md, and in the verification instructions for every
+      # release already shipped. Moving to `--bundle` changes the asset names
+      # and the verify command users have been given, so it is a deliberate
+      # change with its own documentation, not a dependency bump.
+      #
+      # Two failures in a row came from this action, for unrelated reasons, so
+      # note the v4 tag also does not exist as a moving major — sigstore
+      # publishes only exact patch tags from v4 onward.
+      - uses: sigstore/cosign-installer@v3.9.2
 
       - name: Sign artefacts
         working-directory: staging
