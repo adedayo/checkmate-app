@@ -75,14 +75,21 @@ brew install --cask adedayo/tap/checkmate-app
 >
 > If you download the `.dmg` directly, macOS will say Apple "cannot check it".
 > Verify it yourself against `SHA256SUMS` (see
-> [docs/distribution.md](docs/distribution.md)), then clear the flag on that
-> one app:
+> [docs/distribution.md](docs/distribution.md)), drag the app into
+> `/Applications`, then clear the flag on that one app:
 > ```bash
 > xattr -dr com.apple.quarantine /Applications/CheckMate.app
 > ```
-> That is scoped to this app. Do not run `spctl --master-disable`, which
-> disables Gatekeeper for everything you will ever download. Right-clicking the
-> app in Finder and choosing **Open** achieves the same per-app exception.
+> It has to be done after the drag. The copy inside the mounted disk image is
+> on a read-only volume, so `xattr` there fails with `Read-only file system`.
+>
+> If that command answers `Operation not permitted` for every file, macOS App
+> Management protection is guarding the installed bundle. Either run it with
+> `sudo`, or grant your terminal **Privacy & Security → App Management** and
+> retry, or simply right-click the app in Finder and choose **Open**.
+>
+> All of these are scoped to this app. Do not run `spctl --master-disable`,
+> which disables Gatekeeper for everything you will ever download.
 
 #### Option 2: Direct Download
 Download the latest `.dmg` or `.zip` release from [GitHub Releases](https://github.com/adedayo/checkmate-app/releases/latest).

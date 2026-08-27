@@ -41,9 +41,21 @@ Then clear the quarantine attribute on the file you just verified:
 
 ```sh
 xattr -d com.apple.quarantine ~/Downloads/CheckMate-macos-universal.dmg
-# after dragging to /Applications:
+# then, after dragging the app into /Applications:
 xattr -dr com.apple.quarantine /Applications/CheckMate.app
 ```
+
+> It has to be this way round. The disk image is built with `hdiutil -format
+> UDZO`, so it mounts read-only at `/Volumes/CheckMate`; clearing the flag on
+> the app *before* it reaches `/Applications` fails with `Read-only file
+> system`. The Homebrew cask sidesteps this entirely by clearing the flag in
+> `preflight`, while the bundle is still staged and writable in the Caskroom.
+>
+> If the `/Applications` command fails with `Operation not permitted` on every
+> file, App Management protection is guarding the installed bundle. Use
+> `sudo xattr -dr com.apple.quarantine /Applications/CheckMate.app`, or grant
+> your terminal **System Settings → Privacy & Security → App Management** and
+> retry.
 
 > This is deliberately narrow. It removes a flag from **one file you have just
 > verified**. It is not `sudo spctl --master-disable`, which turns Gatekeeper
