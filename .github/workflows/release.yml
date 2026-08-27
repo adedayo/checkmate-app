@@ -555,7 +555,12 @@ jobs:
           sha256sum ./* > SHA256SUMS
           cat SHA256SUMS
 
-      - uses: sigstore/cosign-installer@v4
+      # Pinned to an exact version, not `@v4`. sigstore publishes only exact
+      # patch tags for this action — there is no moving `v4` — so `@v4` is
+      # unresolvable and fails the job at set-up, before a single step runs.
+      # That is what broke the v2.3.1 publish after all seven builds had
+      # succeeded. Bump this deliberately; it will not drift on its own.
+      - uses: sigstore/cosign-installer@v4.1.2
 
       - name: Sign artefacts
         working-directory: staging
@@ -637,7 +642,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update Homebrew cask
-        uses: mislav/bump-homebrew-formula-action@v4
+        # Exact version for the same reason as cosign-installer above: this
+        # action publishes no moving `v4` tag. This job is allowed to fail
+        # without failing the release, so a broken ref here would have been a
+        # silently un-bumped tap rather than an obvious error.
+        uses: mislav/bump-homebrew-formula-action@v4.2
         with:
           formula-name: checkmate-app
           formula-path: Casks/checkmate-app.rb

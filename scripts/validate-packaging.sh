@@ -215,6 +215,69 @@ try:
 except ImportError:
     print("  ~ PyYAML not installed; skipping YAML checks")
 
+# Every `uses:` ref must resolve to a real tag.
+#
+# v2.3.1 built all seven platforms and then failed to publish, because
+# `sigstore/cosign-installer@v4` does not exist: sigstore ships only exact
+# patch tags, with no moving major. GitHub resolves an action when it sets the
+# job up, so the failure lands after every build has already succeeded — the
+# slowest and most misleading place to discover a bad ref.
+#
+# `mislav/bump-homebrew-formula-action@v4` had the same defect and was worse:
+# the package-manager job may fail without failing the release, so it would
+# have surfaced as a tap that quietly stopped updating.
+#
+# Network-dependent, so it is skipped rather than failed when gh is missing or
+# unauthenticated. A check that could not run must not print as one that
+# passed.
+def action_refs_resolve():
+    import subprocess
+    try:
+        authed = subprocess.run(["gh", "auth", "status"],
+                                capture_output=True).returncode == 0
+    except FileNotFoundError:
+        raise RuntimeError("gh not installed")
+    if not authed:
+        raise RuntimeError("gh not authenticated")
+
+    refs = set()
+    for wf in glob.glob(".github/workflows/*.yml"):
+        for line in open(wf):
+            s = line.strip()
+            if s.startswith("#") or "uses:" not in s:
+                continue
+            ref = s.split("uses:", 1)[1].strip()
+            # Local and container actions are not tag refs.
+            if ref.startswith("./") or ref.startswith("docker://") or "@" not in ref:
+                continue
+            refs.add(ref)
+
+    broken = []
+    for ref in sorted(refs):
+        repo, tag = ref.rsplit("@", 1)
+        # A full commit SHA is a legitimate, and stronger, pin.
+        if len(tag) == 40 and all(c in "0123456789abcdef" for c in tag):
+            continue
+        if subprocess.run(["gh", "api", f"repos/{repo}/git/ref/tags/{tag}"],
+                          capture_output=True).returncode != 0:
+            broken.append(ref)
+
+    if broken:
+        raise ValueError(
+            "unresolvable action refs — the tag does not exist, so the action "
+            "probably publishes no moving major tag and needs an exact "
+            "version: " + ", ".join(broken))
+
+try:
+    action_refs_resolve()
+    print("  ✔ every workflow action ref resolves to a real tag")
+except RuntimeError as e:
+    print(f"  ~ {e}; skipping action ref check")
+except Exception as e:
+    print(f"  ✖ every workflow action ref resolves to a real tag: {e}",
+          file=sys.stderr)
+    failures += 1
+
 # Scoop was removed because its manifest existed but no release job published
 # it, so the documentation advertised an install path that could not work. An
 # orphaned manifest is worse than a missing one: it reads to a user as a
