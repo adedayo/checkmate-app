@@ -13,7 +13,7 @@
   "info": {
     "companyName": "Adedayo Adetoye",
     "productName": "CheckMate",
-    "productVersion": "2.3.0",
+    "productVersion": "2.3.1",
     "copyright": "Copyright © 2026 Adedayo Adetoye.",
     "comments": "Local SAST and secret exposure intelligence desktop engine."
   }
