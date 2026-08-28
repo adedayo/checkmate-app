@@ -35,16 +35,20 @@ cask "checkmate-app" do
   # Scoped to this bundle only. Nothing here touches system-wide policy, which
   # is why it is `-dr ... CheckMate.app` and not `xattr -cr` on anything wider.
   #
-  # This runs in `preflight`, against the staged copy in the Caskroom, rather
-  # than in `postflight` against "#{appdir}/CheckMate.app". Once the bundle is
-  # installed, macOS App Management protection can refuse the write, and the
-  # postflight form then fails with `Operation not permitted` on every file in
-  # the bundle. Clearing the flag while the app is still in ~/Library/Caskroom
-  # does not depend on that protection at all, and the flag is not re-applied
-  # when Homebrew moves the bundle into place.
-  preflight do
+  # This runs in `postflight`, against the installed bundle, and not in
+  # `preflight` against "#{staged_path}/CheckMate.app" — the previous form,
+  # which did nothing observable. Homebrew propagates the quarantine attribute
+  # from the downloaded .dmg onto the app as part of *installing* the artifact,
+  # which happens after preflight has run. Clearing the flag on the staged copy
+  # therefore cleared a flag that was about to be re-applied, and users who
+  # installed with the cask still had to run xattr by hand.
+  #
+  # `system_command` and not `system_command!`: a bundle carrying no such
+  # attribute — a future notarised build, or a re-run of this block — must not
+  # turn a successful install into a failed one.
+  postflight do
     system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{staged_path}/CheckMate.app"],
+                   args: ["-dr", "com.apple.quarantine", "#{appdir}/CheckMate.app"],
                    sudo: false
   end
 

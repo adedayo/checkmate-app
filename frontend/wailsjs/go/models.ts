@@ -562,6 +562,10 @@ export namespace main {
 	    downloadUrl: string;
 	    htmlUrl: string;
 	    publishedAt: string;
+	    platform: string;
+	    assetName: string;
+	    installCommand: string;
+	    installHint: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new UpdateInfo(source);
@@ -576,6 +580,10 @@ export namespace main {
 	        this.downloadUrl = source["downloadUrl"];
 	        this.htmlUrl = source["htmlUrl"];
 	        this.publishedAt = source["publishedAt"];
+	        this.platform = source["platform"];
+	        this.assetName = source["assetName"];
+	        this.installCommand = source["installCommand"];
+	        this.installHint = source["installHint"];
 	    }
 	}
 

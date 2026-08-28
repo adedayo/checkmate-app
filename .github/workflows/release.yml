@@ -656,20 +656,56 @@ jobs:
     if: needs.meta.outputs.publish == 'true'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v7
+
+      # The tap is updated by publishing *this repository's* cask file, not by
+      # rewriting the version and sha256 of whatever file already exists in the
+      # tap. The bump action this replaces did the latter, which meant every
+      # edit to packaging/homebrew/checkmate-app.rb — including the block that
+      # clears the macOS quarantine flag — stayed in this repository and never
+      # reached a single user. The cask under packaging/ is the source of truth
+      # or it is decoration.
       - name: Update Homebrew cask
-        # Exact version for the same reason as cosign-installer above: this
-        # action publishes no moving `v4` tag. This job is allowed to fail
-        # without failing the release, so a broken ref here would have been a
-        # silently un-bumped tap rather than an obvious error.
-        uses: mislav/bump-homebrew-formula-action@v4.2
-        with:
-          formula-name: checkmate-app
-          formula-path: Casks/checkmate-app.rb
-          homebrew-tap: adedayo/homebrew-tap
-          download-url: https://github.com/adedayo/checkmate-app/releases/download/${{ needs.meta.outputs.version }}/CheckMate-macos-universal.dmg
-          commit-message: 'checkmate-app ${{ needs.meta.outputs.version }}'
         env:
+          VERSION: ${{ needs.meta.outputs.version }}
           COMMITTER_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          BARE_VERSION="${VERSION#v}"
+          DMG="CheckMate-macos-universal.dmg"
+          URL="https://github.com/adedayo/checkmate-app/releases/download/${VERSION}/${DMG}"
+
+          # The checksum is taken from the published artefact, so the cask can
+          # only ever describe a file that exists at the URL it names.
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/${DMG}" "$URL"
+          SHA="$(shasum -a 256 "$RUNNER_TEMP/${DMG}" | cut -d' ' -f1)"
+
+          git clone --depth 1 \
+            "https://x-access-token:${COMMITTER_TOKEN}@github.com/adedayo/homebrew-tap.git" \
+            "$RUNNER_TEMP/tap"
+
+          mkdir -p "$RUNNER_TEMP/tap/Casks"
+          sed -e "s|^  version \".*\"$|  version \"${BARE_VERSION}\"|" \
+              -e "s|^  sha256 \".*\"$|  sha256 \"${SHA}\"|" \
+              packaging/homebrew/checkmate-app.rb \
+              > "$RUNNER_TEMP/tap/Casks/checkmate-app.rb"
+
+          grep -q "\"${SHA}\"" "$RUNNER_TEMP/tap/Casks/checkmate-app.rb" \
+            || { echo "sha256 substitution failed"; exit 1; }
+          grep -q "\"${BARE_VERSION}\"" "$RUNNER_TEMP/tap/Casks/checkmate-app.rb" \
+            || { echo "version substitution failed"; exit 1; }
+
+          cd "$RUNNER_TEMP/tap"
+          if git diff --quiet; then
+            echo "Tap already current for ${VERSION}"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/checkmate-app.rb
+          git commit -m "checkmate-app ${VERSION}"
+          git push
 
       - name: Submit to winget
         continue-on-error: true

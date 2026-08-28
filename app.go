@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	goruntime "runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -82,6 +83,25 @@ type UpdateInfo struct {
 	DownloadURL    string `json:"downloadUrl"`
 	HTMLURL        string `json:"htmlUrl"`
 	PublishedAt    string `json:"publishedAt"`
+
+	// Platform is the GOOS/GOARCH pair the running binary was built for, so
+	// the UI can say what it is offering rather than offering it blindly.
+	Platform string `json:"platform"`
+
+	// AssetName is the release asset chosen for this platform, empty when the
+	// release publishes nothing that runs here. The previous behaviour took
+	// Assets[0], which is alphabetical rather than applicable: on macOS that
+	// is an .rpm, an artefact the machine cannot open.
+	AssetName string `json:"assetName"`
+
+	// InstallCommand is the package-manager upgrade for this platform, where
+	// one exists. Preferring it over a raw download is not cosmetic: on macOS
+	// the cask verifies the SHA-256 and clears the quarantine flag, which a
+	// direct .dmg download leaves the user to do by hand.
+	InstallCommand string `json:"installCommand"`
+
+	// InstallHint is one line of prose explaining the above.
+	InstallHint string `json:"installHint"`
 }
 
 type githubRelease struct {
@@ -103,7 +123,9 @@ func (a *App) CheckForUpdates() (*UpdateInfo, error) {
 		CurrentVersion: AppVersion,
 		LatestVersion:  AppVersion,
 		HTMLURL:        "https://github.com/adedayo/checkmate-app/releases",
+		Platform:       goruntime.GOOS + "/" + goruntime.GOARCH,
 	}
+	info.InstallCommand, info.InstallHint = installGuidance(goruntime.GOOS)
 
 	client := &http.Client{Timeout: 5 * time.Second}
 	req, err := http.NewRequest("GET", "https://api.github.com/repos/adedayo/checkmate-app/releases/latest", nil)
@@ -133,8 +155,23 @@ func (a *App) CheckForUpdates() (*UpdateInfo, error) {
 	info.PublishedAt = rel.PublishedAt
 
 	if len(rel.Assets) > 0 {
-		info.DownloadURL = rel.Assets[0].BrowserDownloadURL
-	} else {
+		names := make([]string, 0, len(rel.Assets))
+		for _, asset := range rel.Assets {
+			names = append(names, asset.Name)
+		}
+		if name := selectPlatformAsset(names, goruntime.GOOS, goruntime.GOARCH); name != "" {
+			info.AssetName = name
+			for _, asset := range rel.Assets {
+				if asset.Name == name {
+					info.DownloadURL = asset.BrowserDownloadURL
+					break
+				}
+			}
+		}
+	}
+	if info.DownloadURL == "" {
+		// Better the release page, where every platform is listed, than an
+		// artefact for a platform this is not.
 		info.DownloadURL = rel.HTMLURL
 	}
 
@@ -148,6 +185,112 @@ func (a *App) CheckForUpdates() (*UpdateInfo, error) {
 	}
 
 	return info, nil
+}
+
+// installGuidance returns the package-manager upgrade for a platform, and a
+// line of prose to put beside it, so the UI can offer the supported route
+// first rather than sending everyone to a raw file.
+//
+// The macOS hint promises nothing about quarantine. The cask is supposed to
+// clear the flag, but the tap was updated by a bumper that rewrote only the
+// version and sha256 of the file already there, so no cask block written in
+// this repository ever reached a user; and the block itself ran in preflight,
+// before Homebrew propagates the flag from the .dmg onto the installed app.
+// Both are fixed, but a released app cannot know which cask installed it, and
+// an app that says the flag is handled — to a user staring at a refusal to
+// open — is worse than one that just gives the command.
+func installGuidance(goos string) (command, hint string) {
+	switch goos {
+	case "darwin":
+		return "brew install --cask adedayo/tap/checkmate-app",
+			"If macOS refuses to open the app after updating, run: xattr -dr com.apple.quarantine /Applications/CheckMate.app"
+	case "windows":
+		return "winget install Adedayo.CheckMate",
+			"winget upgrades in place; otherwise run the downloaded installer."
+	case "linux":
+		return "", "Install the .deb or .rpm for your distribution — they declare the GTK/WebKit dependencies the tarball does not. The AppImage needs no install."
+	default:
+		return "", "See the release page for the artefact matching your platform."
+	}
+}
+
+// selectPlatformAsset picks the release asset that will actually run on the
+// given platform, or "" when the release publishes none.
+//
+// The candidates are ordered by preference rather than filtered, because more
+// than one asset can be runnable — on Linux a .deb, an .rpm, an AppImage and a
+// tarball are all valid, and only the first is a sensible default. Matching is
+// on the published asset names (documented in docs/distribution.md), and an
+// architecture that is named must agree with ours: "windows-arm64" is not a
+// download to hand to an amd64 machine merely because it says windows.
+func selectPlatformAsset(names []string, goos, goarch string) string {
+	var suffixes []string
+	switch goos {
+	case "darwin":
+		// The macOS build is universal, so architecture does not enter into it.
+		suffixes = []string{".dmg", ".zip"}
+	case "windows":
+		suffixes = []string{"installer.exe", ".exe", ".zip"}
+	case "linux":
+		suffixes = []string{".appimage", ".deb", ".rpm", ".tar.gz"}
+	default:
+		return ""
+	}
+
+	// Arch aliases as they appear in asset names.
+	aliases := map[string][]string{
+		"amd64": {"amd64", "x86_64", "x64"},
+		"arm64": {"arm64", "aarch64"},
+		"386":   {"386", "i386", "x86"},
+	}[goarch]
+	if aliases == nil {
+		aliases = []string{goarch}
+	}
+
+	matchesOS := func(name string) bool {
+		switch goos {
+		case "darwin":
+			return strings.Contains(name, "macos") || strings.Contains(name, "darwin") ||
+				strings.HasSuffix(name, ".dmg")
+		case "windows":
+			return strings.Contains(name, "windows") || strings.HasSuffix(name, ".exe")
+		default:
+			return strings.Contains(name, "linux") ||
+				strings.HasSuffix(name, ".deb") || strings.HasSuffix(name, ".rpm") ||
+				strings.HasSuffix(name, ".appimage")
+		}
+	}
+
+	// An asset naming some other architecture is disqualified; one naming none
+	// (a universal build, a portable archive) is not.
+	archOK := func(name string) bool {
+		for _, a := range aliases {
+			if strings.Contains(name, a) {
+				return true
+			}
+		}
+		for _, other := range []string{"amd64", "x86_64", "arm64", "aarch64", "i386"} {
+			if strings.Contains(name, other) {
+				return false
+			}
+		}
+		return true
+	}
+
+	for _, suffix := range suffixes {
+		for _, name := range names {
+			lower := strings.ToLower(name)
+			// Signatures and checksums sit alongside the artefacts they cover.
+			if strings.HasSuffix(lower, ".sig") || strings.HasSuffix(lower, ".pem") ||
+				strings.HasSuffix(lower, ".sbom") || strings.Contains(lower, "sha256sums") {
+				continue
+			}
+			if strings.HasSuffix(lower, suffix) && matchesOS(lower) && archOK(lower) {
+				return name
+			}
+		}
+	}
+	return ""
 }
 
 // NewApp creates a new App application struct
