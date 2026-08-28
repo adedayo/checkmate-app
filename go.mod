@@ -1,6 +1,12 @@
 module checkmate-app
 
-go 1.26.1
+// Patch-level, deliberately. Every build reads its toolchain from this line —
+// CI via setup-go's go-version-file, local builds via GOTOOLCHAIN — so a `go`
+// directive naming a vulnerable patch release is not a formality: it is the
+// version the released binaries are compiled with. 1.26.6 carries the fixes for
+// GO-2026-6090 (crypto/tls) and GO-2026-5972 (encoding/asn1), both of which
+// govulncheck reports as reachable from this module.
+go 1.26.6
 
 require (
 	github.com/adedayo/checkmate v1.5.0
@@ -32,13 +38,13 @@ require (
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/kevinburke/ssh_config v1.6.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
-	github.com/labstack/echo/v4 v4.13.3 // indirect
-	github.com/labstack/gommon v0.4.2 // indirect
+	github.com/labstack/echo/v4 v4.15.3 // indirect
+	github.com/labstack/gommon v0.5.0 // indirect
 	github.com/leaanthony/go-ansi-parser v1.6.1 // indirect
 	github.com/leaanthony/gosod v1.0.4 // indirect
 	github.com/leaanthony/slicer v1.6.0 // indirect
 	github.com/leaanthony/u v1.1.1 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-sqlite3 v1.14.48 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect

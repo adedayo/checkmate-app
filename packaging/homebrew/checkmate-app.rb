@@ -18,7 +18,10 @@ cask "checkmate-app" do
     strategy :github_latest
   end
 
-  depends_on macos: ">= :catalina"
+  # The symbol form already means "this version or newer". The string form,
+  # `">= :catalina"`, is deprecated and made Homebrew print a warning asking
+  # the tap to fix it on every invocation that touched this cask.
+  depends_on macos: :catalina
 
   # CheckMate.app, matching outputfilename in wails.json. The previous value
   # was "checkmate-app.app", which no build has ever produced — the cask would
