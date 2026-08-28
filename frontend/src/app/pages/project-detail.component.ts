@@ -1,37 +1,97 @@
-import { Component, signal, computed, OnInit, OnDestroy, HostListener, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  signal,
+  computed,
+  OnInit,
+  OnDestroy,
+  HostListener,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { GetProjects, AddRepository, RemoveRepository, StartScan, GetProjectFindings, SuppressFinding, GetExceptions, RemoveException, ExportExceptions, ImportExceptions, GetProjectScanHistory, DeleteProjectScans, SelectDirectory, UpdateProjectDetails, AITriageFinding, GetAISettings, MarkFindingTruePositive, GetActiveScan } from '../../../wailsjs/go/main/App';
+import {
+  GetProjects,
+  AddRepository,
+  RemoveRepository,
+  StartScan,
+  GetProjectFindings,
+  SuppressFinding,
+  GetExceptions,
+  RemoveException,
+  ExportExceptions,
+  ImportExceptions,
+  GetProjectScanHistory,
+  DeleteProjectScans,
+  SelectDirectory,
+  UpdateProjectDetails,
+  AITriageFinding,
+  GetAISettings,
+  MarkFindingTruePositive,
+  GetActiveScan,
+} from '../../../wailsjs/go/main/App';
 import { EventsOn, EventsOff } from '../../../wailsjs/runtime/runtime';
 import { CommonModule } from '@angular/common';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { severityScheme } from '../shared/ui/chart-theme';
 
 @Component({
   selector: 'app-project-detail',
   imports: [RouterLink, FormsModule, CommonModule, NgxChartsModule],
   template: `
     <div class="max-w-6xl mx-auto space-y-6">
-      
       @if (aiTriageProgress()) {
-        <div class="fixed bottom-6 right-6 bg-white dark:bg-slate-900 shadow-xl rounded-xl border border-indigo-200 dark:border-indigo-800 p-4 z-50 flex items-center space-x-4 animate-in slide-in-from-bottom-5">
-          <div class="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/30">
-            <svg class="h-5 w-5 text-indigo-600 dark:text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        <div
+          class="fixed bottom-6 right-6 bg-card shadow-xl rounded-xl border border-info/20 p-4 z-50 flex items-center space-x-4 animate-in slide-in-from-bottom-5"
+        >
+          <div
+            class="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-info/10"
+          >
+            <svg
+              class="h-5 w-5 text-info"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
             </svg>
-            @if (aiTriageProgress().completed + aiTriageProgress().failed < aiTriageProgress().total) {
-              <svg class="absolute inset-0 h-full w-full animate-spin text-indigo-500/30" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            @if (
+              aiTriageProgress().completed + aiTriageProgress().failed < aiTriageProgress().total
+            ) {
+              <svg
+                class="absolute inset-0 h-full w-full animate-spin text-info/30"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  fill="none"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
             }
           </div>
           <div class="flex-1">
-            <h4 class="text-sm font-semibold text-slate-900 dark:text-slate-100">AI Triage in Progress</h4>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
-              Analyzing {{ aiTriageProgress().completed + aiTriageProgress().failed }} / {{ aiTriageProgress().total }} findings
+            <h4 class="text-sm font-semibold text-foreground">AI Triage in Progress</h4>
+            <p class="text-xs text-muted-foreground">
+              Analyzing {{ aiTriageProgress().completed + aiTriageProgress().failed }} /
+              {{ aiTriageProgress().total }} findings
             </p>
             @if (aiTriageProgress().autoSuppressed > 0) {
-              <p class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 mt-0.5">
+              <p class="text-[10px] font-medium text-success mt-0.5">
                 {{ aiTriageProgress().autoSuppressed }} false positives auto-suppressed
               </p>
             }
@@ -40,20 +100,48 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
       }
 
       <!-- Header -->
-      <div class="flex items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <a routerLink="/projects" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      <div class="flex items-center gap-4 bg-card p-6 rounded-2xl border border-border shadow-sm">
+        <a
+          routerLink="/projects"
+          class="w-10 h-10 flex items-center justify-center rounded-full bg-muted hover:bg-accent text-muted-foreground transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
         </a>
         <div class="flex-1">
           @if (isEditing()) {
             <div class="flex flex-col gap-3">
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Project Name</label>
-                <input type="text" [(ngModel)]="editName" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-shadow">
+                <label class="block text-xs font-semibold text-muted-foreground mb-1"
+                  >Project Name</label
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="editName"
+                  class="w-full px-3 py-2 bg-muted border border-border rounded text-foreground font-medium focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Workspace</label>
-                <input type="text" list="workspaces" [(ngModel)]="editWorkspace" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-shadow">
+                <label class="block text-xs font-semibold text-muted-foreground mb-1"
+                  >Workspace</label
+                >
+                <input
+                  type="text"
+                  list="workspaces"
+                  [(ngModel)]="editWorkspace"
+                  class="w-full px-3 py-2 bg-muted border border-border rounded text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                />
                 <datalist id="workspaces">
                   @for (ws of availableWorkspaces(); track ws) {
                     <option [value]="ws"></option>
@@ -61,77 +149,154 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
                 </datalist>
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-500 mb-1">Description (Optional)</label>
-                <input type="text" [(ngModel)]="editDescription" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-shadow">
+                <label class="block text-xs font-semibold text-muted-foreground mb-1"
+                  >Description (Optional)</label
+                >
+                <input
+                  type="text"
+                  [(ngModel)]="editDescription"
+                  class="w-full px-3 py-2 bg-muted border border-border rounded text-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
+                />
               </div>
               <div class="flex gap-2 mt-1">
-                <button (click)="saveDetails()" class="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded shadow-sm transition-colors">Save</button>
-                <button (click)="cancelEdit()" class="px-4 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded transition-colors">Cancel</button>
+                <button
+                  (click)="saveDetails()"
+                  class="px-4 py-1.5 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium rounded shadow-sm transition-colors"
+                >
+                  Save
+                </button>
+                <button
+                  (click)="cancelEdit()"
+                  class="px-4 py-1.5 bg-muted hover:bg-accent text-foreground text-sm font-medium rounded transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           } @else {
             <div class="flex items-center gap-3">
-              <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ project()?.Name || 'Loading...' }}</h2>
-              <button (click)="startEdit()" class="text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors" title="Edit Project Details">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+              <h2 class="text-2xl font-bold text-foreground">
+                {{ project()?.Name || 'Loading...' }}
+              </h2>
+              <button
+                (click)="startEdit()"
+                class="text-muted-foreground hover:text-primary transition-colors"
+                title="Edit Project Details"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
               </button>
             </div>
-            <p class="text-slate-500 dark:text-slate-400 mt-1 font-mono text-sm flex gap-4">
+            <p class="text-muted-foreground mt-1 font-mono text-sm flex gap-4">
               <span>Workspace: {{ project()?.Workspace || 'N/A' }}</span>
-              <span>Last Scan: 
-              @if (project()?.LastScan && !project()?.LastScan.startsWith('0001-01-01')) {
-                {{ project()?.LastScan | date:'medium' }}
-              } @else {
-                Never
-              }
+              <span
+                >Last Scan:
+                @if (project()?.LastScan && !project()?.LastScan.startsWith('0001-01-01')) {
+                  {{ project()?.LastScan | date: 'medium' }}
+                } @else {
+                  Never
+                }
               </span>
             </p>
             @if (project()?.Description) {
-              <p class="text-slate-600 dark:text-slate-300 mt-2 text-sm max-w-2xl">{{ project()?.Description }}</p>
+              <p class="text-foreground mt-2 text-sm max-w-2xl">{{ project()?.Description }}</p>
             }
           }
         </div>
-        <button (click)="runScan()" [disabled]="scanning()" class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:opacity-50 text-white rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2">
+        <button
+          (click)="runScan()"
+          [disabled]="scanning()"
+          class="px-6 py-2.5 bg-gradient-to-r from-success to-success hover:from-success/90 hover:to-success disabled:opacity-50 text-success-foreground rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2"
+        >
           @if (scanning()) {
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <svg
+              class="animate-spin -ml-1 mr-2 h-4 w-4 text-background"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
             {{ scanProgressLabel() }}
           } @else {
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
             Run Scan
           }
         </button>
       </div>
 
       <!-- Scan progress. A sibling of the header card rather than a child:
-           the header is a flex row, and a file path placed in it would be
-           squeezed against the button and resize it as paths of differing
-           length arrive. -->
+ the header is a flex row, and a file path placed in it would be
+ squeezed against the button and resize it as paths of differing
+ length arrive. -->
       @if (scanning() && scanProgress(); as _p) {
-        <div class="mt-4 p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+        <div class="mt-4 p-4 rounded-lg border border-border bg-muted/50">
           <div class="flex items-baseline justify-between gap-4">
-            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">
+            <span class="text-sm font-medium text-foreground">
               {{ scanCountLabel() }}
             </span>
             @if (scanPercent() !== null) {
-              <span class="text-sm font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
+              <span class="text-sm font-semibold text-success tabular-nums">
                 {{ scanPercent() }}%
               </span>
             }
           </div>
 
-          <div class="mt-2 h-2 w-full rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+          <div class="mt-2 h-2 w-full rounded-full bg-muted overflow-hidden">
             @if (scanPercent() !== null) {
-              <div class="h-full rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 transition-all duration-300"
-                   [style.width.%]="scanPercent()"></div>
+              <div
+                class="h-full rounded-full bg-gradient-to-r from-success to-success transition-all duration-300"
+                [style.width.%]="scanPercent()"
+              ></div>
             } @else {
               <!-- Total is still being discovered, so there is no honest
-                   fraction to draw. Indeterminate rather than a bar at zero. -->
-              <div class="h-full w-1/3 rounded-full bg-gradient-to-r from-emerald-600 to-teal-500 animate-pulse"></div>
+ fraction to draw. Indeterminate rather than a bar at zero. -->
+              <div
+                class="h-full w-1/3 rounded-full bg-gradient-to-r from-success to-success animate-pulse"
+              ></div>
             }
           </div>
 
           @if (scanCurrentFile()) {
-            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400 font-mono truncate" [title]="scanProgress()?.currentFile">
+            <p
+              class="mt-2 text-xs text-muted-foreground font-mono truncate"
+              [title]="scanProgress()?.currentFile"
+            >
               {{ scanCurrentFile() }}
             </p>
           }
@@ -139,57 +304,136 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
       }
 
       <!-- Trawl-style Tabs -->
-      <div class="flex space-x-6 border-b border-slate-200 dark:border-slate-800">
-        <button (click)="activeTab.set('overview')" [class]="activeTab() === 'overview' ? 'border-cyan-600 dark:border-cyan-500 text-cyan-700 dark:text-cyan-400 font-semibold border-b-2' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border-b-2'" class="py-3 px-1 text-xs uppercase tracking-wider transition">
+      <div class="flex space-x-6 border-b border-border">
+        <button
+          (click)="activeTab.set('overview')"
+          [class]="
+            activeTab() === 'overview'
+              ? 'border-primary text-primary font-semibold border-b-2'
+              : 'border-transparent text-muted-foreground hover:text-foreground border-b-2'
+          "
+          class="py-3 px-1 text-xs uppercase tracking-wider transition"
+        >
           Overview
         </button>
-        <button (click)="activeTab.set('trends'); loadTrends()" [class]="activeTab() === 'trends' ? 'border-cyan-600 dark:border-cyan-500 text-cyan-700 dark:text-cyan-400 font-semibold border-b-2' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border-b-2'" class="py-3 px-1 text-xs uppercase tracking-wider transition">
+        <button
+          (click)="activeTab.set('trends'); loadTrends()"
+          [class]="
+            activeTab() === 'trends'
+              ? 'border-primary text-primary font-semibold border-b-2'
+              : 'border-transparent text-muted-foreground hover:text-foreground border-b-2'
+          "
+          class="py-3 px-1 text-xs uppercase tracking-wider transition"
+        >
           Trends
         </button>
-        <button (click)="activeTab.set('vulnerabilities')" [class]="activeTab() === 'vulnerabilities' ? 'border-cyan-600 dark:border-cyan-500 text-cyan-700 dark:text-cyan-400 font-semibold border-b-2' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border-b-2'" class="py-3 px-1 text-xs uppercase tracking-wider transition flex items-center space-x-1.5">
+        <button
+          (click)="activeTab.set('vulnerabilities')"
+          [class]="
+            activeTab() === 'vulnerabilities'
+              ? 'border-primary text-primary font-semibold border-b-2'
+              : 'border-transparent text-muted-foreground hover:text-foreground border-b-2'
+          "
+          class="py-3 px-1 text-xs uppercase tracking-wider transition flex items-center space-x-1.5"
+        >
           <span>Vulnerabilities</span>
           @if (activeFindings().length > 0) {
-            <span class="px-1.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-400 text-[10px] font-bold">{{ activeFindings().length }}</span>
+            <span
+              class="px-1.5 py-0.5 rounded-full bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-bold"
+              >{{ activeFindings().length }}</span
+            >
           }
         </button>
-        <button (click)="activeTab.set('exceptions'); loadExceptions()" [class]="activeTab() === 'exceptions' ? 'border-cyan-600 dark:border-cyan-500 text-cyan-700 dark:text-cyan-400 font-semibold border-b-2' : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border-b-2'" class="py-3 px-1 text-xs uppercase tracking-wider transition flex items-center space-x-1.5">
+        <button
+          (click)="activeTab.set('exceptions'); loadExceptions()"
+          [class]="
+            activeTab() === 'exceptions'
+              ? 'border-primary text-primary font-semibold border-b-2'
+              : 'border-transparent text-muted-foreground hover:text-foreground border-b-2'
+          "
+          class="py-3 px-1 text-xs uppercase tracking-wider transition flex items-center space-x-1.5"
+        >
           <span>Exceptions</span>
         </button>
       </div>
 
       <!-- Overview Tab -->
       @if (activeTab() === 'overview') {
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Add Repository</h3>
+        <div class="bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <h3 class="text-lg font-semibold text-foreground mb-4">Add Repository</h3>
           <div class="flex gap-4">
-            <input type="text" [(ngModel)]="newRepoLocation" placeholder="Path to local repo or Git URL (e.g. https://github.com/org/repo.git)" class="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-            <button (click)="browseDirectory()" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 font-medium transition-colors border border-slate-200 dark:border-slate-700 whitespace-nowrap">Browse Local Filesystem...</button>
-            <button (click)="addRepository()" class="px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-lg hover:from-cyan-500 hover:to-blue-500 font-medium transition-colors shadow-sm">Add</button>
+            <input
+              type="text"
+              [(ngModel)]="newRepoLocation"
+              placeholder="Path to local repo or Git URL (e.g. https://github.com/org/repo.git)"
+              class="flex-1 px-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <button
+              (click)="browseDirectory()"
+              class="px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-accent font-medium transition-colors border border-border whitespace-nowrap"
+            >
+              Browse Local Filesystem...
+            </button>
+            <button
+              (click)="addRepository()"
+              class="px-6 py-2 bg-gradient-to-r from-primary to-info text-primary-foreground rounded-lg hover:from-primary/90 hover:to-info font-medium transition-colors shadow-sm"
+            >
+              Add
+            </button>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <table class="w-full text-left">
-            <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+            <thead class="bg-muted border-b border-border">
               <tr>
-                <th class="px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Repository Location</th>
-                <th class="px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-right">Actions</th>
+                <th
+                  class="px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  Repository Location
+                </th>
+                <th
+                  class="px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider text-right"
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody class="divide-y divide-border">
               @for (repo of project()?.Repositories || []; track repo.Location) {
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <td class="px-6 py-4 font-medium text-slate-900 dark:text-slate-100 font-mono text-sm break-all">{{ repo.Location }}</td>
+                <tr class="hover:bg-accent/50 transition-colors">
+                  <td class="px-6 py-4 font-medium text-foreground font-mono text-sm break-all">
+                    {{ repo.Location }}
+                  </td>
                   <td class="px-6 py-4 text-right">
-                    <button (click)="removeRepository(repo.Location)" class="text-rose-500 hover:text-rose-700 transition-colors p-2 rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/30" title="Remove Repository">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    <button
+                      (click)="removeRepository(repo.Location)"
+                      class="text-destructive hover:text-destructive transition-colors p-2 rounded-full hover:bg-destructive/10"
+                      title="Remove Repository"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      </svg>
                     </button>
                   </td>
                 </tr>
-              }
-              @empty {
+              } @empty {
                 <tr>
-                  <td colspan="2" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">No repositories added yet.</td>
+                  <td colspan="2" class="px-6 py-8 text-center text-muted-foreground">
+                    No repositories added yet.
+                  </td>
                 </tr>
               }
             </tbody>
@@ -199,29 +443,74 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 
       <!-- Vulnerabilities Tab -->
       @if (activeTab() === 'vulnerabilities') {
-        
         <div class="flex justify-between items-center mb-4">
           <div class="flex gap-2">
             @if (selectedHistoricalScanID() || selectedSeverityFilter()) {
-              <div class="bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded-lg p-3 flex items-center justify-between shadow-sm flex-1">
+              <div
+                class="bg-info/10 border border-info/20 rounded-lg p-3 flex items-center justify-between shadow-sm flex-1"
+              >
                 <div class="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600 dark:text-indigo-400"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                  <span class="text-sm text-indigo-800 dark:text-indigo-300">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-info"
+                  >
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                  </svg>
+                  <span class="text-sm text-info">
                     Viewing filtered results
-                    @if (selectedHistoricalScanID()) { for historical scan }
-                    @if (selectedSeverityFilter()) { (Severity: <strong>{{selectedSeverityFilter()}}</strong>) }
+                    @if (selectedHistoricalScanID()) {
+                      for historical scan
+                    }
+                    @if (selectedSeverityFilter()) {
+                      (Severity: <strong>{{ selectedSeverityFilter() }}</strong
+                      >)
+                    }
                   </span>
                 </div>
-                <button (click)="selectedHistoricalScanID.set(''); selectedSeverityFilter.set(''); fetchFindings(project().ID)" class="text-xs font-semibold text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 transition-colors bg-white dark:bg-slate-900 px-3 py-1.5 rounded border border-indigo-200 dark:border-indigo-700 ml-4">
+                <button
+                  (click)="
+                    selectedHistoricalScanID.set('');
+                    selectedSeverityFilter.set('');
+                    fetchFindings(project().ID)
+                  "
+                  class="text-xs font-semibold text-info hover:text-info transition-colors bg-card px-3 py-1.5 rounded border border-info/20 ml-4"
+                >
                   Clear Filter
                 </button>
               </div>
             }
           </div>
-          
-          <div class="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 shadow-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-500"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-            <select [ngModel]="selectedSeverityFilter()" (ngModelChange)="selectedSeverityFilter.set($event)" class="text-sm bg-transparent border-none focus:outline-none focus:ring-0 text-slate-700 dark:text-slate-300 font-medium cursor-pointer appearance-none pr-4">
+
+          <div
+            class="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-1.5 shadow-sm"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="text-muted-foreground"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+            <select
+              [ngModel]="selectedSeverityFilter()"
+              (ngModelChange)="selectedSeverityFilter.set($event)"
+              class="text-sm bg-transparent border-none focus:outline-none focus:ring-0 text-foreground font-medium cursor-pointer appearance-none pr-4"
+            >
               <option value="">All Criticalities</option>
               <option value="Critical">Critical</option>
               <option value="High">High</option>
@@ -232,63 +521,111 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <table class="w-full text-left">
-            <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+            <thead class="bg-muted border-b border-border">
               <tr>
-                <th class="px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Location</th>
-                <th class="px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Details</th>
-                <th class="px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Criticality</th>
-                <th class="px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Confidence</th>
+                <th
+                  class="px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  Location
+                </th>
+                <th
+                  class="px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  Details
+                </th>
+                <th
+                  class="px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  Criticality
+                </th>
+                <th
+                  class="px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  Confidence
+                </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody class="divide-y divide-border">
               @for (finding of activeFindings(); track $index) {
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer" (click)="selectFinding(finding)">
-                  <td class="px-6 py-4 text-sm text-slate-900 dark:text-slate-100">
-                    <div class="font-mono text-cyan-600 dark:text-cyan-400 font-semibold" [class.line-through]="finding.Excluded">
+                <tr
+                  class="hover:bg-accent/50 transition-colors cursor-pointer"
+                  (click)="selectFinding(finding)"
+                >
+                  <td class="px-6 py-4 text-sm text-foreground">
+                    <div
+                      class="font-mono text-primary font-semibold"
+                      [class.line-through]="finding.Excluded"
+                    >
                       {{ finding.location || finding.Location || 'Unknown File' }}
                     </div>
-                    @if (finding.range?.start?.line !== undefined || finding.Range?.Start?.Line !== undefined) {
-                      <div class="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                        Line: {{ (finding.range?.start?.line ?? finding.Range?.Start?.Line ?? 0) + 1 }}
+                    @if (
+                      finding.range?.start?.line !== undefined ||
+                      finding.Range?.Start?.Line !== undefined
+                    ) {
+                      <div class="text-xs text-muted-foreground font-mono mt-0.5">
+                        Line:
+                        {{ (finding.range?.start?.line ?? finding.Range?.Start?.Line ?? 0) + 1 }}
                       </div>
                     }
                   </td>
                   <td class="px-6 py-4">
-                    <div class="font-semibold text-slate-900 dark:text-slate-100">
-                      {{ finding.justification?.headline?.description || finding.Justification?.Headline?.Description || finding.providerID || finding.ProviderID || 'Potential Secret / Vulnerability' }}
+                    <div class="font-semibold text-foreground">
+                      {{
+                        finding.justification?.headline?.description ||
+                          finding.Justification?.Headline?.Description ||
+                          finding.providerID ||
+                          finding.ProviderID ||
+                          'Potential Secret / Vulnerability'
+                      }}
                     </div>
                     @if (finding.source || finding.Source) {
-                      <div class="text-xs font-mono text-slate-600 dark:text-slate-400 mt-1 bg-slate-100 dark:bg-slate-950 p-2 rounded border border-slate-200 dark:border-slate-800 overflow-x-auto max-w-xl">
+                      <div
+                        class="text-xs font-mono text-muted-foreground mt-1 bg-muted p-2 rounded border border-border overflow-x-auto max-w-xl"
+                      >
                         {{ finding.source || finding.Source }}
                       </div>
                     }
                   </td>
                   <td class="px-6 py-4">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold border"
-                          [ngClass]="{
-                            'bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900': (finding.severity || finding.Severity)?.toLowerCase() === 'critical',
-                            'bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900': (finding.severity || finding.Severity)?.toLowerCase() === 'high',
-                            'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900': (finding.severity || finding.Severity)?.toLowerCase() === 'medium',
-                            'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900': (finding.severity || finding.Severity)?.toLowerCase() === 'low',
-                            'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700': !(finding.severity || finding.Severity) || (finding.severity || finding.Severity)?.toLowerCase() === 'info'
-                          }">
+                    <span
+                      class="px-2.5 py-1 rounded-full text-xs font-semibold border"
+                      [ngClass]="{
+                        'bg-severity-critical/10 text-severity-critical border-severity-critical/20':
+                          (finding.severity || finding.Severity)?.toLowerCase() === 'critical',
+                        'bg-severity-high/10 text-severity-high border-severity-high/20':
+                          (finding.severity || finding.Severity)?.toLowerCase() === 'high',
+                        'bg-severity-medium/10 text-severity-medium border-severity-medium/20':
+                          (finding.severity || finding.Severity)?.toLowerCase() === 'medium',
+                        'bg-severity-low/10 text-severity-low border-severity-low/20':
+                          (finding.severity || finding.Severity)?.toLowerCase() === 'low',
+                        'bg-muted text-foreground border-border':
+                          !(finding.severity || finding.Severity) ||
+                          (finding.severity || finding.Severity)?.toLowerCase() === 'info',
+                      }"
+                    >
                       {{ finding.severity || finding.Severity || 'Info' }}
                     </span>
                   </td>
                   <td class="px-6 py-4">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                      {{ finding.justification?.headline?.confidence || finding.Justification?.Headline?.Confidence || 'High' }}
+                    <span
+                      class="px-2.5 py-1 rounded-full text-xs font-semibold bg-muted text-foreground border border-border"
+                    >
+                      {{
+                        finding.justification?.headline?.confidence ||
+                          finding.Justification?.Headline?.Confidence ||
+                          'High'
+                      }}
                     </span>
                   </td>
                 </tr>
-              }
-              @empty {
+              } @empty {
                 <tr>
-                  <td colspan="3" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                  <td colspan="3" class="px-6 py-8 text-center text-muted-foreground">
                     @if ((project()?.Repositories || []).length === 0) {
-                      No repositories added to this project yet. Add a local directory path or Git URL above and click <strong>Add</strong>, then run a scan!
+                      No repositories added to this project yet. Add a local directory path or Git
+                      URL above and click <strong>Add</strong>, then run a scan!
                     } @else {
                       No vulnerabilities found in the latest scan!
                     }
@@ -300,14 +637,18 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
         </div>
       }
 
-
       <!-- Trends Tab -->
       @if (activeTab() === 'trends') {
         <div class="space-y-6">
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="bg-card p-6 rounded-2xl border border-border shadow-sm">
             <div class="flex justify-between items-center mb-4">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Vulnerability Trends Over Time</h3>
-              <button (click)="clearHistory()" class="px-4 py-2 border border-rose-300 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/30 font-medium transition-colors text-sm">Clear History</button>
+              <h3 class="text-lg font-semibold text-foreground">Vulnerability Trends Over Time</h3>
+              <button
+                (click)="clearHistory()"
+                class="px-4 py-2 border border-destructive/20 text-destructive rounded-lg hover:bg-destructive/10 font-medium transition-colors text-sm"
+              >
+                Clear History
+              </button>
             </div>
             <div class="h-80 w-full overflow-hidden flex items-center justify-center">
               @if (scanHistory().length > 1) {
@@ -325,27 +666,56 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
                   [autoScale]="true"
                   [showGridLines]="false"
                   (select)="onChartSelect($event)"
-                  (legendLabelClick)="onLegendClick($event)">
+                  (legendLabelClick)="onLegendClick($event)"
+                >
                 </ngx-charts-line-chart>
               } @else if (scanHistory().length === 1) {
-                <div class="text-slate-500 dark:text-slate-400 text-center flex flex-col items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4 opacity-50"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                <div class="text-muted-foreground text-center flex flex-col items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="mb-4 opacity-50"
+                  >
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                  </svg>
                   <p>Run another scan to see trends over time.</p>
                 </div>
               } @else {
-                <div class="text-slate-500 dark:text-slate-400 text-center flex flex-col items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4 opacity-50"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                <div class="text-muted-foreground text-center flex flex-col items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="mb-4 opacity-50"
+                  >
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                  </svg>
                   <p>No historical scans found. Run a scan to see data!</p>
                 </div>
               }
             </div>
             @if (scanHistory().length > 1) {
-              <p class="text-xs text-slate-500 mt-4">Click any data point to view findings from that historical scan.</p>
+              <p class="text-xs text-muted-foreground mt-4">
+                Click any data point to view findings from that historical scan.
+              </p>
             }
           </div>
-          
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Latest Scan Breakdown</h3>
+
+          <div class="bg-card p-6 rounded-2xl border border-border shadow-sm">
+            <h3 class="text-lg font-semibold text-foreground mb-4">Latest Scan Breakdown</h3>
             <div class="h-64 w-full overflow-hidden flex items-center justify-center">
               @if (scanHistory().length > 0) {
                 <ngx-charts-bar-vertical
@@ -361,10 +731,11 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
                   [customColors]="barChartColors"
                   xAxisLabel="Severity"
                   yAxisLabel="Count"
-                  (select)="onBarChartSelect($event)">
+                  (select)="onBarChartSelect($event)"
+                >
                 </ngx-charts-bar-vertical>
               } @else {
-                <div class="text-slate-500 dark:text-slate-400 text-center">
+                <div class="text-muted-foreground text-center">
                   <p>No data available for breakdown.</p>
                 </div>
               }
@@ -375,62 +746,142 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 
       <!-- Exceptions Tab -->
       @if (activeTab() === 'exceptions') {
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm mb-6 flex justify-between items-center">
+        <div
+          class="bg-card p-6 rounded-2xl border border-border shadow-sm mb-6 flex justify-between items-center"
+        >
           <div>
-            <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Scan Exceptions</h3>
-            <p class="text-slate-500 dark:text-slate-400 text-sm">Manage rules that filter out false positives natively during scans.</p>
+            <h3 class="text-lg font-semibold text-foreground">Scan Exceptions</h3>
+            <p class="text-muted-foreground text-sm">
+              Manage rules that filter out false positives natively during scans.
+            </p>
           </div>
           <div class="flex gap-3">
-            <button (click)="importExceptions()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium transition-colors text-sm">
+            <button
+              (click)="importExceptions()"
+              class="px-4 py-2 border border-border text-foreground rounded-lg hover:bg-accent font-medium transition-colors text-sm"
+            >
               Import YAML
             </button>
-            <button (click)="exportExceptions()" class="px-4 py-2 bg-slate-800 dark:bg-slate-100 hover:bg-slate-700 dark:hover:bg-white text-white dark:text-slate-900 rounded-lg font-medium transition-colors text-sm shadow-sm">
+            <button
+              (click)="exportExceptions()"
+              class="px-4 py-2 bg-foreground hover:bg-foreground/90 text-background rounded-lg font-medium transition-colors text-sm shadow-sm"
+            >
               Export YAML
             </button>
           </div>
         </div>
 
-        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <table class="w-full text-left table-fixed">
-            <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+            <thead class="bg-muted border-b border-border">
               <tr>
-                <th class="w-24 px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Type</th>
-                <th class="w-1/4 px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">File / Location</th>
-                <th class="w-1/4 px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Rule Match</th>
-                <th class="w-auto px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Reason</th>
-                <th class="w-28 px-6 py-4 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-right">Actions</th>
+                <th
+                  class="w-24 px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  Type
+                </th>
+                <th
+                  class="w-1/4 px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  File / Location
+                </th>
+                <th
+                  class="w-1/4 px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  Rule Match
+                </th>
+                <th
+                  class="w-auto px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider"
+                >
+                  Reason
+                </th>
+                <th
+                  class="w-28 px-6 py-4 text-xs font-semibold text-foreground uppercase tracking-wider text-right"
+                >
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody class="divide-y divide-border">
               @for (exc of exceptions(); track exc.id || exc.ID) {
-                <tr (click)="selectedException.set(exc)" class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer">
+                <tr
+                  (click)="selectedException.set(exc)"
+                  class="hover:bg-accent/50 transition-colors cursor-pointer"
+                >
                   <td class="px-6 py-4">
-                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900">
+                    <span
+                      class="px-2.5 py-1 rounded-full text-xs font-semibold bg-info/10 text-info border border-info/20"
+                    >
                       {{ exc.scope?.type }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 text-sm font-mono text-cyan-600 dark:text-cyan-400 break-all">
+                  <td class="px-6 py-4 text-sm font-mono text-primary break-all">
                     {{ exc.scope?.path || 'Global (All Files)' }}
                   </td>
-                  <td class="px-6 py-4 text-sm text-slate-900 dark:text-slate-100 font-mono break-all">
-                    {{ exc.scope?.secretChecksum || exc.scope?.stringMatch || exc.scope?.regexMatch || exc.scope?.path || 'N/A' }}
+                  <td class="px-6 py-4 text-sm text-foreground font-mono break-all">
+                    {{
+                      exc.scope?.secretChecksum ||
+                        exc.scope?.stringMatch ||
+                        exc.scope?.regexMatch ||
+                        exc.scope?.path ||
+                        'N/A'
+                    }}
                   </td>
-                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 break-words whitespace-pre-wrap max-w-md">
+                  <td
+                    class="px-6 py-4 text-sm text-muted-foreground break-words whitespace-pre-wrap max-w-md"
+                  >
                     {{ getExceptionReasonText(exc.reason) }}
                   </td>
-                  <td class="px-6 py-4 text-right flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
-                    <button (click)="selectedException.set(exc)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800" title="View Exception Details">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <td
+                    class="px-6 py-4 text-right flex items-center justify-end gap-1"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <button
+                      (click)="selectedException.set(exc)"
+                      class="text-muted-foreground hover:text-foreground transition-colors p-2 rounded-full hover:bg-accent"
+                      title="View Exception Details"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
                     </button>
-                    <button (click)="removeException(exc.id || exc.ID)" class="text-rose-500 hover:text-rose-700 transition-colors p-2 rounded-full hover:bg-rose-50 dark:hover:bg-rose-900/30" title="Remove Exception">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    <button
+                      (click)="removeException(exc.id || exc.ID)"
+                      class="text-destructive hover:text-destructive transition-colors p-2 rounded-full hover:bg-destructive/10"
+                      title="Remove Exception"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                      </svg>
                     </button>
                   </td>
                 </tr>
-              }
-              @empty {
+              } @empty {
                 <tr>
-                  <td colspan="5" class="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                  <td colspan="5" class="px-6 py-8 text-center text-muted-foreground">
                     No exceptions found for this project.
                   </td>
                 </tr>
@@ -443,54 +894,149 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
       <!-- Drawer -->
       @if (selectedFinding()) {
         <div class="fixed inset-0 z-50 flex justify-end">
-          <div class="fixed inset-0 bg-slate-900/20 dark:bg-slate-900/60 backdrop-blur-sm transition-opacity" (click)="selectedFinding.set(null)"></div>
-          <div class="relative w-full max-w-2xl h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800" style="animation: slideIn 0.2s ease-out forwards;">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Finding Details</h3>
-              <button (click)="selectedFinding.set(null)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <div
+            class="fixed inset-0 bg-foreground/20 backdrop-blur-sm transition-opacity"
+            (click)="selectedFinding.set(null)"
+          ></div>
+          <div
+            class="relative w-full max-w-2xl h-full bg-card shadow-2xl flex flex-col border-l border-border"
+            style="animation: slideIn 0.2s ease-out forwards;"
+          >
+            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
+              <h3 class="text-lg font-semibold text-foreground">Finding Details</h3>
+              <button
+                (click)="selectedFinding.set(null)"
+                class="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
               </button>
             </div>
-            
+
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
               <div>
-                <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Location</div>
-                <div class="font-mono text-sm text-cyan-600 dark:text-cyan-400 break-all">{{ selectedFinding().location || selectedFinding().Location || 'Unknown' }}</div>
-                @if (selectedFinding().range?.start?.line !== undefined || selectedFinding().Range?.Start?.Line !== undefined) {
-                  <div class="text-sm text-slate-600 dark:text-slate-300 mt-1">Line: {{ (selectedFinding().range?.start?.line ?? selectedFinding().Range?.Start?.Line ?? 0) + 1 }}</div>
+                <div
+                  class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                >
+                  Location
+                </div>
+                <div class="font-mono text-sm text-primary break-all">
+                  {{ selectedFinding().location || selectedFinding().Location || 'Unknown' }}
+                </div>
+                @if (
+                  selectedFinding().range?.start?.line !== undefined ||
+                  selectedFinding().Range?.Start?.Line !== undefined
+                ) {
+                  <div class="text-sm text-foreground mt-1">
+                    Line:
+                    {{
+                      (selectedFinding().range?.start?.line ??
+                        selectedFinding().Range?.Start?.Line ??
+                        0) + 1
+                    }}
+                  </div>
                 }
               </div>
 
               <div>
-                <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Classification</div>
+                <div
+                  class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                >
+                  Classification
+                </div>
                 <div class="flex items-center gap-3">
-                  <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900">
-                    {{ selectedFinding().justification?.headline?.confidence || selectedFinding().Justification?.Headline?.Confidence || 'High' }} Confidence
+                  <span
+                    class="px-2.5 py-1 rounded-full text-xs font-semibold bg-destructive/10 text-destructive border border-destructive/20"
+                  >
+                    {{
+                      selectedFinding().justification?.headline?.confidence ||
+                        selectedFinding().Justification?.Headline?.Confidence ||
+                        'High'
+                    }}
+                    Confidence
                   </span>
-                  <span class="text-slate-700 dark:text-slate-300 font-medium">
-                    {{ selectedFinding().justification?.headline?.description || selectedFinding().Justification?.Headline?.Description || selectedFinding().providerID || selectedFinding().ProviderID || 'Potential Secret / Vulnerability' }}
+                  <span class="text-foreground font-medium">
+                    {{
+                      selectedFinding().justification?.headline?.description ||
+                        selectedFinding().Justification?.Headline?.Description ||
+                        selectedFinding().providerID ||
+                        selectedFinding().ProviderID ||
+                        'Potential Secret / Vulnerability'
+                    }}
                   </span>
                 </div>
               </div>
 
               @if (selectedFinding().source || selectedFinding().Source) {
                 <div>
-                  <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Code Context</div>
-                  <pre class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 overflow-x-auto text-sm font-mono text-slate-800 dark:text-slate-300 whitespace-pre-wrap">{{ selectedFinding().source || selectedFinding().Source }}</pre>
+                  <div
+                    class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                  >
+                    Code Context
+                  </div>
+                  <pre
+                    class="bg-muted p-4 rounded-xl border border-border overflow-x-auto text-sm font-mono text-foreground whitespace-pre-wrap"
+                    >{{ selectedFinding().source || selectedFinding().Source }}</pre>
                 </div>
               }
 
               @if (reusedSecrets().length > 0) {
                 <div>
-                  <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Reused In Other Files</div>
+                  <div
+                    class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                  >
+                    Reused In Other Files
+                  </div>
                   <div class="space-y-2">
                     @for (reused of reusedSecrets(); track $index) {
-                      <div class="flex items-start gap-2 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" (click)="selectFinding(reused)">
-                        <svg class="w-4 h-4 text-slate-400 mt-0.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                      <div
+                        class="flex items-start gap-2 bg-muted/50 p-2.5 rounded-lg border border-border cursor-pointer hover:bg-accent transition-colors"
+                        (click)="selectFinding(reused)"
+                      >
+                        <svg
+                          class="w-4 h-4 text-muted-foreground mt-0.5 shrink-0"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path
+                            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                          ></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                          <line x1="16" y1="13" x2="8" y2="13"></line>
+                          <line x1="16" y1="17" x2="8" y2="17"></line>
+                          <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
                         <div class="flex-1">
-                          <div class="text-sm font-mono text-cyan-600 dark:text-cyan-400 break-all">{{ reused.location || reused.Location || 'Unknown' }}</div>
-                          @if (reused.range?.start?.line !== undefined || reused.Range?.Start?.Line !== undefined) {
-                            <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Line: {{ (reused.range?.start?.line ?? reused.Range?.Start?.Line ?? 0) + 1 }}</div>
+                          <div class="text-sm font-mono text-primary break-all">
+                            {{ reused.location || reused.Location || 'Unknown' }}
+                          </div>
+                          @if (
+                            reused.range?.start?.line !== undefined ||
+                            reused.Range?.Start?.Line !== undefined
+                          ) {
+                            <div class="text-xs text-muted-foreground mt-0.5">
+                              Line:
+                              {{
+                                (reused.range?.start?.line ?? reused.Range?.Start?.Line ?? 0) + 1
+                              }}
+                            </div>
                           }
                         </div>
                       </div>
@@ -498,111 +1044,283 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
                   </div>
                 </div>
               }
-              
+
               @if (selectedFinding().Excluded) {
-                <div class="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-xl flex items-start gap-3">
-                  <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                <div
+                  class="p-4 bg-success/10 border border-success/20 rounded-xl flex items-start gap-3"
+                >
+                  <svg
+                    class="w-5 h-5 text-success mt-0.5 shrink-0"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+                    />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
                   <div>
-                    <div class="font-semibold text-emerald-800 dark:text-emerald-300">Suppressed as False Positive</div>
-                    <div class="text-sm text-emerald-600 dark:text-emerald-400 mt-1">This finding is ignored in reports.</div>
+                    <div class="font-semibold text-success">Suppressed as False Positive</div>
+                    <div class="text-sm text-success mt-1">This finding is ignored in reports.</div>
                   </div>
                 </div>
               } @else {
-                <div class="pt-4 border-t border-slate-200 dark:border-slate-800">
+                <div class="pt-4 border-t border-border">
                   <div class="flex items-center justify-between mb-3">
-                    <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">AI Triage</div>
+                    <div
+                      class="text-sm font-semibold text-muted-foreground uppercase tracking-wider"
+                    >
+                      AI Triage
+                    </div>
                     @if (aiEnabled()) {
-                      <button (click)="runAITriage()" [disabled]="triaging()" class="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-700 dark:text-indigo-400 text-xs font-medium rounded border border-indigo-200 dark:border-indigo-800/50 transition-colors flex items-center space-x-1.5 disabled:opacity-50">
+                      <button
+                        (click)="runAITriage()"
+                        [disabled]="triaging()"
+                        class="px-3 py-1.5 bg-info/10 hover:bg-info/90/10 text-info text-xs font-medium rounded border border-info/20 transition-colors flex items-center space-x-1.5 disabled:opacity-50"
+                      >
                         @if (triaging()) {
-                          <svg class="animate-spin h-3.5 w-3.5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                          <svg
+                            class="animate-spin h-3.5 w-3.5 text-info"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              class="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              stroke-width="4"
+                            ></circle>
+                            <path
+                              class="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
                           <span>Analyzing...</span>
                         } @else {
-                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                          </svg>
                           <span>Ask AI</span>
                         }
                       </button>
                     }
                   </div>
-                  
+
                   @if (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation) {
-                    <div class="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/50 rounded-xl p-4 space-y-3">
+                    <div class="bg-info/10 border border-info/20 rounded-xl p-4 space-y-3">
                       <div class="flex items-start justify-between">
-                        <div class="font-medium text-slate-900 dark:text-slate-100 text-sm">{{ (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).summary || (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).Summary }}</div>
-                        <div class="px-2 py-0.5 rounded text-xs font-semibold bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-400 shadow-sm shrink-0 ml-3">
-                          FP Likelihood: {{ (((selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).fpLikelihood || (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).FPLikelihood) * 100) | number:'1.0-0' }}%
+                        <div class="font-medium text-foreground text-sm">
+                          {{
+                            (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                              .summary ||
+                              (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                                .Summary
+                          }}
+                        </div>
+                        <div
+                          class="px-2 py-0.5 rounded text-xs font-semibold bg-card border border-info/20 text-info shadow-sm shrink-0 ml-3"
+                        >
+                          FP Likelihood:
+                          {{
+                            ((selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                              .fpLikelihood ||
+                              (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                                .FPLikelihood) * 100 | number: '1.0-0'
+                          }}%
                         </div>
                       </div>
-                      
-                      @if ((selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).remediationHint || (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).RemediationHint) {
+
+                      @if (
+                        (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                          .remediationHint ||
+                        (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                          .RemediationHint
+                      ) {
                         <div>
-                          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Remediation</div>
-                          <div class="text-sm text-slate-700 dark:text-slate-300">{{ (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).remediationHint || (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).RemediationHint }}</div>
+                          <div class="text-xs font-semibold text-muted-foreground mb-1">
+                            Remediation
+                          </div>
+                          <div class="text-sm text-foreground">
+                            {{
+                              (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                                .remediationHint ||
+                                (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                                  .RemediationHint
+                            }}
+                          </div>
                         </div>
                       }
-                      
-                      @if ((selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).contextClues?.length > 0 || (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).ContextClues?.length > 0) {
+
+                      @if (
+                        (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                          .contextClues?.length > 0 ||
+                        (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                          .ContextClues?.length > 0
+                      ) {
                         <div>
-                          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Reasoning</div>
-                          <ul class="list-disc pl-4 space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                            @for (clue of ((selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).contextClues || (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).ContextClues); track $index) {
+                          <div class="text-xs font-semibold text-muted-foreground mb-1">
+                            Reasoning
+                          </div>
+                          <ul class="list-disc pl-4 space-y-1 text-sm text-muted-foreground">
+                            @for (
+                              clue of (
+                                selectedFinding().aiAnnotation || selectedFinding().AIAnnotation
+                              ).contextClues ||
+                                (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                                  .ContextClues;
+                              track $index
+                            ) {
                               <li>{{ clue }}</li>
                             }
                           </ul>
                         </div>
                       }
-                      <div class="text-[10px] text-slate-400 dark:text-slate-500 text-right">Analyzed by {{ (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).model || (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).Model }}</div>
+                      <div class="text-[10px] text-muted-foreground text-right">
+                        Analyzed by
+                        {{
+                          (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation)
+                            .model ||
+                            (selectedFinding().aiAnnotation || selectedFinding().AIAnnotation).Model
+                        }}
+                      </div>
                     </div>
                   } @else if (!aiEnabled()) {
-                    <div class="text-sm text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-3 rounded border border-slate-200 dark:border-slate-800">
-                      AI Triage is disabled. <a routerLink="/settings" class="text-cyan-600 dark:text-cyan-400 hover:underline" (click)="selectedFinding.set(null)">Configure AI Settings</a> to enable automated analysis.
+                    <div
+                      class="text-sm text-muted-foreground bg-muted/50 p-3 rounded border border-border"
+                    >
+                      AI Triage is disabled.
+                      <a
+                        routerLink="/settings"
+                        class="text-primary hover:underline"
+                        (click)="selectedFinding.set(null)"
+                        >Configure AI Settings</a
+                      >
+                      to enable automated analysis.
                     </div>
                   } @else {
-                    <div class="text-sm text-slate-500 dark:text-slate-400">
+                    <div class="text-sm text-muted-foreground">
                       Click 'Ask AI' to analyze this finding.
                     </div>
                   }
                 </div>
 
-                <div class="pt-4 border-t border-slate-200 dark:border-slate-800 mt-4">
-                  <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Manage Exception</div>
-                  
+                <div class="pt-4 border-t border-border mt-4">
+                  <div
+                    class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3"
+                  >
+                    Manage Exception
+                  </div>
+
                   <div class="space-y-4">
                     <div>
-                      <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Scope Type</label>
-                      <select [(ngModel)]="suppressScope" (change)="onScopeChange()" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                        <option value="globalHash">Global Hash (Ignore Exact Secret Everywhere)</option>
-                        <option value="globalString">Global String (Ignore Exact Text Everywhere)</option>
-                        <option value="globalRegex">Global Regex (Ignore Text Matching Regex Everywhere)</option>
-                        <option value="pathRegex">Path Regex (Ignore all secrets in files matching regex)</option>
-                        <option value="pathString">Path + String (Ignore exact text in this specific file)</option>
-                        <option value="pathHash">Path + Hash (Ignore exact secret in this specific file)</option>
-                        <option value="pathRegexRegex">Path + Regex (Ignore text matching regex in this specific file)</option>
+                      <label class="block text-xs text-muted-foreground mb-1">Scope Type</label>
+                      <select
+                        [(ngModel)]="suppressScope"
+                        (change)="onScopeChange()"
+                        class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        <option value="globalHash">
+                          Global Hash (Ignore Exact Secret Everywhere)
+                        </option>
+                        <option value="globalString">
+                          Global String (Ignore Exact Text Everywhere)
+                        </option>
+                        <option value="globalRegex">
+                          Global Regex (Ignore Text Matching Regex Everywhere)
+                        </option>
+                        <option value="pathRegex">
+                          Path Regex (Ignore all secrets in files matching regex)
+                        </option>
+                        <option value="pathString">
+                          Path + String (Ignore exact text in this specific file)
+                        </option>
+                        <option value="pathHash">
+                          Path + Hash (Ignore exact secret in this specific file)
+                        </option>
+                        <option value="pathRegexRegex">
+                          Path + Regex (Ignore text matching regex in this specific file)
+                        </option>
                       </select>
                     </div>
 
                     @if (suppressScope().startsWith('path') && suppressScope() !== 'pathRegex') {
                       <div>
-                        <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">File Path</label>
-                        <input type="text" [(ngModel)]="suppressPath" class="w-full px-3 py-2 font-mono text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        <label class="block text-xs text-muted-foreground mb-1">File Path</label>
+                        <input
+                          type="text"
+                          [(ngModel)]="suppressPath"
+                          class="w-full px-3 py-2 font-mono text-sm border border-border rounded-lg bg-muted text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
                       </div>
                     }
 
                     <div>
-                      <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Match Pattern / String / Hash</label>
-                      <textarea [(ngModel)]="suppressMatch" rows="2" class="w-full px-3 py-2 font-mono text-sm border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"></textarea>
+                      <label class="block text-xs text-muted-foreground mb-1"
+                        >Match Pattern / String / Hash</label
+                      >
+                      <textarea
+                        [(ngModel)]="suppressMatch"
+                        rows="2"
+                        class="w-full px-3 py-2 font-mono text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      ></textarea>
                     </div>
 
                     <div>
-                      <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">Reason for suppression</label>
-                      <input type="text" [(ngModel)]="suppressReason" placeholder="e.g., Test credential, False positive" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                      <label class="block text-xs text-muted-foreground mb-1"
+                        >Reason for suppression</label
+                      >
+                      <input
+                        type="text"
+                        [(ngModel)]="suppressReason"
+                        placeholder="e.g., Test credential, False positive"
+                        class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
                     </div>
 
                     <div class="flex justify-between items-center pt-2">
-                      <button (click)="markTruePositive(selectedFinding().id || selectedFinding().ID)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors text-sm shadow-sm flex items-center gap-1.5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                      <button
+                        (click)="markTruePositive(selectedFinding().id || selectedFinding().ID)"
+                        class="px-4 py-2 bg-success hover:bg-success/90 text-success-foreground rounded-lg font-medium transition-colors text-sm shadow-sm flex items-center gap-1.5"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
                         Mark as True Positive
                       </button>
-                      <button (click)="suppressSelected()" [disabled]="suppressing() || !suppressReason() || !suppressMatch()" class="px-6 py-2 bg-slate-800 dark:bg-slate-100 hover:bg-slate-700 dark:hover:bg-white disabled:opacity-50 text-white dark:text-slate-900 rounded-lg font-medium transition-colors shadow-sm whitespace-nowrap">
+                      <button
+                        (click)="suppressSelected()"
+                        [disabled]="suppressing() || !suppressReason() || !suppressMatch()"
+                        class="px-6 py-2 bg-foreground hover:bg-foreground/90 disabled:opacity-50 text-background rounded-lg font-medium transition-colors shadow-sm whitespace-nowrap"
+                      >
                         {{ suppressing() ? 'Suppressing...' : 'Mark as False Positive' }}
                       </button>
                     </div>
@@ -617,77 +1335,155 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
       <!-- Exception Details Slideout Drawer -->
       @if (selectedException()) {
         <div class="fixed inset-0 z-50 flex justify-end">
-          <div class="fixed inset-0 bg-slate-900/20 dark:bg-slate-900/60 backdrop-blur-sm transition-opacity" (click)="selectedException.set(null)"></div>
-          <div class="relative w-full max-w-2xl h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800" style="animation: slideIn 0.2s ease-out forwards;">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <div
+            class="fixed inset-0 bg-foreground/20 backdrop-blur-sm transition-opacity"
+            (click)="selectedException.set(null)"
+          ></div>
+          <div
+            class="relative w-full max-w-2xl h-full bg-card shadow-2xl flex flex-col border-l border-border"
+            style="animation: slideIn 0.2s ease-out forwards;"
+          >
+            <div class="flex items-center justify-between px-6 py-4 border-b border-border">
               <div>
-                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Exception Details</h3>
-                <div class="text-xs text-slate-500 font-mono mt-0.5">{{ selectedException().id || selectedException().ID }}</div>
+                <h3 class="text-lg font-semibold text-foreground">Exception Details</h3>
+                <div class="text-xs text-muted-foreground font-mono mt-0.5">
+                  {{ selectedException().id || selectedException().ID }}
+                </div>
               </div>
-              <button (click)="selectedException.set(null)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              <button
+                (click)="selectedException.set(null)"
+                class="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
               </button>
             </div>
 
             <div class="flex-1 overflow-y-auto p-6 space-y-6">
               <div>
-                <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Scope & Location</div>
+                <div
+                  class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                >
+                  Scope & Location
+                </div>
                 <div class="flex items-center gap-3 mb-2">
-                  <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900">
+                  <span
+                    class="px-2.5 py-1 rounded-full text-xs font-semibold bg-info/10 text-info border border-info/20"
+                  >
                     {{ selectedException().scope?.type }}
                   </span>
-                  <span class="text-slate-700 dark:text-slate-300 font-medium text-sm">
+                  <span class="text-foreground font-medium text-sm">
                     Rule ID: {{ selectedException().ruleId || selectedException().RuleID || 'N/A' }}
                   </span>
                 </div>
-                <div class="font-mono text-sm text-cyan-600 dark:text-cyan-400 break-all bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div
+                  class="font-mono text-sm text-primary break-all bg-muted p-3 rounded-xl border border-border"
+                >
                   Path: {{ selectedException().scope?.path || 'Global (Applies to all files)' }}
                 </div>
               </div>
 
               <div>
-                <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Pattern / Checksum Match</div>
-                <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-xs text-slate-800 dark:text-slate-300 break-all">
-                  {{ selectedException().scope?.secretChecksum || selectedException().scope?.stringMatch || selectedException().scope?.regexMatch || 'N/A' }}
+                <div
+                  class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                >
+                  Pattern / Checksum Match
+                </div>
+                <div
+                  class="bg-muted p-4 rounded-xl border border-border font-mono text-xs text-foreground break-all"
+                >
+                  {{
+                    selectedException().scope?.secretChecksum ||
+                      selectedException().scope?.stringMatch ||
+                      selectedException().scope?.regexMatch ||
+                      'N/A'
+                  }}
                 </div>
               </div>
 
               <div>
-                <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Reason & Description</div>
-                <div class="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 whitespace-pre-wrap">
+                <div
+                  class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                >
+                  Reason & Description
+                </div>
+                <div
+                  class="text-sm text-foreground bg-muted/50 p-4 rounded-xl border border-border whitespace-pre-wrap"
+                >
                   {{ getExceptionReasonText(selectedException().reason) }}
                 </div>
               </div>
 
               @if (getExceptionSnippetText(selectedException().reason)) {
                 <div>
-                  <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Code Snippet Context</div>
-                  <pre class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 overflow-x-auto text-xs font-mono text-slate-800 dark:text-slate-300 whitespace-pre-wrap">{{ getExceptionSnippetText(selectedException().reason) }}</pre>
+                  <div
+                    class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                  >
+                    Code Snippet Context
+                  </div>
+                  <pre
+                    class="bg-muted p-4 rounded-xl border border-border overflow-x-auto text-xs font-mono text-foreground whitespace-pre-wrap"
+                    >{{ getExceptionSnippetText(selectedException().reason) }}</pre>
                 </div>
               }
 
               <div class="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Created By</div>
-                  <div class="text-slate-800 dark:text-slate-200 font-medium">{{ selectedException().createdBy || selectedException().CreatedBy || 'system' }}</div>
+                  <div
+                    class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1"
+                  >
+                    Created By
+                  </div>
+                  <div class="text-foreground font-medium">
+                    {{ selectedException().createdBy || selectedException().CreatedBy || 'system' }}
+                  </div>
                 </div>
                 <div>
-                  <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Created At</div>
-                  <div class="text-slate-800 dark:text-slate-200 font-medium">{{ selectedException().createdAt || selectedException().CreatedAt | date:'medium' }}</div>
+                  <div
+                    class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1"
+                  >
+                    Created At
+                  </div>
+                  <div class="text-foreground font-medium">
+                    {{
+                      selectedException().createdAt || selectedException().CreatedAt
+                        | date: 'medium'
+                    }}
+                  </div>
                 </div>
               </div>
 
               @if (selectedException().auditTrail && selectedException().auditTrail.length > 0) {
                 <div>
-                  <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Audit History</div>
+                  <div
+                    class="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2"
+                  >
+                    Audit History
+                  </div>
                   <div class="space-y-2">
                     @for (audit of selectedException().auditTrail; track audit.action) {
-                      <div class="text-xs p-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex justify-between">
+                      <div
+                        class="text-xs p-3 rounded-lg bg-muted border border-border flex justify-between"
+                      >
                         <div>
-                          <span class="font-semibold text-slate-700 dark:text-slate-300">{{ audit.action }}</span>
-                          <span class="text-slate-500 ml-2">{{ audit.details }}</span>
+                          <span class="font-semibold text-foreground">{{ audit.action }}</span>
+                          <span class="text-muted-foreground ml-2">{{ audit.details }}</span>
                         </div>
-                        <span class="text-slate-400 font-mono">{{ audit.timestamp | date:'shortTime' }}</span>
+                        <span class="text-muted-foreground font-mono">{{
+                          audit.timestamp | date: 'shortTime'
+                        }}</span>
                       </div>
                     }
                   </div>
@@ -695,21 +1491,43 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
               }
             </div>
 
-            <div class="p-6 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
-              <button (click)="removeException(selectedException().id || selectedException().ID); selectedException.set(null)" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            <div class="p-6 border-t border-border flex justify-between items-center bg-muted">
+              <button
+                (click)="
+                  removeException(selectedException().id || selectedException().ID);
+                  selectedException.set(null)
+                "
+                class="px-4 py-2.5 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl font-medium transition-colors text-sm shadow-sm flex items-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
                 Delete Exception
               </button>
-              <button (click)="selectedException.set(null)" class="px-4 py-2.5 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-white dark:hover:bg-slate-900 font-medium transition-colors text-sm">
+              <button
+                (click)="selectedException.set(null)"
+                class="px-4 py-2.5 border border-border text-foreground rounded-xl hover:bg-accent font-medium transition-colors text-sm"
+              >
                 Close
               </button>
             </div>
           </div>
         </div>
       }
-
     </div>
-  `
+  `,
 })
 export class ProjectDetailComponent implements OnInit, OnDestroy {
   project = signal<any>(null);
@@ -775,7 +1593,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       await this.loadExceptions();
       this.fetchFindings(proj.ID || proj.id);
     } catch (e) {
-      alert("Error marking finding as true positive: " + e);
+      alert('Error marking finding as true positive: ' + e);
     }
   }
 
@@ -808,18 +1626,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   selectedHistoricalScanID = signal<string>('');
   selectedSeverityFilter = signal<string>('');
 
-  barChartColors = [
-    { name: 'Critical', value: '#e11d48' },
-    { name: 'CRITICAL', value: '#e11d48' },
-    { name: 'High', value: '#f97316' },
-    { name: 'HIGH', value: '#f97316' },
-    { name: 'Medium', value: '#eab308' },
-    { name: 'MEDIUM', value: '#eab308' },
-    { name: 'Low', value: '#3b82f6' },
-    { name: 'LOW', value: '#3b82f6' },
-    { name: 'Info', value: '#94a3b8' },
-    { name: 'INFO', value: '#94a3b8' }
-  ];
+  barChartColors = severityScheme();
 
   selectedFinding = signal<any>(null);
   suppressReason = signal<string>('');
@@ -834,11 +1641,16 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   private fetchFindingsTimeout: any;
 
   activeFindings = computed(() => {
-    let list = this.findings().filter(f => !f.Excluded && !f.excluded);
+    let list = this.findings().filter((f) => !f.Excluded && !f.excluded);
     const severity = this.selectedSeverityFilter();
     if (severity) {
-      list = list.filter(f => {
-        const sev = f.severity || f.Severity || (f.justification?.headline?.confidence || f.Justification?.Headline?.Confidence || '');
+      list = list.filter((f) => {
+        const sev =
+          f.severity ||
+          f.Severity ||
+          f.justification?.headline?.confidence ||
+          f.Justification?.Headline?.Confidence ||
+          '';
         return sev.toLowerCase() === severity.toLowerCase();
       });
     }
@@ -850,7 +1662,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if (!selected) return [];
     const selectedHash = selected.sha256 || selected.SHA256;
     if (!selectedHash) return [];
-    return this.findings().filter(f => {
+    return this.findings().filter((f) => {
       const fHash = f.sha256 || f.SHA256;
       return fHash === selectedHash && f !== selected;
     });
@@ -858,15 +1670,15 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
-    EventsOn("scan-finding", (finding: any) => {
-      this.findings.update(f => [...f, finding]);
+    EventsOn('scan-finding', (finding: any) => {
+      this.findings.update((f) => [...f, finding]);
     });
 
-    EventsOn("scan-progress", (progress: any) => {
+    EventsOn('scan-progress', (progress: any) => {
       // "scan-progress" is a single global channel. Without this guard, a scan
       // running on another project would drive this project's progress bar.
       // Events predating the projectId field are accepted rather than dropped.
@@ -879,14 +1691,14 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       if (!this.scanning()) this.scanning.set(true);
     });
 
-    EventsOn("ai-triage-progress", (progress: any) => {
+    EventsOn('ai-triage-progress', (progress: any) => {
       this.aiTriageProgress.set(progress);
       if (progress.completed + progress.failed >= progress.total) {
         setTimeout(() => this.aiTriageProgress.set(null), 3000);
       }
     });
 
-    EventsOn("scan-finding-updated", () => {
+    EventsOn('scan-finding-updated', () => {
       if (this.fetchFindingsTimeout) clearTimeout(this.fetchFindingsTimeout);
       this.fetchFindingsTimeout = setTimeout(() => {
         if (this.project()) {
@@ -903,7 +1715,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       }, 1000);
     });
 
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.fetchProject(id);
@@ -980,10 +1792,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     // These listeners are registered on the Wails runtime, which outlives the
     // component. Without this, navigating away and back stacks a second set of
     // handlers and every finding gets appended twice.
-    EventsOff("scan-finding");
-    EventsOff("scan-progress");
-    EventsOff("ai-triage-progress");
-    EventsOff("scan-finding-updated");
+    EventsOff('scan-finding');
+    EventsOff('scan-progress');
+    EventsOff('ai-triage-progress');
+    EventsOff('scan-finding-updated');
 
     if (this.fetchFindingsTimeout) clearTimeout(this.fetchFindingsTimeout);
     // Same reasoning as the listeners: the interval outlives the component and
@@ -996,7 +1808,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       const s = await GetAISettings();
       this.aiEnabled.set(s?.enabled === true);
     } catch (e) {
-      console.error("Failed to fetch AI Settings", e);
+      console.error('Failed to fetch AI Settings', e);
     }
   }
 
@@ -1020,10 +1832,9 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         return f;
       });
       this.findings.set(updated);
-
     } catch (e) {
-      console.error("Failed to run AI triage", e);
-      alert("AI Triage failed: " + e);
+      console.error('Failed to run AI triage', e);
+      alert('AI Triage failed: ' + e);
     } finally {
       this.triaging.set(false);
     }
@@ -1043,13 +1854,13 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       if (retries > 0) {
         setTimeout(() => this.fetchProject(id, retries - 1), 200);
       } else {
-        console.warn("Wails IPC not available. Are you viewing in a standard browser?");
+        console.warn('Wails IPC not available. Are you viewing in a standard browser?');
       }
     }
   }
 
   fetchFindings(projID: string, scanID: string = '') {
-    GetProjectFindings(projID, scanID).then(findings => {
+    GetProjectFindings(projID, scanID).then((findings) => {
       this.findings.set(findings || []);
     });
   }
@@ -1084,7 +1895,10 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         if (isNaN(d.getTime())) {
           name = 'Scan ' + (index + 1);
         } else {
-          name = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          name =
+            d.toLocaleDateString() +
+            ' ' +
+            d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
         // Ensure unique names for ngx-charts (it merges data points with identical names)
         const count = seenNames.get(name) || 0;
@@ -1092,12 +1906,21 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
         if (count > 0) {
           name = name + ' #' + (count + 1);
         }
-        totalSeries.series.push({ name, value: scan.Metrics?.totalFindings || 0, extra: { scanID: scan.ID } });
+        totalSeries.series.push({
+          name,
+          value: scan.Metrics?.totalFindings || 0,
+          extra: { scanID: scan.ID },
+        });
 
-        let crit = 0; let high = 0;
+        let crit = 0;
+        let high = 0;
         if (scan.Metrics?.findingsBySeverity) {
-          crit = scan.Metrics.findingsBySeverity['Critical'] || scan.Metrics.findingsBySeverity['CRITICAL'] || 0;
-          high = scan.Metrics.findingsBySeverity['High'] || scan.Metrics.findingsBySeverity['HIGH'] || 0;
+          crit =
+            scan.Metrics.findingsBySeverity['Critical'] ||
+            scan.Metrics.findingsBySeverity['CRITICAL'] ||
+            0;
+          high =
+            scan.Metrics.findingsBySeverity['High'] || scan.Metrics.findingsBySeverity['HIGH'] || 0;
         }
         critSeries.series.push({ name, value: crit, extra: { scanID: scan.ID } });
         highSeries.series.push({ name, value: high, extra: { scanID: scan.ID } });
@@ -1124,11 +1947,13 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     if (!proj) return;
 
     // if (confirm('Are you sure you want to clear all historical scans? This cannot be undone.')) {
-    DeleteProjectScans(proj.ID).then(() => {
-      this.loadTrends();
-    }).catch((err: any) => {
-      alert("Error clearing history: " + err);
-    });
+    DeleteProjectScans(proj.ID)
+      .then(() => {
+        this.loadTrends();
+      })
+      .catch((err: any) => {
+        alert('Error clearing history: ' + err);
+      });
     // }
   }
 
@@ -1140,18 +1965,20 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.editWorkspace = proj.Workspace || '';
     this.editDescription = proj.Description || '';
 
-    GetProjects().then((workspaces: any) => {
-      const wsSet = new Set<string>();
-      if (workspaces && workspaces.Details) {
-        Object.keys(workspaces.Details).forEach(ws => wsSet.add(ws));
-      }
-      this.availableWorkspaces.set(Array.from(wsSet));
-      this.isEditing.set(true);
-    }).catch(err => {
-      console.error('Failed to load workspaces:', err);
-      // Even if it fails, still allow editing
-      this.isEditing.set(true);
-    });
+    GetProjects()
+      .then((workspaces: any) => {
+        const wsSet = new Set<string>();
+        if (workspaces && workspaces.Details) {
+          Object.keys(workspaces.Details).forEach((ws) => wsSet.add(ws));
+        }
+        this.availableWorkspaces.set(Array.from(wsSet));
+        this.isEditing.set(true);
+      })
+      .catch((err) => {
+        console.error('Failed to load workspaces:', err);
+        // Even if it fails, still allow editing
+        this.isEditing.set(true);
+      });
   }
 
   cancelEdit() {
@@ -1162,12 +1989,14 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     const proj = this.project();
     if (!proj) return;
 
-    UpdateProjectDetails(proj.ID, this.editName, this.editWorkspace, this.editDescription).then((updated: any) => {
-      this.project.set(updated);
-      this.isEditing.set(false);
-    }).catch((err: any) => {
-      alert("Error saving project details: " + err);
-    });
+    UpdateProjectDetails(proj.ID, this.editName, this.editWorkspace, this.editDescription)
+      .then((updated: any) => {
+        this.project.set(updated);
+        this.isEditing.set(false);
+      })
+      .catch((err: any) => {
+        alert('Error saving project details: ' + err);
+      });
   }
 
   onChartSelect(event: any) {
@@ -1215,31 +2044,37 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
   }
 
   browseDirectory() {
-    SelectDirectory().then((dir: any) => {
-      if (dir) {
-        this.newRepoLocation = dir;
-        this.cdr.detectChanges();
-      }
-    }).catch((err: any) => console.error(err));
+    SelectDirectory()
+      .then((dir: any) => {
+        if (dir) {
+          this.newRepoLocation = dir;
+          this.cdr.detectChanges();
+        }
+      })
+      .catch((err: any) => console.error(err));
   }
 
   addRepository() {
     const proj = this.project();
     if (!proj || !this.newRepoLocation) return;
 
-    AddRepository(proj.ID, this.newRepoLocation).then(updatedProj => {
-      this.project.set(updatedProj);
-      this.newRepoLocation = '';
-    }).catch(err => alert("Error adding repo: " + err));
+    AddRepository(proj.ID, this.newRepoLocation)
+      .then((updatedProj) => {
+        this.project.set(updatedProj);
+        this.newRepoLocation = '';
+      })
+      .catch((err) => alert('Error adding repo: ' + err));
   }
 
   removeRepository(repoLocation: string) {
     const proj = this.project();
     if (!proj) return;
 
-    RemoveRepository(proj.ID, repoLocation).then(updatedProj => {
-      this.project.set(updatedProj);
-    }).catch(err => alert("Error removing repo: " + err));
+    RemoveRepository(proj.ID, repoLocation)
+      .then((updatedProj) => {
+        this.project.set(updatedProj);
+      })
+      .catch((err) => alert('Error removing repo: ' + err));
   }
 
   runScan() {
@@ -1260,15 +2095,17 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     this.scanProgress.set(null);
     this.activeTab.set('vulnerabilities');
 
-    StartScan(proj.ID).then(() => {
-      this.scanning.set(false);
-      this.scanProgress.set(null);
-      this.fetchProject(proj.ID);
-    }).catch(err => {
-      alert("Error triggering scan: " + err);
-      this.scanning.set(false);
-      this.scanProgress.set(null);
-    });
+    StartScan(proj.ID)
+      .then(() => {
+        this.scanning.set(false);
+        this.scanProgress.set(null);
+        this.fetchProject(proj.ID);
+      })
+      .catch((err) => {
+        alert('Error triggering scan: ' + err);
+        this.scanning.set(false);
+        this.scanProgress.set(null);
+      });
   }
 
   selectFinding(finding: any) {
@@ -1316,19 +2153,21 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       scopeType: scope,
       matchString: match,
       path: path,
-      reason: reason
+      reason: reason,
     };
 
-    SuppressFinding(projID, finding, opts as any).then(() => {
-      this.suppressing.set(false);
-      finding.Excluded = true;
-      this.selectedFinding.set(null); // Close the drawer
+    SuppressFinding(projID, finding, opts as any)
+      .then(() => {
+        this.suppressing.set(false);
+        finding.Excluded = true;
+        this.selectedFinding.set(null); // Close the drawer
 
-      this.fetchFindings(projID);
-    }).catch(err => {
-      alert("Error suppressing finding: " + err);
-      this.suppressing.set(false);
-    });
+        this.fetchFindings(projID);
+      })
+      .catch((err) => {
+        alert('Error suppressing finding: ' + err);
+        this.suppressing.set(false);
+      });
   }
 
   async loadExceptions() {
@@ -1338,18 +2177,18 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       const ex = await GetExceptions(p.ID);
       this.exceptions.set(ex || []);
     } catch (e) {
-      console.error("Failed to load exceptions", e);
+      console.error('Failed to load exceptions', e);
     }
   }
 
   async removeException(id: string) {
     if (!id) {
-      alert("Error: Exception ID is undefined or empty!");
+      alert('Error: Exception ID is undefined or empty!');
       return;
     }
     // if (!confirm("Are you sure you want to remove this exception? It will no longer filter issues on future scans.")) return;
     // Optimistically remove from UI immediately
-    this.exceptions.update(list => list.filter(e => (e.id || e.ID) !== id));
+    this.exceptions.update((list) => list.filter((e) => (e.id || e.ID) !== id));
     try {
       await RemoveException(id);
       // Reload findings so that the removed exception immediately unsuppresses existing findings
@@ -1360,7 +2199,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
     } catch (e) {
       // Restore list if the call failed
       await this.loadExceptions();
-      alert("Error removing exception: " + e);
+      alert('Error removing exception: ' + e);
     }
   }
 
@@ -1371,7 +2210,7 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       await ExportExceptions(p.ID);
       // We don't need to alert on success if the save dialog handles it gracefully
     } catch (e) {
-      alert("Error exporting exceptions: " + e);
+      alert('Error exporting exceptions: ' + e);
     }
   }
 
@@ -1382,17 +2221,23 @@ export class ProjectDetailComponent implements OnInit, OnDestroy {
       await ImportExceptions(p.ID);
       await this.loadExceptions();
     } catch (e) {
-      alert("Error importing exceptions: " + e);
+      alert('Error importing exceptions: ' + e);
     }
   }
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
     const target = event.target as HTMLElement;
-    const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+    const isInput =
+      target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
 
     if ((event.metaKey || event.ctrlKey) && event.key === 's') {
       event.preventDefault();
-      if (this.selectedFinding() && !this.suppressing() && this.suppressReason() && this.suppressMatch()) {
+      if (
+        this.selectedFinding() &&
+        !this.suppressing() &&
+        this.suppressReason() &&
+        this.suppressMatch()
+      ) {
         this.suppressSelected();
       }
       return;

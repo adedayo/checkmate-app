@@ -1,12 +1,13 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { GetAppVersion } from '../../wailsjs/go/main/App';
+import { HlmImports } from './shared/ui';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ...HlmImports],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App implements OnInit {
   theme = signal<'light' | 'dark'>('dark');
@@ -16,9 +17,11 @@ export class App implements OnInit {
     // Check local storage or system preference in a real app, defaulting to dark for Trawl feel
     this.applyTheme(this.theme());
     try {
-      GetAppVersion().then(v => {
-        if (v) this.version.set(v);
-      }).catch(() => {});
+      GetAppVersion()
+        .then((v) => {
+          if (v) this.version.set(v);
+        })
+        .catch(() => {});
     } catch (e) {}
   }
 
