@@ -7,8 +7,11 @@ cask "checkmate-app" do
   version "2.1.0"
   sha256 "0000000000000000000000000000000000000000000000000000000000000000"
 
-  url "https://github.com/adedayo/checkmate-app/releases/download/v#{version}/CheckMate-macos-universal.dmg",
-      verified: "github.com/adedayo/checkmate-app/"
+  # No `verified:` parameter. It is deprecated: it existed to assert that a URL
+  # whose host differs from the homepage is nevertheless the right one, and
+  # Homebrew now derives that itself. Keeping it only produced a warning on
+  # every command that touched this cask.
+  url "https://github.com/adedayo/checkmate-app/releases/download/v#{version}/CheckMate-macos-universal.dmg"
   name "CheckMate App"
   desc "Local SAST & secret exposure intelligence desktop engine"
   homepage "https://github.com/adedayo/checkmate-app"
@@ -18,10 +21,21 @@ cask "checkmate-app" do
     strategy :github_latest
   end
 
-  # The symbol form already means "this version or newer". The string form,
-  # `">= :catalina"`, is deprecated and made Homebrew print a warning asking
-  # the tap to fix it on every invocation that touched this cask.
-  depends_on macos: :catalina
+  # There is deliberately no *versioned* `depends_on macos:` stanza. Homebrew
+  # 6.0.22 *disabled* `depends_on macos: :catalina` outright — "There is no
+  # replacement" — and the string form `">= :catalina"` before it. Declaring
+  # either is now a hard error that makes the cask uninstallable, which is how
+  # it reached a user: `brew install --cask adedayo/tap/checkmate-app` aborted
+  # with "Calling `depends_on macos: :catalina` is disabled!".
+  #
+  # Nothing is lost by dropping the version. The stanza only ever produced a
+  # nicer message on macOS versions older than Catalina; the .dmg is a
+  # universal 64-bit bundle those releases could not run regardless, and
+  # Homebrew itself no longer supports them.
+  #
+  # The unversioned form below is still supported, and is required: `brew
+  # style` flags a cask with a macOS-only artifact that omits it.
+  depends_on :macos
 
   # CheckMate.app, matching outputfilename in wails.json. The previous value
   # was "checkmate-app.app", which no build has ever produced — the cask would
@@ -46,13 +60,23 @@ cask "checkmate-app" do
   # therefore cleared a flag that was about to be re-applied, and users who
   # installed with the cask still had to run xattr by hand.
   #
-  # `system_command` and not `system_command!`: a bundle carrying no such
-  # attribute — a future notarised build, or a re-run of this block — must not
-  # turn a successful install into a failed one.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/CheckMate.app"],
-                   sudo: false
+  # `postflight_steps` and not `postflight`: the arbitrary-Ruby `postflight`
+  # block is deprecated in Homebrew 6 and slated for the same removal that just
+  # turned `depends_on macos:` into an error. `postflight_steps` is the
+  # declarative replacement — a list of vetted operations that Homebrew can run
+  # inside a sandbox, rather than a block of tap-supplied code.
+  #
+  # `{{appdir}}` is a template token expanded by Homebrew at install time; it
+  # cannot be written as `#{appdir}` here because the steps block is evaluated
+  # before any cask paths exist.
+  #
+  # `must_succeed: false` because a bundle carrying no such attribute — a
+  # future notarised build, or a re-run of this block — must not turn a
+  # successful install into a failed one.
+  postflight_steps do
+    run "/usr/bin/xattr",
+        args:         ["-dr", "com.apple.quarantine", "{{appdir}}/CheckMate.app"],
+        must_succeed: false
   end
 
   zap trash: [

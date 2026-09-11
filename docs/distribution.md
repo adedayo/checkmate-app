@@ -48,7 +48,7 @@ xattr -dr com.apple.quarantine /Applications/CheckMate.app
 > It has to be this way round. The disk image is built with `hdiutil -format
 > UDZO`, so it mounts read-only at `/Volumes/CheckMate`; clearing the flag on
 > the app *before* it reaches `/Applications` fails with `Read-only file
-> system`. The Homebrew cask does the same thing for you in `postflight`,
+> system`. The Homebrew cask does the same thing for you in `postflight_steps`,
 > against the installed bundle — Homebrew copies the quarantine attribute from
 > the downloaded disk image onto the app as it installs it, so clearing it any
 > earlier clears a flag that is about to come back.

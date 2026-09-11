@@ -97,6 +97,31 @@ def cask():
         )
 check("homebrew cask verifies and installs what wails builds", cask)
 
+# Homebrew removes cask DSL, and a removed stanza is not a warning: it aborts
+# `brew install` for every user of the tap. That is not hypothetical — 6.0.22
+# disabled `depends_on macos: :catalina` and the published cask became
+# uninstallable, with no signal from this repository, because nothing here
+# read the cask for stanzas Homebrew had retired.
+#
+# Each entry is (pattern, why). Keep the list additive: when Homebrew warns,
+# fix the cask *and* add the old form here, so a revert cannot go out quietly.
+def cask_dsl_currency():
+    text = open("packaging/homebrew/checkmate-app.rb").read()
+    retired = [
+        (r"^\s*depends_on\s+macos:\s*[\":>]",
+         "versioned `depends_on macos:` is disabled by Homebrew; use bare `depends_on :macos`"),
+        (r"^\s*verified:",
+         "the `verified:` url parameter is deprecated; Homebrew derives it"),
+        (r"^\s*(pre|post)flight\s+do",
+         "arbitrary-Ruby `preflight`/`postflight` are deprecated; use `*flight_steps`"),
+        (r"^\s*sha256\s+:no_check",
+         "`sha256 :no_check` removes the only integrity check in the macOS install path"),
+    ]
+    for pattern, why in retired:
+        if re.search(pattern, text, re.MULTILINE):
+            raise ValueError(f"cask uses retired Homebrew DSL: {why}")
+check("homebrew cask uses no retired DSL", cask_dsl_currency)
+
 # The reproducibility rule, asserted rather than documented. This is the defect
 # that made every previous release un-attestable.
 def reproducible():
