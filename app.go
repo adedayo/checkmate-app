@@ -1058,10 +1058,20 @@ func (a *App) AddRepository(projectID string, repoUrl string) (*projects.Project
 		return nil, err
 	}
 
+	// LocationType is not decoration: the scan engine switches on it to decide
+	// whether to clone a URL or walk a directory, and a repository carrying ""
+	// matched neither branch and was dropped. Every project created through
+	// this app was affected — the scan ran, found nothing, and reported a
+	// clean result, because it had been given nothing to look at.
+	repo := projects.Repository{
+		Location:     repoUrl,
+		LocationType: locationType(repoUrl),
+	}
+
 	desc := projects.ProjectDescription{
 		Name:         proj.Name,
 		Workspace:    proj.Workspace,
-		Repositories: append(proj.Repositories, projects.Repository{Location: repoUrl}),
+		Repositories: append(proj.Repositories, repo),
 		ScanPolicy:   proj.ScanPolicy,
 	}
 
@@ -1072,6 +1082,26 @@ func (a *App) AddRepository(projectID string, repoUrl string) (*projects.Project
 	}
 
 	return a.store.GetProjectSummary(updated.ID)
+}
+
+// locationType classifies a repository location as one the engine clones or one
+// it walks.
+//
+// The library infers the same thing when the field is empty, for the sake of
+// projects already stored without it, but recording it here means the stored
+// project says what it is rather than depending on every future reader to guess
+// the same way.
+func locationType(location string) string {
+	for _, scheme := range []string{"https://", "http://", "git://", "ssh://", "git+ssh://"} {
+		if strings.HasPrefix(location, scheme) {
+			return "git"
+		}
+	}
+	// scp-style shorthand, git@host:owner/repo.git — no scheme, but not a path.
+	if at := strings.Index(location, "@"); at > 0 && strings.Contains(location[at:], ":") {
+		return "git"
+	}
+	return "filesystem"
 }
 
 // dummyConsumer implements diagnostics.SecurityDiagnosticsConsumer
