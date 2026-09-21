@@ -43,7 +43,7 @@ CheckMate App includes a privacy-first **BYO AI Triage Engine** that eliminates 
 
 ### Key Capabilities
 - **Multi-Provider Support:** Connect your choice of AI provider:
-  - 🦙 **Ollama** (Local, air-gapped LLMs like `llama3`, `mistral`, `codellama` — zero code leaves your machine)
+  - 🦙 **Ollama** (Local, air-gapped LLMs like `llama3`, `mistral`, `codellama` - zero code leaves your machine)
   - 🧠 **OpenAI** (`gpt-4o`, `gpt-4-turbo`)
   - 🤖 **Anthropic** (`claude-3-5-sonnet`, `claude-3-haiku`)
   - ⚡ **DeepSeek** (`deepseek-chat`, `deepseek-coder`)
@@ -68,7 +68,7 @@ brew install --cask adedayo/tap/checkmate-app
 
 > [!NOTE]
 > **macOS Gatekeeper.** CheckMate is free open-source software and is not
-> code-signed with a paid Apple Developer certificate — we are not going to
+> code-signed with a paid Apple Developer certificate - we are not going to
 > charge the community, however indirectly, to fund a $99/year rent to Apple.
 > The Homebrew cask above verifies the download's SHA-256 and clears the
 > quarantine flag for you, so **this route needs no workaround**.

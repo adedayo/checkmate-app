@@ -41,6 +41,13 @@ echo "✔ builds"
 step "Go — tests"
 go test -count=1 ./...
 
+# Checks only text a user reads: Go string literals, Angular templates and
+# template literals, and the documents a user is pointed at. Comments keep the
+# punctuation they were written with, because a check that flags a maintainer's
+# prose is one people learn to ignore.
+step "Prose — em dashes in user-visible text"
+go run ./tools/prosecheck
+
 step "Angular — unit tests"
 (cd frontend && npm run test -- --watch=false)
 

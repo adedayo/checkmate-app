@@ -12,20 +12,20 @@ of this section.
 
 Or download `CheckMate-macos-universal.dmg` from the
 [latest release](https://github.com/adedayo/checkmate-app/releases/latest). The
-build is universal — one download works on Apple Silicon and Intel.
+build is universal - one download works on Apple Silicon and Intel.
 
 ### Why macOS complains, and what to do about it
 
 CheckMate is ad-hoc signed, not Developer ID signed. Apple only issues
 Developer ID certificates to members of its Developer Program, which costs $99
 a year. CheckMate is free software given away for the community's benefit, and
-it is not going to charge you — directly or indirectly — to fund a rent to
+it is not going to charge you - directly or indirectly - to fund a rent to
 Apple for permission to do that. So on first launch macOS will say the app
 "cannot be opened because Apple cannot check it for malicious software."
 
 That message is about *provenance*, not about the file being damaged or
 dangerous. Apple has not checked it because we have not paid Apple to check it.
-Establish provenance yourself instead — this is stronger evidence than
+Establish provenance yourself instead - this is stronger evidence than
 notarisation, because it ties the artefact to the public build that produced
 it:
 
@@ -49,7 +49,7 @@ xattr -dr com.apple.quarantine /Applications/CheckMate.app
 > UDZO`, so it mounts read-only at `/Volumes/CheckMate`; clearing the flag on
 > the app *before* it reaches `/Applications` fails with `Read-only file
 > system`. The Homebrew cask does the same thing for you in `postflight_steps`,
-> against the installed bundle — Homebrew copies the quarantine attribute from
+> against the installed bundle - Homebrew copies the quarantine attribute from
 > the downloaded disk image onto the app as it installs it, so clearing it any
 > earlier clears a flag that is about to come back.
 >
@@ -79,7 +79,7 @@ portable `.zip` if you would rather not install anything.
 
 | Format | Use when |
 |---|---|
-| `.deb` | Debian, Ubuntu and derivatives — declares its GTK/WebKit dependencies |
+| `.deb` | Debian, Ubuntu and derivatives - declares its GTK/WebKit dependencies |
 | `.rpm` | Fedora, RHEL, openSUSE |
 | `.AppImage` | Your distribution's WebKit is the wrong vintage, or you want no install at all |
 | `.tar.gz` | You want to unpack it somewhere and manage dependencies yourself |

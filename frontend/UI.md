@@ -6,10 +6,10 @@ The desktop UI is Angular 22 + **Tailwind CSS v4** + **Spartan UI**.
 
 There is no `tailwind.config.js`. All configuration lives in CSS:
 
-- `src/styles.css` — `@import "tailwindcss"`, `@source`, `@custom-variant dark`,
+- `src/styles.css` - `@import "tailwindcss"`, `@source`, `@custom-variant dark`,
   the design tokens (`:root` / `.dark`) and the `@theme inline` mapping that
   exposes them as utilities (`bg-card`, `text-muted-foreground`, `border-border`…).
-- `.postcssrc.json` — registers `@tailwindcss/postcss` for the Angular builder.
+- `.postcssrc.json` - registers `@tailwindcss/postcss` for the Angular builder.
 
 Dark mode is class based: the app shell toggles `.dark` on `<html>`.
 
@@ -35,7 +35,7 @@ Conventions used throughout:
 - Tints and edges use opacity of the token: `bg-destructive/10 border-destructive/20`.
 - Hover on a solid surface softens it: `hover:bg-primary/90`.
 - `dark:` overrides are only needed for things a token cannot express (e.g.
-  `dark:shadow-none`) — the tokens themselves already flip with the theme.
+  `dark:shadow-none`) - the tokens themselves already flip with the theme.
 
 ### Charts and SVG
 
@@ -46,16 +46,16 @@ or `var(--token)` rather than hex literals.
 
 ## Spartan UI (helm)
 
-Spartan components are *copy-in* — they live in this repo under
+Spartan components are *copy-in* - they live in this repo under
 `src/app/shared/ui/` rather than being imported from a package:
 
-- `utils.ts` — `hlm()` / `cn()` class merger (`clsx` + `tailwind-merge`).
-- `hlm-button.ts` — `hlmBtn` directive (`variant`, `size`).
-- `hlm-badge.ts` — `hlmBadge` directive (`variant`).
-- `hlm-card.ts` — `hlmCard`, `hlmCardHeader`, `hlmCardTitle`,
+- `utils.ts` - `hlm()` / `cn()` class merger (`clsx` + `tailwind-merge`).
+- `hlm-button.ts` - `hlmBtn` directive (`variant`, `size`).
+- `hlm-badge.ts` - `hlmBadge` directive (`variant`).
+- `hlm-card.ts` - `hlmCard`, `hlmCardHeader`, `hlmCardTitle`,
   `hlmCardDescription`, `hlmCardContent`, `hlmCardFooter`.
-- `hlm-form-field.ts` — `hlmInput`, `hlmSelect`, `hlmLabel`, `hlmSeparator`, `hlmMuted`.
-- `chart-theme.ts` — CSS token → TypeScript colour bridge for ngx-charts.
+- `hlm-form-field.ts` - `hlmInput`, `hlmSelect`, `hlmLabel`, `hlmSeparator`, `hlmMuted`.
+- `chart-theme.ts` - CSS token → TypeScript colour bridge for ngx-charts.
 
 Usage in a standalone component:
 

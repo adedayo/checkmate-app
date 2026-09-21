@@ -208,7 +208,7 @@ func installGuidance(goos string) (command, hint string) {
 		return "winget install Adedayo.CheckMate",
 			"winget upgrades in place; otherwise run the downloaded installer."
 	case "linux":
-		return "", "Install the .deb or .rpm for your distribution — they declare the GTK/WebKit dependencies the tarball does not. The AppImage needs no install."
+		return "", "Install the .deb or .rpm for your distribution - they declare the GTK/WebKit dependencies the tarball does not. The AppImage needs no install."
 	default:
 		return "", "See the release page for the artefact matching your platform."
 	}

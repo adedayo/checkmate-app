@@ -1284,7 +1284,7 @@ export class DashboardComponent implements OnInit {
     if (!info) return '';
     return info.assetName
       ? `Download ${info.assetName} for ${info.platform}`
-      : `No prebuilt artefact for ${info.platform ?? 'this platform'} — open the release page`;
+      : `No prebuilt artefact for ${info.platform ?? 'this platform'} - open the release page`;
   });
 
   copyInstallCommand() {
