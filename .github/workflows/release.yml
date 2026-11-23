@@ -84,7 +84,7 @@ jobs:
   macos:
     name: macOS (universal)
     needs: meta
-    runs-on: macos-14
+    runs-on: macos-15
     # Job level, not step level. A step-level `env:` is not visible to that
     # same step's `if:`, which is evaluated before the step environment is
     # constructed — so guarding on it there silently never matches, and signing
