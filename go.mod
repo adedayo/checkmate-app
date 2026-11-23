@@ -9,7 +9,7 @@ module checkmate-app
 go 1.26.6
 
 require (
-	github.com/adedayo/checkmate v1.5.3
+	github.com/adedayo/checkmate v1.7.0
 	github.com/google/uuid v1.6.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/wailsapp/wails/v2 v2.14.0
